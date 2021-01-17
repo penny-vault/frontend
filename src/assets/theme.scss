@@ -1,0 +1,53 @@
+// File: custom.scss
+// Color scheme: http://paletton.com/#uid=73a0u0kw0F7jOKHpvH1E-tvG6mW
+// Color scheme
+$theme-colors: (
+  "info": #00c291,
+  "primary": #105FC3,
+  "danger": #B40009,
+  "link2": #007759,
+  "white": #FFFFFF,
+  "nav": #242A33
+);
+
+// Define your variable overrides here
+$enable-shadows: true;
+$enable-gradients: true;
+$grid-breakpoints: (
+  xs: 0,
+  sm: 456px,
+  md: 789px,
+  lg: 999px,
+  xl: 1234px
+);
+$bv-enable-table-stacked: false;
+
+$navbar-dark-color:       rgba(255, 255, 255, .75) !default;
+$navbar-dark-hover-color: rgba(255, 255, 255, 1) !default;
+
+// Include Bootstrap and BootstrapVue SCSS files
+@import '~bootstrap/scss/bootstrap.scss';
+@import '~bootstrap-vue/src/index.scss';
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Sacramento&display=swap');
+
+// load fonts
+@font-face {
+  font-family: 'league-gothic';
+  src: url('leaguegothic-regular-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+// General style overrides and custom classes
+body {
+  margin: 0;
+}
+
+h1 {
+  font-family: 'league-gothic';
+  text-transform: uppercase;
+}
+
+.left {
+  text-align: left;
+}
