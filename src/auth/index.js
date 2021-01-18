@@ -122,6 +122,7 @@ export const useAuth0 = ({
     }
   });
 
+  console.log(instance);
   return instance;
 };
 

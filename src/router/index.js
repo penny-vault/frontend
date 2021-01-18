@@ -2,6 +2,9 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Profile from '../views/Profile.vue'
+import StrategyCards from '../views/StrategyCards.vue'
+import Strategy from '../views/Strategy.vue'
+import ManagementApi from '../views/ManagementApi.vue'
 
 import { authGuard } from '../auth/authGuard'
 
@@ -17,6 +20,24 @@ const routes = [
     path: '/profile',
     name: 'profile',
     component: Profile,
+    beforeEnter: authGuard
+  },
+  {
+    path: '/strategies',
+    name: 'strategies',
+    component: StrategyCards,
+    beforeEnter: authGuard
+  },
+  {
+    path: '/strategy/:id',
+    name: 'strategy',
+    component: Strategy,
+    beforeEnter: authGuard
+  },
+  {
+    path: "/management-api",
+    name: "management-api",
+    component: ManagementApi,
     beforeEnter: authGuard
   },
   {

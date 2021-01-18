@@ -37,7 +37,7 @@ export default {
   methods: {
     // Log the user in
     login() {
-      this.$auth.loginWithRedirect();
+      this.$auth.loginWithRedirect({ scope: 'read:current_user_metadata' });
     },
     // Log the user out
     logout() {

@@ -2,11 +2,10 @@ import Vue from 'vue'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import App from './App.vue'
 import router from './router'
+import axios from "axios";
 
 // Import the Auth0 configuration
-import { domain, clientId } from "../auth_config.json";
-
-// Import the plugin here
+import { domain, clientId, audience } from "../auth_config.json";
 import { Auth0Plugin } from "./auth";
 
 // Import Bootstrap an BootstrapVue CSS files (order is important)
@@ -16,6 +15,7 @@ import "./assets/theme.scss";
 Vue.use(Auth0Plugin, {
   domain,
   clientId,
+  audience,
   onRedirectCallback: appState => {
     router.push(
       appState && appState.targetUrl
@@ -30,6 +30,15 @@ Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 
 Vue.config.productionTip = false
+
+// setup axios
+const axiosConfig = {
+//  baseURL: 'https://penny-vault.herokuapp.com/v1',
+  baseURL: 'http://localhost:3000/v1',
+  timeout: 30000,
+};
+
+Vue.prototype.$axios = axios.create(axiosConfig)
 
 new Vue({
   router,
