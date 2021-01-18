@@ -33,8 +33,8 @@ Vue.config.productionTip = false
 
 // setup axios
 const axiosConfig = {
-//  baseURL: 'https://penny-vault.herokuapp.com/v1',
-  baseURL: 'http://localhost:3000/v1',
+  baseURL: 'https://penny-vault.herokuapp.com/v1',
+//  baseURL: 'http://localhost:3000/v1',
   timeout: 30000,
 };
 
