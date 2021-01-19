@@ -3,6 +3,9 @@
     <b-row>
         <h1>Available Strategies</h1>
     </b-row>
+    <b-row v-if="loading">
+        <img src="https://media.giphy.com/media/jAYUbVXgESSti/source.gif" style="width: 100%;" />
+    </b-row>
     <b-row class="left">
         <b-card-group columns>
 
@@ -36,7 +39,8 @@ export default {
   name: 'StrategyCards',
   data() {
     return {
-      items: []
+      items: [],
+      loading: true
     };
   },
   mounted: async function() {
@@ -51,6 +55,7 @@ export default {
     });
 
     this.items = data;
+    this.loading = false;
   },
   components: {
       //isotope

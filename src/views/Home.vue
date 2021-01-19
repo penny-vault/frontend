@@ -22,6 +22,10 @@ export default {
   components: {
     Portfolio
   },
+  mounted: async function() {
+    // Use Axios to make a call to the API to get things kicking if it's idle
+    await this.$axios.get("/");
+  },
   methods: {
     // Log the user in
     login() {
