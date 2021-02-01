@@ -35,15 +35,22 @@
         </b-col>
 
         <b-col cols="9" class="left">
-        <h3>{{ strategy.name }}</h3>
-        <h5>Jan 1990 - Dec 2020</h5>
-        <p>Tactical asset allocation model results from Jan 1990 to Dec 2020 are based on dual momentum model holding the best performing asset. Absolute momentum based trend following filter is used to switch any selected assets that have a negative excess return over the risk free rate to cash. The model uses a single performance window of 10 calendar month(s). Tactical asset allocation model trades are executed using the end of month close price each month based on the end of month signals. The time period was constrained by the available data for T. Rowe Price International Discovery (PRIDX) [Jan 1989 - Dec 2020].</p>
-        <b-tabs content-class="mt-3">
-            <b-tab title="Summary" active>
-              <apexchart ref="valueChart" width="100%" height="300" type="area" :options="options" :series="series"></apexchart>
-            </b-tab>
-        </b-tabs>
-
+            <h3>{{ strategy.name }}</h3>
+          <div v-if="strategyLoaded">
+            <h5>Jan 1990 - Dec 2020</h5>
+            <p>Tactical asset allocation model results from Jan 1990 to Dec 2020 are based on dual momentum model holding the best performing asset. Absolute momentum based trend following filter is used to switch any selected assets that have a negative excess return over the risk free rate to cash. The model uses a single performance window of 10 calendar month(s). Tactical asset allocation model trades are executed using the end of month close price each month based on the end of month signals. The time period was constrained by the available data for T. Rowe Price International Discovery (PRIDX) [Jan 1989 - Dec 2020].</p>
+            <b-tabs content-class="mt-3">
+                <b-tab title="Summary" active>
+                  <apexchart ref="valueChart" width="100%" height="300" type="area" :options="options" :series="series"></apexchart>
+                </b-tab>
+            </b-tabs>
+          </div>
+          <div v-else-if="strategyLoading">
+            <h3>Please wait while the simulation runs</h3>
+          </div>
+          <div v-else>
+            <h3>To begin fill out the form to the left.</h3>
+          </div>
         </b-col>
     </b-row>
   </b-container>
@@ -58,6 +65,8 @@ export default {
         name: ""
       },
       form: {},
+      strategyLoaded: false,
+      strategyLoading: false,
       performance: {},
       simulationBegin: new Date(1980,0,1),
       simulationEnd: new Date(),
@@ -158,6 +167,8 @@ export default {
   methods: {
       onSubmit: async function (e) {
         e.preventDefault()
+        this.strategyLoading = true;
+        this.strategyLoaded = false;
 
         var stratParams = Object.assign({}, this.form)
         Object.entries(this.strategy.arguments).forEach( elem => {
@@ -185,15 +196,12 @@ export default {
           chartData.push([elem.time * 1000, elem.value])
         })
 
-        this.series.data = {
+        this.series = [{
           name: 'strategy',
           data: chartData
-        }
+        }]
 
-        this.$refs.valueChart.updateSeries([{
-          data: chartData,
-        }], false, true);
-        console.log(chartData)
+        this.strategyLoaded = true;
       },
       onReset: function() {}
   }
