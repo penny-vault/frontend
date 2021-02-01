@@ -57,7 +57,7 @@ export default {
   width: 100%;
   height: 100%;
   z-index: -999;
-  background-image: url("../assets/wallpaper_lg.jpg");
+  background-image: url("../assets/wallpaper.jpg");
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
