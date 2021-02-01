@@ -1,14 +1,22 @@
 <template>
   <div class="home">
+    <div class="background"></div>
     <Portfolio />
 
-    <!-- Check that the SDK client is not currently loading before accessing is methods -->
-    <div v-if="!$auth.loading">
-      <!-- show login when not authenticated -->
-      <button v-if="!$auth.isAuthenticated" @click="login">Log in</button>
-      <!-- show logout when authenticated -->
-      <button v-if="$auth.isAuthenticated" @click="logout">Log out</button>
+    <div class="banner">
+      Welcome to Penny Vault,
+      <!-- Check that the SDK client is not currently loading before accessing is methods -->
+      <span v-if="!$auth.loading">
+        <!-- show login when not authenticated -->
+        <span v-if="!$auth.isAuthenticated">
+        <p>
+          please login to get started: <b-button class="helvetica" variant="dark" size="lg" @click="login">Login</b-button>
+
+        </p>
+        </span>
+      </span>
     </div>
+
 
   </div>
 </template>
@@ -40,3 +48,36 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.background {
+  margin: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -999;
+  background-image: url("../assets/wallpaper_lg.jpg");
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.helvetica {
+  font-family: "Helvetica", sans-serif;
+}
+
+.banner {
+  font-family: "Sacramento", sans-serif;
+  font-weight: 900;
+  font-size: 4rem;
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: left;
+  margin-left: 100px;
+  margin-top: 300px;
+  color: black;
+}
+</style>
