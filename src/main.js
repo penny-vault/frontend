@@ -4,7 +4,7 @@ import App from './App.vue'
 import router from './router'
 import axios from "axios";
 
-import VueApexCharts from 'vue-apexcharts'
+import HighchartsVue from 'highcharts-vue'
 
 // Import the Auth0 configuration
 import { domain, clientId, audience } from "../auth_config.json";
@@ -30,7 +30,7 @@ Vue.use(Auth0Plugin, {
 // Make BootstrapVue available throughout project
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
-Vue.component('apexchart', VueApexCharts)
+Vue.use(HighchartsVue)
 
 Vue.config.productionTip = false
 

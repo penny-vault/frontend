@@ -30,6 +30,10 @@ $navbar-dark-hover-color: rgba(255, 255, 255, 1) !default;
 @import '~bootstrap-vue/src/index.scss';
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Sacramento&display=swap');
 
+@import "~ag-grid-community/dist/styles/ag-grid.css";
+@import "~ag-grid-community/dist/styles/ag-theme-alpine.css";
+
+
 // General style overrides and custom classes
 body {
   margin: 0;
