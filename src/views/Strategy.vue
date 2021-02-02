@@ -182,13 +182,23 @@ export default {
         const token = await this.$auth.getTokenSilently()
 
         // Use Axios to make a call to the API
-        const { data } = await this.$axios.post("/strategy/" + this.strategy.shortcode, stratParams, {
-          headers: {
-            Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
-          }
-        })
-
-        this.performance = data
+        try {
+          const { data } = await this.$axios.post("/strategy/" + this.strategy.shortcode, stratParams, {
+            headers: {
+              Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
+            }
+          })
+          this.performance = data
+        } catch(error) {
+          this.$bvToast.toast("Server failed to calculate strategy performance", {
+            title: 'Error',
+            variant: 'danger',
+            autoHideDelay: 5000,
+            appendToast: false
+          })
+          this.strategyLoading = false
+          return
+        }
 
         // Reformat value data to match chart
         var chartData = []
