@@ -37,11 +37,17 @@
         <b-col cols="9" class="left">
             <h3>{{ strategy.name }}</h3>
           <div v-if="strategyLoaded">
-            <h5>Jan 1990 - Dec 2020</h5>
-            <p>Tactical asset allocation model results from Jan 1990 to Dec 2020 are based on dual momentum model holding the best performing asset. Absolute momentum based trend following filter is used to switch any selected assets that have a negative excess return over the risk free rate to cash. The model uses a single performance window of 10 calendar month(s). Tactical asset allocation model trades are executed using the end of month close price each month based on the end of month signals. The time period was constrained by the available data for T. Rowe Price International Discovery (PRIDX) [Jan 1989 - Dec 2020].</p>
+            <h5>{{ periodStart }} - {{ periodEnd }}</h5>
             <b-tabs content-class="mt-3">
                 <b-tab title="Summary" active>
-                  <apexchart ref="valueChart" width="100%" height="300" type="area" :options="options" :series="series"></apexchart>
+                  <highcharts ref="valueChart" width="100%" height="300" :options="chartOptions"></highcharts>
+                </b-tab>
+                <b-tab title="Portfolio">
+                  <ag-grid-vue style="width: 100%; height: 500px;"
+                    class="ag-theme-alpine"
+                    :columnDefs="columnDefs"
+                    :rowData="rowData">
+                  </ag-grid-vue>
                 </b-tab>
             </b-tabs>
           </div>
@@ -57,6 +63,8 @@
 </template>
 
 <script>
+import { AgGridVue } from "ag-grid-vue";
+
 export default {
   name: 'Strategy',
   data() {
@@ -65,66 +73,66 @@ export default {
         name: ""
       },
       form: {},
+      columnDefs: null,
+      rowData: null,
       strategyLoaded: false,
       strategyLoading: false,
       performance: {},
       simulationBegin: new Date(1980,0,1),
       simulationEnd: new Date(),
-      options: {
+      periodStart: null,
+      periodEnd: null,
+      chartOptions: {
         chart: {
-          id: 'value-chart',
-          zoom: {
-            type: 'x',
-            enabled: true,
-            autoScaleYaxis: true
-          },
-          toolbar: {
-            autoSelected: 'zoom'
+          zoomType: 'x'
+        },
+        title: {
+            text: 'Strategy performance over time'
+        },
+        subtitle: {
+            text: document.ontouchstart === undefined ?
+                'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+          title: {
+            text: 'Value'
           }
         },
-        dataLabels: {
+        legend: {
           enabled: false
         },
-        markers: {
-          size: 0
+        credits: {
+          enabled: false
         },
-        fill: {
-          type: 'gradient',
-          gradient: {
-            shadeIntensity: 1,
-            inverseColors: false,
-            opacityFrom: 0.5,
-            opacityTo: 0,
-            stops: [0, 90, 100]
-          }
-        },
-        yaxis: {
-          labels: {
-            formatter: function (val) {
-              return new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(val)
-            },
-          },
-          title: {
-            text: 'Price'
-          },
-//          logarithmic: true
-        },
-        xaxis: {
-          type: 'datetime',
+        lang: {
+          thousandsSep: ','
         },
         tooltip: {
-          shared: false,
-          y: {
-            formatter: function (val) {
-              return new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(val)
-            }
+          pointFormat: "{series.name}: <b>${point.y:,.2f}</b><br/>"
+        },
+        plotOptions: {
+          area: {
+            marker: {
+              radius: 2
+            },
+            lineWidth: 1,
+            states: {
+              hover: {
+                lineWidth: 1
+              }
+            },
+            threshold: null
           }
-        }
+        },
+        series: [{
+          type: 'area',
+          name: 'strategy',
+          data: []
+        }],
       },
-      series: [{
-        name: 'strategy',
-        data: []
-      }],
       args: []
     };
   },
@@ -163,7 +171,9 @@ export default {
       this.args.push(item);
     })
   },
-  components: {},
+  components: {
+    AgGridVue
+  },
   methods: {
       onSubmit: async function (e) {
         e.preventDefault()
@@ -206,10 +216,30 @@ export default {
           chartData.push([elem.time * 1000, elem.value])
         })
 
-        this.series = [{
+        this.chartOptions.series = [{
+          type: 'area',
           name: 'strategy',
           data: chartData
         }]
+
+        var start = new Date(this.performance.periodStart * 1000)
+        var end = new Date(this.performance.periodEnd * 1000)
+
+        var shortMonth = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+        this.periodStart = shortMonth[start.getMonth()] + " " + start.getFullYear()
+        this.periodEnd = shortMonth[end.getMonth()] + " " + end.getFullYear()
+
+        this.columnDefs = [
+            { field: 'date' },
+            { field: 'ticker' }
+        ];
+
+        this.performance.holdingByMonth.forEach( elem => {
+          elem.date = new Date(elem.date * 1000)
+        })
+
+        this.rowData = this.performance.holdingByMonth
 
         this.strategyLoaded = true;
       },
