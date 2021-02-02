@@ -25,7 +25,7 @@
         </b-collapse>
       </b-container>
     </b-navbar>
-    <img id="logo" src="@/assets/logo.png" alt="Penny Vault Logo" />
+    <img id="logo" src="@/assets/logo.webp" alt="Penny Vault Logo" />
 
     <router-view/>
   </div>

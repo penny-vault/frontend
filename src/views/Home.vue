@@ -4,13 +4,13 @@
     <Portfolio />
 
     <div class="banner">
-      Welcome to Penny Vault,
+      Welcome to Penny Vault!
       <!-- Check that the SDK client is not currently loading before accessing is methods -->
       <span v-if="!$auth.loading">
         <!-- show login when not authenticated -->
         <span v-if="!$auth.isAuthenticated">
         <p>
-          please login to get started: <b-button class="helvetica" variant="dark" size="lg" @click="login">Login</b-button>
+          Please login to get started: <b-button class="helvetica" variant="dark" size="lg" @click="login">Login</b-button>
 
         </p>
         </span>
@@ -57,7 +57,7 @@ export default {
   width: 100%;
   height: 100%;
   z-index: -999;
-  background-image: url("../assets/wallpaper.jpg");
+  background-image: url("../assets/wallpaper.webp");
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
