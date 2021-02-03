@@ -20,7 +20,7 @@ export default {
   data() {
     return {
       columnDefs: [
-        { field: 'date', width: 100, filter: 'agDateColumnFilter', sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
+        { field: 'date', width: 110, filter: 'agDateColumnFilter', sortable: true, sortingOrder: ['desc', 'asc'], sort: 'desc', resizable: true, editable: false, valueFormatter: (params) => {
             var d = params.data.date;
             const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d)
             const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d)
@@ -28,10 +28,12 @@ export default {
             return `${mo} ${ye}`
           }
         },
-        { field: 'ticker', width: 150 },
-        { headerName: 'Monthly Return'},
-        { headerName: 'VFINX Return'},
-        { headerName: 'PRIDX Return'},
+        { field: 'ticker', width: 90, sortable: true, resizable: true, editable: false},
+        { field: 'percentReturn', width: 90, headerName: 'Return', sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
+            var d = (params.data.percentReturn * 100).toFixed(2);
+            return `${d}%`
+          }
+        },
         { headerName: 'VFINX Score'},
         { headerName: 'PRIDX Score'}
       ]

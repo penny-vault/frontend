@@ -40,7 +40,14 @@
             <h5>{{ periodStart }} - {{ periodEnd }}</h5>
             <b-tabs content-class="mt-3">
                 <b-tab title="Summary" active>
-                  <value-chart v-bind:series="series"></value-chart>
+
+                  <b-card-group deck>
+                    <stat-card name="Current Asset" :value="currentAsset"></stat-card>
+                    <percent-stat-card name="YTD Return" :value="ytdReturn"></percent-stat-card>
+                    <percent-stat-card name="CAGR Since Inception" :value="cagrSinceInception"></percent-stat-card>
+                  </b-card-group>
+
+                  <value-chart v-bind:series="series" class="mt-3"></value-chart>
                 </b-tab>
                 <b-tab title="Portfolio">
                   <portfolio v-bind:row-data="holdings"></portfolio>
@@ -63,12 +70,16 @@
 <script>
 import ValueChart from "@/components/ValueChart.vue"
 import Portfolio from "@/components/Portfolio.vue"
+import StatCard from "@/components/StatCard.vue"
+import PercentStatCard from "@/components/PercentStatCard.vue"
 
 export default {
   name: 'Strategy',
   data() {
     return {
       args: [],
+      cagrSinceInception: 0.0,
+      currentAsset: '',
       form: {},
       performance: {},
       periodStart: null,
@@ -85,7 +96,8 @@ export default {
         name: ""
       },
       strategyLoaded: false,
-      strategyLoading: false
+      strategyLoading: false,
+      ytdReturn: 0.0
     }
   },
   mounted: async function() {
@@ -124,7 +136,7 @@ export default {
     })
   },
   components: {
-    ValueChart, Portfolio
+    ValueChart, Portfolio, StatCard, PercentStatCard
   },
   methods: {
       onSubmit: async function (e) {
@@ -168,7 +180,8 @@ export default {
           chartData.push([elem.time * 1000, elem.value])
           this.holdings.push({
             date: new Date(elem.time * 1000),
-            ticker: elem.holdings
+            ticker: elem.holdings,
+            percentReturn: elem.percentReturn
           })
         })
 
@@ -185,6 +198,10 @@ export default {
 
         this.periodStart = shortMonth[start.getMonth()] + " " + start.getFullYear()
         this.periodEnd = shortMonth[end.getMonth()] + " " + end.getFullYear()
+
+        this.cagrSinceInception = this.performance.cagrSinceInception
+        this.ytdReturn = this.performance.ytdReturn
+        this.currentAsset = this.performance.currentAsset
 
         this.strategyLoaded = true
       },
