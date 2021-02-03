@@ -35,26 +35,24 @@
         </b-col>
 
         <b-col cols="9" class="left">
-            <h3>{{ strategy.name }}</h3>
+          <h3>{{ strategy.name }}</h3>
           <div v-if="strategyLoaded">
             <h5>{{ periodStart }} - {{ periodEnd }}</h5>
             <b-tabs content-class="mt-3">
                 <b-tab title="Summary" active>
-                  <highcharts ref="valueChart" width="100%" height="300" :options="chartOptions"></highcharts>
+                  <value-chart v-bind:series="series"></value-chart>
                 </b-tab>
                 <b-tab title="Portfolio">
-                  <ag-grid-vue style="width: 100%; height: 500px;"
-                    class="ag-theme-alpine"
-                    :columnDefs="columnDefs"
-                    :rowData="rowData">
-                  </ag-grid-vue>
+                  <portfolio v-bind:row-data="holdings"></portfolio>
                 </b-tab>
             </b-tabs>
           </div>
           <div v-else-if="strategyLoading">
+            <hr/>
             <h3>Please wait while the simulation runs</h3>
           </div>
           <div v-else>
+            <hr/>
             <h3>To begin fill out the form to the left.</h3>
           </div>
         </b-col>
@@ -63,78 +61,32 @@
 </template>
 
 <script>
-import { AgGridVue } from "ag-grid-vue";
+import ValueChart from "@/components/ValueChart.vue"
+import Portfolio from "@/components/Portfolio.vue"
 
 export default {
   name: 'Strategy',
   data() {
     return {
-      strategy: {
-        name: ""
-      },
+      args: [],
       form: {},
-      columnDefs: null,
-      rowData: null,
-      strategyLoaded: false,
-      strategyLoading: false,
       performance: {},
-      simulationBegin: new Date(1980,0,1),
-      simulationEnd: new Date(),
       periodStart: null,
       periodEnd: null,
-      chartOptions: {
-        chart: {
-          zoomType: 'x'
-        },
-        title: {
-            text: 'Strategy performance over time'
-        },
-        subtitle: {
-            text: document.ontouchstart === undefined ?
-                'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
-        },
-        xAxis: {
-            type: 'datetime'
-        },
-        yAxis: {
-          title: {
-            text: 'Value'
-          }
-        },
-        legend: {
-          enabled: false
-        },
-        credits: {
-          enabled: false
-        },
-        lang: {
-          thousandsSep: ','
-        },
-        tooltip: {
-          pointFormat: "{series.name}: <b>${point.y:,.2f}</b><br/>"
-        },
-        plotOptions: {
-          area: {
-            marker: {
-              radius: 2
-            },
-            lineWidth: 1,
-            states: {
-              hover: {
-                lineWidth: 1
-              }
-            },
-            threshold: null
-          }
-        },
-        series: [{
+      holdings: [],
+      series: [{
           type: 'area',
           name: 'strategy',
           data: []
         }],
+      simulationBegin: new Date(1980,0,1),
+      simulationEnd: new Date(),
+      strategy: {
+        name: ""
       },
-      args: []
-    };
+      strategyLoaded: false,
+      strategyLoading: false
+    }
   },
   mounted: async function() {
     // Get the access token from the auth wrapper
@@ -172,7 +124,7 @@ export default {
     })
   },
   components: {
-    AgGridVue
+    ValueChart, Portfolio
   },
   methods: {
       onSubmit: async function (e) {
@@ -214,9 +166,13 @@ export default {
         var chartData = []
         this.performance.value.forEach(elem => {
           chartData.push([elem.time * 1000, elem.value])
+          this.holdings.push({
+            date: new Date(elem.time * 1000),
+            ticker: elem.holdings
+          })
         })
 
-        this.chartOptions.series = [{
+        this.series = [{
           type: 'area',
           name: 'strategy',
           data: chartData
@@ -230,18 +186,7 @@ export default {
         this.periodStart = shortMonth[start.getMonth()] + " " + start.getFullYear()
         this.periodEnd = shortMonth[end.getMonth()] + " " + end.getFullYear()
 
-        this.columnDefs = [
-            { field: 'date' },
-            { field: 'ticker' }
-        ];
-
-        this.performance.holdingByMonth.forEach( elem => {
-          elem.date = new Date(elem.date * 1000)
-        })
-
-        this.rowData = this.performance.holdingByMonth
-
-        this.strategyLoaded = true;
+        this.strategyLoaded = true
       },
       onReset: function() {}
   }

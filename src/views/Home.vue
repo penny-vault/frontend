@@ -1,8 +1,6 @@
 <template>
   <div class="home">
     <div class="background"></div>
-    <Portfolio />
-
     <div class="banner">
       Welcome to Penny Vault!
       <!-- Check that the SDK client is not currently loading before accessing is methods -->
@@ -22,14 +20,10 @@
 </template>
 
 <script>
-// @ is an alias to /src
-import Portfolio from '@/components/Portfolio.vue'
 
 export default {
   name: 'Home',
-  components: {
-    Portfolio
-  },
+  components: {},
   mounted: async function() {
     // Use Axios to make a call to the API to get things kicking if it's idle
     await this.$axios.get("/");
