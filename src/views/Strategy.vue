@@ -10,7 +10,7 @@
                 class="ml-0"
             >
 
-            <b-form ref="params" @submit="onSubmit" @reset="onReset">
+            <b-form ref="params" @submit="onSubmit">
               <b-form-group v-for="item in args" :label="item.name" :description="item.description" :key="item.id" :label-for="item.inpid">
                 <b-form-input
                   :id="item.inpid"
@@ -35,7 +35,16 @@
         </b-col>
 
         <b-col cols="9" class="left">
-          <h3>{{ strategy.name }}</h3>
+          <b-row>
+            <b-col>
+              <h3>{{ strategy.name }}</h3>
+            </b-col>
+            <b-col style="text-align: right">
+              <b-button v-if="strategyLoaded" @click="onSave" size="sm" variant="outline-nav" class="mt-1">
+                <b-icon icon="bookmark-star-fill" aria-hidden="true"></b-icon> Save
+              </b-button>
+            </b-col>
+          </b-row>
           <div v-if="strategyLoaded">
             <h5>{{ periodStart }} - {{ periodEnd }}</h5>
             <b-tabs content-class="mt-3">
@@ -51,6 +60,9 @@
                 </b-tab>
                 <b-tab title="Portfolio">
                   <portfolio v-bind:row-data="holdings"></portfolio>
+                </b-tab>
+                <b-tab title="Settings">
+                  <portfolio-settings></portfolio-settings>
                 </b-tab>
             </b-tabs>
           </div>
@@ -70,6 +82,7 @@
 <script>
 import ValueChart from "@/components/ValueChart.vue"
 import Portfolio from "@/components/Portfolio.vue"
+import PortfolioSettings from "@/components/PortfolioSettings.vue"
 import StatCard from "@/components/StatCard.vue"
 import PercentStatCard from "@/components/PercentStatCard.vue"
 
@@ -136,10 +149,53 @@ export default {
     })
   },
   components: {
-    ValueChart, Portfolio, StatCard, PercentStatCard
+    ValueChart, Portfolio, PortfolioSettings, StatCard, PercentStatCard
   },
   methods: {
-      onSubmit: async function (e) {
+    onSave: async function(e) {
+      e.preventDefault()
+      var stratParams = Object.assign({}, this.form)
+      Object.entries(this.strategy.arguments).forEach( elem => {
+        const [k, v] = elem;
+        if (v.typecode == '[]string') {
+          stratParams[k] = stratParams[k].split(' ');
+        }
+      })
+
+      var params = {
+        name: this.strategy.name,
+        arguments: stratParams,
+        strategy: this.strategy.shortcode
+      }
+
+      // Get the access token from the auth wrapper
+      const token = await this.$auth.getTokenSilently()
+
+      // Use Axios to make a call to the API
+      try {
+        const { data } = await this.$axios.post("/portfolio/", params, {
+          headers: {
+            Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
+          }
+        })
+        this.$bvToast.toast(`Saved portfolio: ${data.name} (${data.id})`, {
+          title: 'Saved',
+          variant: 'success',
+          autoHideDelay: 5000,
+          appendToast: false
+        })
+        return
+      } catch(error) {
+        this.$bvToast.toast("Failed to save portfolio", {
+          title: 'Error',
+          variant: 'danger',
+          autoHideDelay: 5000,
+          appendToast: false
+        })
+        return
+      }
+    },
+    onSubmit: async function (e) {
         e.preventDefault()
         this.strategyLoading = true;
         this.strategyLoaded = false;
@@ -176,6 +232,7 @@ export default {
 
         // Reformat value data to match chart
         var chartData = []
+        this.holdings = []
         this.performance.value.forEach(elem => {
           chartData.push([elem.time * 1000, elem.value])
           this.holdings.push({
@@ -204,8 +261,7 @@ export default {
         this.currentAsset = this.performance.currentAsset
 
         this.strategyLoaded = true
-      },
-      onReset: function() {}
+      }
   }
 }
 </script>
