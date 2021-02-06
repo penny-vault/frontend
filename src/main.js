@@ -3,7 +3,9 @@ import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import App from './App.vue'
 import router from './router'
 import axios from "axios";
+import Vuex from 'vuex'
 
+// Highcharts
 import HighchartsVue from 'highcharts-vue'
 
 // Import the Auth0 configuration
@@ -43,7 +45,17 @@ const axiosConfig = {
 
 Vue.prototype.$axios = axios.create(axiosConfig)
 
+// setup Vuex
+Vue.use(Vuex)
+const store = new Vuex.Store({
+  state: {
+    appVersion: require('../package.json').version,
+    changelog: "https://github.com/jdfergason/pv-frontend/blob/master/CHANGELOG.md"
+  }
+})
+
 new Vue({
   router,
+  store: store,
   render: h => h(App)
 }).$mount('#app')

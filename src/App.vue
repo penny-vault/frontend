@@ -30,7 +30,7 @@
     <router-view class="mb-4"/>
 
     <div class="footer small">
-      Copyright &copy; 2021. All rights reserved. <router-link to="/tos">Terms of Service</router-link>.
+      Penny Vault v{{ $store.state.appVersion }} <a :href="$store.state.changelog" target="_blank">Changelog</a>. Copyright &copy; 2021. All rights reserved. <router-link to="/tos">Terms of Service</router-link>.
     </div>
   </div>
 </template>
