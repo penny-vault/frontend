@@ -47,6 +47,13 @@ const routes = [
     beforeEnter: authGuard
   },
   {
+    path: '/portfolio/:id',
+    name: 'portfolio',
+    component: Strategy,
+    props: route => ({ portfolioId: route.params.id }),
+    beforeEnter: authGuard
+  },
+  {
     path: "/management-api",
     name: "management-api",
     component: ManagementApi,
