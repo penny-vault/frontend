@@ -44,6 +44,7 @@ const routes = [
     path: '/strategy/:id',
     name: 'strategy',
     component: Strategy,
+    props: route => ({ strategyId: route.params.id }),
     beforeEnter: authGuard
   },
   {
