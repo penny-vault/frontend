@@ -6,7 +6,6 @@ import PrivacyPolicy from '../views/PrivacyPolicy.vue'
 import Profile from '../views/Profile.vue'
 import StrategyCards from '../views/StrategyCards.vue'
 import Strategy from '../views/Strategy.vue'
-import ManagementApi from '../views/ManagementApi.vue'
 
 import { authGuard } from '../auth/authGuard'
 
@@ -51,12 +50,6 @@ const routes = [
     name: 'portfolio',
     component: Strategy,
     props: route => ({ portfolioId: route.params.id }),
-    beforeEnter: authGuard
-  },
-  {
-    path: "/management-api",
-    name: "management-api",
-    component: ManagementApi,
     beforeEnter: authGuard
   }
 ]
