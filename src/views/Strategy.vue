@@ -2,36 +2,7 @@
   <b-container>
     <b-row>
         <b-col>
-            <b-card
-                header="Strategy Parameters"
-                header-bg-variant="primary"
-                header-text-variant="white"
-                align="left"
-                class="ml-0"
-            >
-
-            <b-form ref="params" @submit="onSubmit">
-              <b-form-group v-for="item in args" :label="item.name" :description="item.description" :key="item.id" :label-for="item.inpid">
-                <b-form-input
-                  :id="item.inpid"
-                  v-model="form[item.arg]"
-                  :type="item.inptype"
-                  :required="item.required"
-                ></b-form-input>
-              </b-form-group>
-
-              <b-form-group label="Start Date" label-for="simulationBegin">
-                <b-form-datepicker id="simulationBegin" v-model="simulationBegin" :date-format-options="{ year: 'numeric', month: 'short'}"></b-form-datepicker>
-              </b-form-group>
-
-              <b-form-group label="End Date" label-for="simulationEnd">
-                <b-form-datepicker id="simulationEnd" v-model="simulationEnd" :date-format-options="{ year: 'numeric', month: 'short'}"></b-form-datepicker>
-              </b-form-group>
-
-              <b-button type="submit" class="mr-2" variant="info">Submit</b-button>
-            </b-form>
-
-            </b-card>
+          <strategy-arguments :spec="args" :disabled="Boolean(portfolioId)" @execute="onSubmit"></strategy-arguments>
         </b-col>
 
         <b-col cols="9" class="left">
@@ -47,6 +18,7 @@
           </b-row>
           <div v-if="strategyLoaded">
             <h5>{{ periodStart }} - {{ periodEnd }}</h5>
+            <h6 v-if="portfolioId">{{portfolioId}}</h6>
             <b-tabs content-class="mt-3">
                 <b-tab title="Summary" active>
 
@@ -68,11 +40,14 @@
           </div>
           <div v-else-if="strategyLoading">
             <hr/>
-            <h3>Please wait while the simulation runs</h3>
+            <div class="ml-5 mr-5 mt-5">
+            Strategy computing ...
+            <b-progress :value="100" variant="primary" striped animated class="mt-2"></b-progress>
+            </div>
           </div>
           <div v-else>
             <hr/>
-            <h3>To begin fill out the form to the left.</h3>
+            <h4 class="mt-3">To begin fill out the form and click 'Submit'.</h4>
           </div>
         </b-col>
     </b-row>
@@ -85,15 +60,18 @@ import Portfolio from "@/components/Portfolio.vue"
 import PortfolioSettings from "@/components/PortfolioSettings.vue"
 import StatCard from "@/components/StatCard.vue"
 import PercentStatCard from "@/components/PercentStatCard.vue"
+import StrategyArguments from "@/components/StrategyArguments.vue"
 
 export default {
   name: 'Strategy',
+  props: {
+    portfolioId: String
+  },
   data() {
     return {
       args: [],
       cagrSinceInception: 0.0,
       currentAsset: '',
-      form: {},
       performance: {},
       periodStart: null,
       periodEnd: null,
@@ -103,8 +81,6 @@ export default {
           name: 'strategy',
           data: []
         }],
-      simulationBegin: new Date(1980,0,1),
-      simulationEnd: new Date(),
       strategy: {
         name: ""
       },
@@ -140,31 +116,20 @@ export default {
 
       if (v.typecode == "[]string") {
         item.inpdefault = JSON.parse(v.default).join(" ");
-        this.form[item.arg] = JSON.parse(v.default).join(" ");
-      } else {
-        this.form[item.arg] = v.default;
       }
 
       this.args.push(item);
     })
   },
   components: {
-    ValueChart, Portfolio, PortfolioSettings, StatCard, PercentStatCard
+    ValueChart, Portfolio, PortfolioSettings, StatCard, PercentStatCard, StrategyArguments
   },
   methods: {
     onSave: async function(e) {
       e.preventDefault()
-      var stratParams = Object.assign({}, this.form)
-      Object.entries(this.strategy.arguments).forEach( elem => {
-        const [k, v] = elem;
-        if (v.typecode == '[]string') {
-          stratParams[k] = stratParams[k].split(' ');
-        }
-      })
-
       var params = {
         name: this.strategy.name,
-        arguments: stratParams,
+        arguments: this.strategy.userArgs,
         strategy: this.strategy.shortcode
       }
 
@@ -195,18 +160,19 @@ export default {
         return
       }
     },
-    onSubmit: async function (e) {
-        e.preventDefault()
-        this.strategyLoading = true;
-        this.strategyLoaded = false;
+    onSubmit: async function (form) {
+        this.strategyLoading = true
+        this.strategyLoaded = false
 
-        var stratParams = Object.assign({}, this.form)
+        var stratParams = Object.assign({}, form)
         Object.entries(this.strategy.arguments).forEach( elem => {
           const [k, v] = elem;
           if (v.typecode == '[]string') {
             stratParams[k] = stratParams[k].split(' ');
           }
         })
+
+        this.strategy.userArgs = stratParams
 
         // Get the access token from the auth wrapper
         const token = await this.$auth.getTokenSilently()
