@@ -1,5 +1,5 @@
 <template>
-<b-form ref="params" @submit="onSubmit" @reset="onReset">
+<b-form ref="params" @submit="onSubmit">
     <b-form-group
       label="Notification frequency"
       v-slot="{ ariaDescribedby }"
