@@ -5,7 +5,7 @@
     </b-row>
     <b-row v-if="loading">
       <div class="ml-5 mr-5 mt-5">
-        Loading strategies ...
+        Loading portfolios ...
         <b-progress :value="100" variant="primary" striped animated class="mt-2"></b-progress>
       </div>
     </b-row>
@@ -14,7 +14,7 @@
 
             <b-card
                 v-for="item in items"
-                v-bind:key="item.shortcode"
+                v-bind:key="item.id"
                 :header="item.name"
                 header-bg-variant="primary"
                 header-text-variant="white"
@@ -24,7 +24,7 @@
                 {{ item.description }}
                 </p>
 
-                <b-button :to="'/strategy/' + item.shortcode" variant="nav">Launch</b-button>
+                <b-button :to="'/portfolio/' + item.id" variant="nav">Launch</b-button>
                 <template #footer>
                     <!-- <em><b-icon-arrow-up></b-icon-arrow-up> {{ item.ytd_gain }}% YTD</em> -->
                 </template>
@@ -39,7 +39,7 @@
 //import isotope from 'vueisotope'
 
 export default {
-  name: 'StrategyCards',
+  name: 'PortfolioCards',
   data() {
     return {
       items: [],
@@ -51,7 +51,7 @@ export default {
     const token = await this.$auth.getTokenSilently();
 
     // Use Axios to make a call to the API
-    const { data } = await this.$axios.get("/strategy", {
+    const { data } = await this.$axios.get("/portfolio", {
     headers: {
         Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
     }
