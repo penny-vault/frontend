@@ -6,6 +6,7 @@ import PrivacyPolicy from '../views/PrivacyPolicy.vue'
 import Profile from '../views/Profile.vue'
 import StrategyCards from '../views/StrategyCards.vue'
 import Strategy from '../views/Strategy.vue'
+import PortfolioCards from '../views/PortfolioCards.vue'
 
 import { authGuard } from '../auth/authGuard'
 
@@ -44,6 +45,11 @@ const routes = [
     name: 'strategy',
     component: Strategy,
     beforeEnter: authGuard
+  },
+  {
+    path: '/portfolio/',
+    name: 'portfolios',
+    component: PortfolioCards
   },
   {
     path: '/portfolio/:id',
