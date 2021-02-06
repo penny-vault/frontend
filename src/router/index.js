@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
+import TermsOfService from '../views/TermsOfService.vue'
+import PrivacyPolicy from '../views/PrivacyPolicy.vue'
 import Profile from '../views/Profile.vue'
 import StrategyCards from '../views/StrategyCards.vue'
 import Strategy from '../views/Strategy.vue'
@@ -15,6 +17,16 @@ const routes = [
     path: '/',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/tos',
+    name: 'TermsOfService',
+    component: TermsOfService
+  },
+  {
+    path: '/privacy-policy',
+    name: 'PrivacyPolicy',
+    component: PrivacyPolicy
   },
   {
     path: '/profile',

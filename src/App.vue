@@ -27,7 +27,11 @@
     </b-navbar>
     <img id="logo" src="@/assets/logo.webp" alt="Penny Vault Logo" />
 
-    <router-view/>
+    <router-view class="mb-4"/>
+
+    <div class="footer small">
+      Copyright &copy; 2021. All rights reserved. <router-link to="/tos">Terms of Service</router-link>.
+    </div>
   </div>
 </template>
 
@@ -50,6 +54,20 @@ export default {
 </script>
 
 <style lang="scss">
+
+.small {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 8pt;
+  color: #999;
+}
+
+.footer {
+  position: fixed;
+  width: 100%;
+  background-color: rgba(255, 255, 255, .5);
+  bottom: 0;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
