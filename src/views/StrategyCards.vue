@@ -4,7 +4,10 @@
         <h1>Available Strategies</h1>
     </b-row>
     <b-row v-if="loading">
-        <img src="https://media.giphy.com/media/jAYUbVXgESSti/source.gif" style="width: 100%;" />
+      <div class="ml-5 mr-5 mt-5">
+        Loading strategies ...
+        <b-progress :value="100" variant="primary" striped animated class="mt-2"></b-progress>
+      </div>
     </b-row>
     <b-row class="left">
         <b-card-group columns>
@@ -23,7 +26,7 @@
 
                 <b-button :to="'/strategy/' + item.shortcode" variant="nav">Launch</b-button>
                 <template #footer>
-                    <em><b-icon-arrow-up></b-icon-arrow-up> {{ item.ytd_gain }}% YTD</em>
+                    <!-- <em><b-icon-arrow-up></b-icon-arrow-up> {{ item.ytd_gain }}% YTD</em> -->
                 </template>
             </b-card>
 
