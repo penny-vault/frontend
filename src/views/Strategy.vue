@@ -9,25 +9,17 @@
           <b-row>
             <b-col>
               <h3>{{ strategy.name }}</h3>
+              <h5 v-if="strategyLoaded">{{ periodStart }} - {{ periodEnd }}</h5>
             </b-col>
             <b-col style="text-align: right">
-              <b-button v-if="canSave" @click="onSave" size="sm" variant="outline-nav" class="mt-1">
+              <b-button v-if="canSave" @click="onSave" size="sm" variant="outline-nav" class="mt-1 mb-2">
                 <b-icon icon="bookmark-star-fill" aria-hidden="true"></b-icon> Save
               </b-button>
-              <span class="small" v-else-if="portfolioId">Portfolio Id: {{ portfolioId }}</span>
+              <div class="small" v-else-if="portfolioId">Portfolio Id: {{ portfolioId }}</div>
+              <div class="small" v-if="strategyLoaded">Computed at {{ this.executedAsOf | formatDate }}</div>
             </b-col>
           </b-row>
           <div v-if="strategyLoaded">
-            <b-row>
-              <b-col cols="3">
-                <h5>{{ periodStart }} - {{ periodEnd }}</h5>
-              </b-col>
-              <b-col>
-                <div class="pt-1 left small">
-                  Computed at {{ this.executedAsOf | formatDate }}
-                </div>
-              </b-col>
-            </b-row>
             <b-tabs content-class="mt-3">
                 <b-tab title="Summary" active>
 
@@ -80,7 +72,10 @@ function pad(num, size) {
 
 Vue.filter("formatDate", function (value) {
   var month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-  return `${pad(value.getHours(), 2)}:${pad(value.getMinutes(), 2)}, ${month[value.getMonth()]} ${pad(value.getDay(), 2)}, ${value.getFullYear()}`
+  if (value !== null) {
+    return `${pad(value.getHours(), 2)}:${pad(value.getMinutes(), 2)}, ${month[value.getMonth()]} ${pad(value.getDay(), 2)}, ${value.getFullYear()}`
+  }
+  return ``;
 })
 
 export default {
