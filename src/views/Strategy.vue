@@ -9,16 +9,17 @@
           <b-row>
             <b-col>
               <h3>{{ strategy.name }}</h3>
+              <h5 v-if="strategyLoaded">{{ periodStart }} - {{ periodEnd }}</h5>
             </b-col>
             <b-col style="text-align: right">
-              <b-button v-if="strategyLoaded" @click="onSave" size="sm" variant="outline-nav" class="mt-1">
+              <b-button v-if="canSave" @click="onSave" size="sm" variant="outline-nav" class="mt-1 mb-2">
                 <b-icon icon="bookmark-star-fill" aria-hidden="true"></b-icon> Save
               </b-button>
+              <div class="small" v-else-if="portfolioId">Portfolio Id: {{ portfolioId }}</div>
+              <div class="small" v-if="strategyLoaded">Computed at {{ this.executedAsOf | formatDate }}</div>
             </b-col>
           </b-row>
           <div v-if="strategyLoaded">
-            <h5>{{ periodStart }} - {{ periodEnd }}</h5>
-            <h6 v-if="portfolioId">{{portfolioId}}</h6>
             <b-tabs content-class="mt-3">
                 <b-tab title="Summary" active>
 
@@ -34,7 +35,7 @@
                   <portfolio v-bind:row-data="holdings"></portfolio>
                 </b-tab>
                 <b-tab title="Settings">
-                  <portfolio-settings></portfolio-settings>
+                  <portfolio-settings :portfolio-id="portfolioId" :portfolio-settings="portfolio"></portfolio-settings>
                 </b-tab>
             </b-tabs>
           </div>
@@ -61,20 +62,38 @@ import PortfolioSettings from "@/components/PortfolioSettings.vue"
 import StatCard from "@/components/StatCard.vue"
 import PercentStatCard from "@/components/PercentStatCard.vue"
 import StrategyArguments from "@/components/StrategyArguments.vue"
+import Vue from 'vue'
+
+function pad(num, size) {
+    num = num.toString();
+    while (num.length < size) num = "0" + num;
+    return num;
+}
+
+Vue.filter("formatDate", function (value) {
+  var month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  if (value !== null) {
+    return `${pad(value.getHours(), 2)}:${pad(value.getMinutes(), 2)}, ${month[value.getMonth()]} ${pad(value.getDay(), 2)}, ${value.getFullYear()}`
+  }
+  return ``;
+})
 
 export default {
   name: 'Strategy',
   props: {
-    portfolioId: String
+    portfolioId: String,
+    strategyId: String
   },
   data() {
     return {
       args: [],
       cagrSinceInception: 0.0,
       currentAsset: '',
+      executedAsOf: null,
       performance: {},
       periodStart: null,
       periodEnd: null,
+      portfolio: null,
       holdings: [],
       series: [{
           type: 'area',
@@ -82,27 +101,69 @@ export default {
           data: []
         }],
       strategy: {
-        name: ""
+        name: "",
+        shortcode: ""
       },
       strategyLoaded: false,
       strategyLoading: false,
       ytdReturn: 0.0
     }
   },
+  computed: {
+    canSave: function() {
+      return !this.portfolioId && this.strategyLoaded
+    }
+  },
   mounted: async function() {
     // Get the access token from the auth wrapper
-    const token = await this.$auth.getTokenSilently();
+    const token = await this.$auth.getTokenSilently()
 
-    // Use Axios to make a call to the API
-    const { data } = await this.$axios.get("/strategy/" + this.$route.params.id, {
-    headers: {
-        Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
+    this.strategy.shortcode = this.strategyId
+
+    // if there is a portfolio id get that first
+    try {
+      var endpoint = "/portfolio/" + this.portfolioId
+      if (this.portfolioId) {
+        const { data } = await this.$axios.get(endpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        this.portfolio = data
+        this.strategy.shortcode = data.strategy
+      }
+    } catch(error) {
+      this.$bvToast.toast("Failed to load portfolio definition", {
+        title: 'Error',
+        variant: 'danger',
+        autoHideDelay: 5000,
+        appendToast: false
+      })
+      return
     }
-    });
 
-    this.strategy = data;
+    // Load strategy definition
+    try {
+      endpoint = "/strategy/" + this.strategy.shortcode
+      const { data } = await this.$axios.get(endpoint, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+      })
+      this.strategy = data
+    } catch(error) {
+        this.$bvToast.toast("Failed to load strategy definition", {
+          title: 'Error',
+          variant: 'danger',
+          autoHideDelay: 5000,
+          appendToast: false
+        })
+        return
+      }
+
     Object.entries(this.strategy.arguments).forEach( elem => {
-      const [k, v] = elem;
+      const [k, v] = elem
       var item = {
         arg: k,
         name: v.name,
@@ -114,12 +175,24 @@ export default {
         required: true
       };
 
+      if (this.portfolio) {
+        item.inpdefault = this.portfolio.arguments[k]
+      }
+
       if (v.typecode == "[]string") {
-        item.inpdefault = JSON.parse(v.default).join(" ");
+        var val = item.inpdefault
+        if (typeof item.inpdefault === "string") {
+          val = JSON.parse(val)
+        }
+        item.inpdefault = val.join(" ");
       }
 
       this.args.push(item);
     })
+
+    if (this.portfolio !== null) {
+      this.executeStrategy(this.portfolio.arguments)
+    }
   },
   components: {
     ValueChart, Portfolio, PortfolioSettings, StatCard, PercentStatCard, StrategyArguments
@@ -161,9 +234,6 @@ export default {
       }
     },
     onSubmit: async function (form) {
-        this.strategyLoading = true
-        this.strategyLoaded = false
-
         var stratParams = Object.assign({}, form)
         Object.entries(this.strategy.arguments).forEach( elem => {
           const [k, v] = elem;
@@ -171,6 +241,11 @@ export default {
             stratParams[k] = stratParams[k].split(' ');
           }
         })
+        this.executeStrategy(stratParams)
+    },
+    executeStrategy: async function (stratParams) {
+        this.strategyLoading = true
+        this.strategyLoaded = false
 
         this.strategy.userArgs = stratParams
 
@@ -179,11 +254,13 @@ export default {
 
         // Use Axios to make a call to the API
         try {
-          const { data } = await this.$axios.post("/strategy/" + this.strategy.shortcode, stratParams, {
+          var endpoint = "/strategy/" + this.strategy.shortcode
+          const { data } = await this.$axios.post(endpoint, stratParams, {
             headers: {
               Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
             }
           })
+          this.executedAsOf = new Date()
           this.performance = data
         } catch(error) {
           this.$bvToast.toast("Server failed to calculate strategy performance", {
@@ -231,3 +308,10 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.small {
+  font-size: 8pt;
+  color: #666;
+}
+</style>

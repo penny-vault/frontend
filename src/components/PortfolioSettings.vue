@@ -1,13 +1,25 @@
 <template>
 <b-form ref="params" @submit="onSubmit">
+    <!-- portfolio name -->
+    <b-form-group
+      label="Portfolio Name"
+      v-slot="{ ariaName }"
+    >
+    <b-form-input
+        v-model="name"
+        :aria-describedby="ariaName"
+      ></b-form-input>
+    </b-form-group>
+
+    <!-- notification settings -->
     <b-form-group
       label="Notification frequency"
-      v-slot="{ ariaDescribedby }"
+      v-slot="{ ariaNotification }"
     >
     <b-form-checkbox-group
         v-model="notification"
         :options="notificationOpts"
-        :aria-describedby="ariaDescribedby"
+        :aria-describedby="ariaNotification"
         switches
       ></b-form-checkbox-group>
     </b-form-group>
@@ -21,25 +33,92 @@
 export default {
   name: 'PortfolioSettings',
   props: {
-    portfolioId: String
+    portfolioId: String,
+    portfolioSettings: Object
   },
   components: {
   },
   data() {
     return {
-        notification: [], // Must be an array reference!
+        name: "",
+        notification: [],
         notificationOpts: [
-          { text: 'Daily', value: 'daily' },
-          { text: 'Weekly', value: 'weekly' },
-          { text: 'Monthly', value: 'monthly' },
-          { text: 'Annually', value: 'annually' }
+          { text: 'Daily',    value: 0x00000001 },
+          { text: 'Weekly',   value: 0x00000010 },
+          { text: 'Monthly',  value: 0x00000100 },
+          { text: 'Annually', value: 0x00001000 }
         ]
     }
   },
+  mounted: function() {
+    this.setFormValues(this.portfolioSettings)
+  },
+  watch: {
+    portfolioSettings: function(n) {
+      this.setFormValues(n)
+    }
+  },
   methods: {
-      onSubmit: async function(e) {
-          e.preventDefault()
+    onSubmit: async function(e) {
+      e.preventDefault()
+      var notificationCode = 0
+      this.notification.forEach( elem => {
+        notificationCode |= elem
+      })
+
+      var params = {
+        name: this.name,
+        notifications: notificationCode
       }
+
+      this.$emit("settingsChanged", params)
+      this.updatePortfolio(params)
+    },
+    updatePortfolio: async function(params) {
+      // Get the access token from the auth wrapper
+      const token = await this.$auth.getTokenSilently()
+
+      // Use Axios to make a call to the API
+      try {
+        const { data } = await this.$axios.patch("/portfolio/" + this.portfolioId, params, {
+          headers: {
+            Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
+          }
+        })
+        this.$bvToast.toast(`Saved portfolio settings: ${data.name} (${data.id})`, {
+          title: 'Saved',
+          variant: 'success',
+          autoHideDelay: 5000,
+          appendToast: false
+        })
+        return
+      } catch(error) {
+        this.$bvToast.toast("Failed to save portfolio settings", {
+          title: 'Error',
+          variant: 'danger',
+          autoHideDelay: 5000,
+          appendToast: false
+        })
+        return
+      }
+
+    },
+    setFormValues: async function(vals) {
+      this.name = vals.name
+      this.notification = []
+      if (vals.notifications & 0x00000001) {
+        this.notification.push(0x00000001)
+      }
+      if (vals.notifications & 0x00000010) {
+        this.notification.push(0x00000010)
+      }
+      if (vals.notifications & 0x00000100) {
+        this.notification.push(0x00000100)
+      }
+      if (vals.notifications & 0x00001000) {
+        this.notification.push(0x00001000)
+      }
+    }
   }
 }
 </script>
