@@ -34,7 +34,7 @@
                 <b-tab title="Portfolio">
                   <portfolio v-bind:row-data="holdings"></portfolio>
                 </b-tab>
-                <b-tab title="Settings">
+                <b-tab title="Settings" v-if="portfolioId">
                   <portfolio-settings :portfolio-id="portfolioId" :portfolio-settings="portfolio"></portfolio-settings>
                 </b-tab>
             </b-tabs>
