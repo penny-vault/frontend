@@ -1,7 +1,7 @@
 <template>
   <b-container>
     <b-row>
-        <h1>Available Strategies</h1>
+        <h1>My Portfolios</h1>
     </b-row>
     <b-row v-if="loading">
       <div class="ml-5 mr-5 mt-5">
@@ -20,10 +20,12 @@
                 header-text-variant="white"
                 align="left"
             >
-                <p>
-                {{ item.description }}
-                </p>
+                <div class="name">YTD Return</div>
+                <div class="metric">{{ item.ytd_return | formatPercent }}</div>
 
+                <div class="name">Arguments</div>
+                <div class="metric">{{ item.arguments | formatArguments }}</div>
+                <br/>
                 <b-button :to="'/portfolio/' + item.id" variant="nav">Launch</b-button>
                 <template #footer>
                     <!-- <em><b-icon-arrow-up></b-icon-arrow-up> {{ item.ytd_gain }}% YTD</em> -->
@@ -36,7 +38,28 @@
 </template>
 
 <script>
-//import isotope from 'vueisotope'
+import Vue from 'vue'
+
+Vue.filter("formatPercent", function (value) {
+  var v;
+  if (typeof value === "number") {
+    v = value * 100
+    v = v.toFixed(2)
+    return `${v}%`
+  } else if (typeof value === "object") {
+    if (value["Valid"]) {
+      v = value["Float64"] * 100
+      v = v.toFixed(2)
+      return `${v}%`
+    }
+  }
+
+  return ``
+})
+
+Vue.filter("formatArguments", function (value) {
+  return value["inTickers"].join(" ") + " " + value["outTicker"]
+})
 
 export default {
   name: 'PortfolioCards',
@@ -65,3 +88,16 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+  .metric {
+    font-weight: 900;
+    font-size: 2rem;
+  }
+
+  .name {
+    font-weight: 100;
+    color: #666;
+    font-size: .75rem;
+  }
+</style>
