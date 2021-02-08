@@ -38,7 +38,9 @@ export default {
   props: {
     spec: Array,
     callback: Function,
-    disabled: Boolean
+    disabled: Boolean,
+    begin: Date,
+    end: Date
   },
   data() {
     return {
@@ -52,6 +54,12 @@ export default {
         elem = elem[1]
         this.form[elem.arg] = elem.inpdefault
       })
+      if (this.begin != 0) {
+        this.simulationBegin = this.begin
+      }
+      if (this.end != 0) {
+        this.simulationEnd = this.end
+      }
   },
   watch: {
     spec: function(n) {
@@ -59,12 +67,18 @@ export default {
         elem = elem[1]
         this.form[elem.arg] = elem.inpdefault
       })
+    },
+    begin: function(n) {
+      this.simulationBegin = n
+    },
+    end: function(n) {
+      this.simulationEnd = n
     }
   },
   methods: {
       onSubmit: async function(e) {
           e.preventDefault()
-          this.$emit("execute", this.form)
+          this.$emit("execute", this.form, this.simulationBegin, this.simulationEnd)
       }
   }
 }

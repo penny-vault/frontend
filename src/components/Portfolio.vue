@@ -33,9 +33,7 @@ export default {
             var d = (params.data.percentReturn * 100).toFixed(2);
             return `${d}%`
           }
-        },
-        { headerName: 'VFINX Score'},
-        { headerName: 'PRIDX Score'}
+        }
       ]
     }
   },
