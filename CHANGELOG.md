@@ -13,4 +13,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Terms of Service
 - Privacy Policy
 
-[Unreleased]: https://github.com/jdfergason/pv-frontend/releases/tag/v0.1.0
+[0.1.0]: https://github.com/jdfergason/pv-frontend/releases/tag/v0.1.0
