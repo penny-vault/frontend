@@ -32,6 +32,12 @@
 
 <script>
 
+const NoNotify = 0x00000001
+const Daily    = 0x00000010
+const Weekly   = 0x00000100
+const Monthly  = 0x00001000
+const Annually = 0x00010000
+
 export default {
   name: 'PortfolioSettings',
   props: {
@@ -45,10 +51,10 @@ export default {
         name: "",
         notification: [],
         notificationOpts: [
-          { text: 'Daily',    value: 0x00000001 },
-          { text: 'Weekly',   value: 0x00000010 },
-          { text: 'Monthly',  value: 0x00000100 },
-          { text: 'Annually', value: 0x00001000 }
+          { text: 'Daily',    value: Daily },
+          { text: 'Weekly',   value: Weekly },
+          { text: 'Monthly',  value: Monthly },
+          { text: 'Annually', value: Annually }
         ]
     }
   },
@@ -63,7 +69,7 @@ export default {
   methods: {
     onSubmit: async function(e) {
       e.preventDefault()
-      var notificationCode = 0
+      var notificationCode = NoNotify
       this.notification.forEach( elem => {
         notificationCode |= elem
       })
@@ -160,17 +166,17 @@ export default {
     setFormValues: async function(vals) {
       this.name = vals.name
       this.notification = []
-      if (vals.notifications & 0x00000001) {
-        this.notification.push(0x00000001)
+      if ((vals.notifications & Daily) == Daily) {
+        this.notification.push(Daily)
       }
-      if (vals.notifications & 0x00000010) {
-        this.notification.push(0x00000010)
+      if ((vals.notifications & Weekly) == Weekly) {
+        this.notification.push(Weekly)
       }
-      if (vals.notifications & 0x00000100) {
-        this.notification.push(0x00000100)
+      if ((vals.notifications & Monthly) == Monthly) {
+        this.notification.push(Monthly)
       }
-      if (vals.notifications & 0x00001000) {
-        this.notification.push(0x00001000)
+      if ((vals.notifications & Annually) == Annually) {
+        this.notification.push(Annually)
       }
     }
   }
