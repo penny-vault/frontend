@@ -25,7 +25,9 @@
     </b-form-group>
 
     <b-button type="submit" class="mr-2" variant="info">Save</b-button>
+    <b-button type="button" class="mr-2" variant="danger" @click="deletePortfolio">Delete</b-button>
 </b-form>
+
 </template>
 
 <script>
@@ -73,6 +75,58 @@ export default {
 
       this.$emit("settingsChanged", params)
       this.updatePortfolio(params)
+    },
+    deletePortfolio: async function() {
+      // Get the access token from the auth wrapper
+      const token = await this.$auth.getTokenSilently()
+
+      this.$bvModal.msgBoxConfirm('Please confirm that you want to delete this portfolio.', {
+          title: 'Confirm',
+          size: 'sm',
+          buttonSize: 'sm',
+          okVariant: 'danger',
+          okTitle: 'DELETE',
+          cancelTitle: 'CANCEL',
+          footerClass: 'p-2',
+          hideHeaderClose: false,
+          centered: true
+        })
+        .then(value => {
+          if (!value) {
+            return
+          }
+
+          // Use Axios to make a call to the API
+          this.$axios.delete("/portfolio/" + this.portfolioId, {
+              headers: {
+                Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
+              }
+            }).then( resp => {
+              this.$bvToast.toast(`Deleted saved portfolio ${resp}`, {
+              title: 'Deleted',
+              variant: 'success',
+              autoHideDelay: 5000,
+              appendToast: false
+            })
+            this.$router.replace("/portfolio/")
+            return
+            }).catch( err => {
+            this.$bvToast.toast(`Failed to delete portfolio: ${err}`, {
+              title: 'Error',
+              variant: 'danger',
+              autoHideDelay: 5000,
+              appendToast: false
+            })
+          })
+        })
+        .catch(err => {
+          this.$bvToast.toast(`Failed to delete portfolio: ${err}`, {
+            title: 'Error',
+            variant: 'danger',
+            autoHideDelay: 5000,
+            appendToast: false
+          })
+        })
     },
     updatePortfolio: async function(params) {
       // Get the access token from the auth wrapper
