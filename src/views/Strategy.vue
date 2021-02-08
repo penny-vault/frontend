@@ -2,13 +2,14 @@
   <b-container>
     <b-row>
         <b-col>
-          <strategy-arguments :spec="args" :disabled="Boolean(portfolioId)" @execute="onSubmit"></strategy-arguments>
+          <strategy-arguments :spec="args" :disabled="Boolean(portfolioId)" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit"></strategy-arguments>
         </b-col>
 
         <b-col cols="9" class="left">
           <b-row>
             <b-col>
-              <h3>{{ strategy.name }}</h3>
+              <h3 v-if="portfolio">{{ portfolio.name }}</h3>
+              <h4>{{ strategy.name }}</h4>
               <h5 v-if="strategyLoaded">{{ periodStart }} - {{ periodEnd }}</h5>
             </b-col>
             <b-col style="text-align: right">
@@ -35,7 +36,7 @@
                   <portfolio v-bind:row-data="holdings"></portfolio>
                 </b-tab>
                 <b-tab title="Settings" v-if="portfolioId">
-                  <portfolio-settings :portfolio-id="portfolioId" :portfolio-settings="portfolio"></portfolio-settings>
+                  <portfolio-settings :portfolio-id="portfolioId" :portfolio-settings="portfolio" @settingsChanged="updateSettings"></portfolio-settings>
                 </b-tab>
             </b-tabs>
           </div>
@@ -73,10 +74,14 @@ function pad(num, size) {
 Vue.filter("formatDate", function (value) {
   var month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   if (value !== null) {
-    return `${pad(value.getHours(), 2)}:${pad(value.getMinutes(), 2)}, ${month[value.getMonth()]} ${pad(value.getDay(), 2)}, ${value.getFullYear()}`
+    return `${pad(value.getHours(), 2)}:${pad(value.getMinutes(), 2)}, ${month[value.getMonth()]} ${pad(value.getDate(), 2)}, ${value.getFullYear()}`
   }
   return ``;
 })
+
+function ymdString(dt) {
+  return dt.toISOString().split("T")[0]
+}
 
 export default {
   name: 'Strategy',
@@ -93,6 +98,8 @@ export default {
       performance: {},
       periodStart: null,
       periodEnd: null,
+      simulationStart: new Date(1980, 0, 1),
+      simulationEnd: new Date(),
       portfolio: null,
       holdings: [],
       series: [{
@@ -131,6 +138,7 @@ export default {
         })
 
         this.portfolio = data
+        this.simulationStart = new Date(this.portfolio.start_date * 1000)
         this.strategy.shortcode = data.strategy
       }
     } catch(error) {
@@ -198,12 +206,16 @@ export default {
     ValueChart, Portfolio, PortfolioSettings, StatCard, PercentStatCard, StrategyArguments
   },
   methods: {
+    updateSettings: async function(settings) {
+      this.portfolio.name = settings.name
+    },
     onSave: async function(e) {
       e.preventDefault()
       var params = {
         name: this.strategy.name,
         arguments: this.strategy.userArgs,
-        strategy: this.strategy.shortcode
+        strategy: this.strategy.shortcode,
+        start_date: this.simulationStart.getTime() / 1000
       }
 
       // Get the access token from the auth wrapper
@@ -233,8 +245,10 @@ export default {
         return
       }
     },
-    onSubmit: async function (form) {
+    onSubmit: async function (form, start, end) {
         var stratParams = Object.assign({}, form)
+        this.simulationStart = new Date(start)
+        this.simulationEnd = new Date(end)
         Object.entries(this.strategy.arguments).forEach( elem => {
           const [k, v] = elem;
           if (v.typecode == '[]string') {
@@ -254,7 +268,7 @@ export default {
 
         // Use Axios to make a call to the API
         try {
-          var endpoint = "/strategy/" + this.strategy.shortcode
+          var endpoint = "/strategy/" + this.strategy.shortcode + "?startDate=" + ymdString(this.simulationStart) + "&endDate=" + ymdString(this.simulationEnd)
           const { data } = await this.$axios.post(endpoint, stratParams, {
             headers: {
               Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
