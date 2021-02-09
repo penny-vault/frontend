@@ -9,6 +9,8 @@ npm run build
 # navigate into the build output directory
 cd dist
 
+cp -Rp ../src/assets/email img/
+
 # if you are deploying to a custom domain
 echo 'www.pennyvault.com' > CNAME
 cd -
