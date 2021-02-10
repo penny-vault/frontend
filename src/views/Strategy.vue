@@ -31,6 +31,7 @@
                   </b-card-group>
 
                   <value-chart v-bind:series="series" class="mt-3"></value-chart>
+                  <return-heatmap v-bind:series="monthlyReturn" v-bind:categories="monthlyReturnYears" class="mt-3"></return-heatmap>
                 </b-tab>
                 <b-tab title="Portfolio">
                   <portfolio v-bind:row-data="holdings"></portfolio>
@@ -58,6 +59,7 @@
 
 <script>
 import ValueChart from "@/components/ValueChart.vue"
+import ReturnHeatmap from "@/components/ReturnHeatmap.vue"
 import Portfolio from "@/components/Portfolio.vue"
 import PortfolioSettings from "@/components/PortfolioSettings.vue"
 import StatCard from "@/components/StatCard.vue"
@@ -102,6 +104,16 @@ export default {
       simulationEnd: new Date(),
       portfolio: null,
       holdings: [],
+      monthlyReturn: [{
+        name: "Strategy",
+        borderWidth: 1,
+        data: [],
+        dataLabels: {
+          enabled: true,
+          color: "#000000"
+        }
+      }],
+      monthlyReturnYears: [],
       series: [{
           type: 'area',
           name: 'strategy',
@@ -203,7 +215,13 @@ export default {
     }
   },
   components: {
-    ValueChart, Portfolio, PortfolioSettings, StatCard, PercentStatCard, StrategyArguments
+    ValueChart,
+    ReturnHeatmap,
+    Portfolio,
+    PortfolioSettings,
+    StatCard,
+    PercentStatCard,
+    StrategyArguments
   },
   methods: {
     updateSettings: async function(settings) {
@@ -289,8 +307,47 @@ export default {
 
         // Reformat value data to match chart
         var chartData = []
+        var rets = []
+        var years = new Set()
+        var col = 0;
+        var row = 0;
         this.holdings = []
+        var annual = {}
+
+        var currYear = new Date(this.performance.value[0].time * 1000).getFullYear()
+        var total = 0.0
         this.performance.value.forEach(elem => {
+          var yr = new Date(elem.time * 1000).getFullYear()
+          if (yr != currYear) {
+            annual[currYear] = total * 100
+            total = 0.0
+            currYear = yr
+          }
+          total += elem.percentReturn
+        })
+
+        annual[currYear] = total * 100
+        console.log(annual)
+
+        rets.push([0, row, annual[new Date(this.performance.value[0].time * 1000).getFullYear()]])
+        row += 1
+
+        var first = new Date(this.performance.value[0].time * 1000).getMonth()
+        for (var ii=0; ii < (first); ii++) {
+          rets.push([col, row, 0])
+          row += 1
+        }
+
+        this.performance.value.forEach(elem => {
+          rets.push([col, row, elem.percentReturn * 100])
+          row += 1
+          var yr = new Date(elem.time * 1000).getFullYear()
+          if (row == 13) {
+            col += 1
+            row = 1
+            rets.push([col, 0, annual[yr+1]])
+          }
+          years.add(String(yr))
           chartData.push([elem.time * 1000, elem.value])
           this.holdings.push({
             date: new Date(elem.time * 1000),
@@ -298,6 +355,17 @@ export default {
             percentReturn: elem.percentReturn
           })
         })
+
+        this.monthlyReturnYears = Array.from(years)
+        this.monthlyReturn = [{
+          name: "Strategy",
+          borderWidth: 1,
+          data: rets,
+          dataLabels: {
+            enabled: false,
+            color: "#000000"
+          }
+        }]
 
         this.series = [{
           type: 'area',
