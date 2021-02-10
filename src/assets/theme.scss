@@ -32,6 +32,7 @@ $navbar-dark-hover-color: rgba(255, 255, 255, 1) !default;
 
 @import "~ag-grid-community/dist/styles/ag-grid.css";
 @import "~ag-grid-community/dist/styles/ag-theme-alpine.css";
+@import "~vue-ctk-date-time-picker/dist/vue-ctk-date-time-picker.css";
 
 
 // General style overrides and custom classes
@@ -41,4 +42,11 @@ body {
 
 .left {
   text-align: left;
+}
+
+.date-time-picker input {
+  font-family: Avenir, Helvetica, Arial, sans-serif!important;
+  font-weight: 400;
+  font-size: 1rem!important;
+  color: #495057;
 }
