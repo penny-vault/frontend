@@ -30,11 +30,19 @@
                     <percent-stat-card name="CAGR Since Inception" :value="cagrSinceInception"></percent-stat-card>
                   </b-card-group>
 
-                  <value-chart v-bind:series="series" class="mt-3"></value-chart>
-                  <return-heatmap v-bind:series="monthlyReturn" v-bind:categories="monthlyReturnYears" class="mt-3"></return-heatmap>
+                  <value-chart v-bind:measurements="performance.measurements" class="mt-4"></value-chart>
                 </b-tab>
                 <b-tab title="Portfolio">
-                  <portfolio v-bind:row-data="holdings"></portfolio>
+                  <portfolio v-bind:measurements="performance.measurements"></portfolio>
+                </b-tab>
+                <b-tab title="Returns">
+                  <return-heatmap v-bind:measurements="performance.measurements" class="mt-3"></return-heatmap>
+                </b-tab>
+                <b-tab title="Rolling">
+                </b-tab>
+                <b-tab title="Risk">
+                </b-tab>
+                <b-tab title="Tax Consequences">
                 </b-tab>
                 <b-tab title="Settings" v-if="portfolioId">
                   <portfolio-settings :portfolio-id="portfolioId" :portfolio-settings="portfolio" @settingsChanged="updateSettings"></portfolio-settings>
@@ -103,22 +111,6 @@ export default {
       simulationStart: new Date(1980, 0, 1),
       simulationEnd: new Date(),
       portfolio: null,
-      holdings: [],
-      monthlyReturn: [{
-        name: "Strategy",
-        borderWidth: 1,
-        data: [],
-        dataLabels: {
-          enabled: true,
-          color: "#000000"
-        }
-      }],
-      monthlyReturnYears: [],
-      series: [{
-          type: 'area',
-          name: 'strategy',
-          data: []
-        }],
       strategy: {
         name: "",
         shortcode: ""
@@ -304,74 +296,6 @@ export default {
           this.strategyLoading = false
           return
         }
-
-        // Reformat value data to match chart
-        var chartData = []
-        var rets = []
-        var years = new Set()
-        var col = 0;
-        var row = 0;
-        this.holdings = []
-        var annual = {}
-
-        var currYear = new Date(this.performance.value[0].time * 1000).getFullYear()
-        var total = 0.0
-        this.performance.value.forEach(elem => {
-          var yr = new Date(elem.time * 1000).getFullYear()
-          if (yr != currYear) {
-            annual[currYear] = total * 100
-            total = 0.0
-            currYear = yr
-          }
-          total += elem.percentReturn
-        })
-
-        annual[currYear] = total * 100
-        console.log(annual)
-
-        rets.push([0, row, annual[new Date(this.performance.value[0].time * 1000).getFullYear()]])
-        row += 1
-
-        var first = new Date(this.performance.value[0].time * 1000).getMonth()
-        for (var ii=0; ii < (first); ii++) {
-          rets.push([col, row, 0])
-          row += 1
-        }
-
-        this.performance.value.forEach(elem => {
-          rets.push([col, row, elem.percentReturn * 100])
-          row += 1
-          var yr = new Date(elem.time * 1000).getFullYear()
-          if (row == 13) {
-            col += 1
-            row = 1
-            rets.push([col, 0, annual[yr+1]])
-          }
-          years.add(String(yr))
-          chartData.push([elem.time * 1000, elem.value])
-          this.holdings.push({
-            date: new Date(elem.time * 1000),
-            ticker: elem.holdings,
-            percentReturn: elem.percentReturn
-          })
-        })
-
-        this.monthlyReturnYears = Array.from(years)
-        this.monthlyReturn = [{
-          name: "Strategy",
-          borderWidth: 1,
-          data: rets,
-          dataLabels: {
-            enabled: false,
-            color: "#000000"
-          }
-        }]
-
-        this.series = [{
-          type: 'area',
-          name: 'strategy',
-          data: chartData
-        }]
 
         var start = new Date(this.performance.periodStart * 1000)
         var end = new Date(this.performance.periodEnd * 1000)

@@ -1,9 +1,19 @@
 <template>
+  <div>
+  <b-button-toolbar class="mb-1">
+    <b-button-group class="mr-1">
+      <b-button @click="exportCSV" title="Export CSV" variant="info">
+        <b-icon icon="cloud-download" aria-hidden="true"></b-icon>
+      </b-button>
+    </b-button-group>
+  </b-button-toolbar>
   <ag-grid-vue style="width: 100%; height: 500px;"
     class="ag-theme-alpine"
     :columnDefs="columnDefs"
-    :rowData="rowData">
+    :rowData="rowData"
+    :gridOptions="gridOptions">
   </ag-grid-vue>
+  </div>
 </template>
 
 <script>
@@ -12,13 +22,22 @@ import { AgGridVue } from "ag-grid-vue"
 export default {
   name: 'Portfolio',
   props: {
-    rowData: Array
+    measurements: Array
   },
   components: {
     AgGridVue
   },
+  watch: {
+    measurements: async function (n) {
+      this.updateData(n)
+    }
+  },
   data() {
     return {
+      rowData: [],
+      gridOptions: {},
+      gridApi: {},
+      gridColumnApi: {},
       columnDefs: [
         { field: 'date', width: 110, filter: 'agDateColumnFilter', sortable: true, sortingOrder: ['desc', 'asc'], sort: 'desc', resizable: true, editable: false, valueFormatter: (params) => {
             var d = params.data.date;
@@ -33,14 +52,36 @@ export default {
             var d = (params.data.percentReturn * 100).toFixed(2);
             return `${d}%`
           }
+        },
+        { field: 'value', width: 150, headerName: 'Value', sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.data.value)
+          }
         }
+
       ]
     }
   },
+  mounted() {
+    this.updateData(this.measurements)
+    this.gridApi = this.gridOptions.api;
+    this.gridColumnApi = this.gridOptions.columnApi;
+  },
+  methods: {
+    exportCSV: function(e) {
+      e.preventDefault()
+      this.gridApi.exportDataAsCsv({});
+    },
+    updateData: async function (data) {
+      this.rowData = []
+      data.forEach(elem => {
+        this.rowData.push({
+          date: new Date(elem.time * 1000),
+          ticker: elem.holdings,
+          value: elem.value,
+          percentReturn: elem.percentReturn
+        })
+      })
+    }
+  }
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-
-</style>

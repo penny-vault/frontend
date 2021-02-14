@@ -11,21 +11,74 @@ hcHeatmap(Highcharts);
 export default {
   name: 'ReturnHeatmap',
   props: {
-    categories: {
+    measurements: {
       type: Array,
       default: function () {
           return []
       }
-    },
-    series: {
-      type: Array,
-      default: function () {
-          return [{
-          type: 'area',
-          name: 'strategy',
-          data: []
+    }
+  },
+  watch: {
+    measurements: async function (n) {
+      this.updateData(n)
+    }
+  },
+  mounted: async function () {
+    this.updateData(this.measurements)
+  },
+  methods: {
+    updateData: async function (m) {
+        var rets = []
+        var years = new Set()
+        var col = 0;
+        var row = 0;
+        var annual = {}
+
+        var currYear = new Date(m[0].time * 1000).getFullYear()
+        var total = 0.0
+        m.forEach(elem => {
+          var yr = new Date(elem.time * 1000).getFullYear()
+          if (yr != currYear) {
+            annual[currYear] = total * 100
+            total = 0.0
+            currYear = yr
+          }
+          total += elem.percentReturn
+        })
+
+        annual[currYear] = total * 100
+
+        rets.push([0, row, annual[new Date(m[0].time * 1000).getFullYear()]])
+        row += 1
+
+        var first = new Date(m[0].time * 1000).getMonth()
+        for (var ii=0; ii < (first); ii++) {
+          rets.push([col, row, 0])
+          row += 1
+        }
+
+        m.forEach(elem => {
+          rets.push([col, row, elem.percentReturn * 100])
+          row += 1
+          var yr = new Date(elem.time * 1000).getFullYear()
+          if (row == 13) {
+            col += 1
+            row = 1
+            rets.push([col, 0, annual[yr+1]])
+          }
+          years.add(String(yr))
+        })
+
+        this.chartOptions.xAxis.categories = Array.from(years)
+        this.chartOptions.series = [{
+          name: "Strategy",
+          borderWidth: 1,
+          data: rets,
+          dataLabels: {
+            enabled: false,
+            color: "#000000"
+          }
         }]
-      }
     }
   },
   data() {
@@ -41,7 +94,7 @@ export default {
             text: 'Monthly Returns'
         },
         xAxis: {
-            categories: this.categories
+            categories: []
         },
         yAxis: {
           categories: [
@@ -95,7 +148,7 @@ export default {
               )
           }
         },
-        series: this.series,
+        series: [{name: 'strategy', data: []}],
       }
     }
   }
