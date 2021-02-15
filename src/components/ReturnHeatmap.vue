@@ -35,18 +35,18 @@ export default {
         var annual = {}
 
         var currYear = new Date(m[0].time * 1000).getFullYear()
-        var total = 0.0
+        var total = 1.0
         m.forEach(elem => {
           var yr = new Date(elem.time * 1000).getFullYear()
           if (yr != currYear) {
-            annual[currYear] = total * 100
-            total = 0.0
+            annual[currYear] = (total - 1) * 100
+            total = 1.0
             currYear = yr
           }
-          total += elem.percentReturn
+          total = total * (1 + elem.percentReturn)
         })
 
-        annual[currYear] = total * 100
+        annual[currYear] = (total - 1) * 100
 
         rets.push([0, row, annual[new Date(m[0].time * 1000).getFullYear()]])
         row += 1
