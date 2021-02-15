@@ -23,18 +23,22 @@
           <div v-if="strategyLoaded">
             <b-tabs content-class="mt-3">
                 <b-tab title="Summary" active>
-
-                  <b-card-group deck>
-                    <stat-card name="Current Asset" :value="currentAsset"></stat-card>
-                    <percent-stat-card name="YTD Return" :value="ytdReturn"></percent-stat-card>
-                    <percent-stat-card name="CAGR Since Inception" :value="cagrSinceInception"></percent-stat-card>
-                  </b-card-group>
-
-                  <value-chart v-bind:series="series" class="mt-3"></value-chart>
+                  <strategy-summary v-bind:performance="performance" v-bind:benchmark="benchmark"></strategy-summary>
                 </b-tab>
                 <b-tab title="Portfolio">
-                  <portfolio v-bind:row-data="holdings"></portfolio>
+                  <portfolio v-bind:measurements="performance.measurements"></portfolio>
                 </b-tab>
+                <b-tab title="Returns">
+                  <return-heatmap v-bind:measurements="performance.measurements" class="mt-3"></return-heatmap>
+                </b-tab>
+                <!--
+                <b-tab title="Rolling">
+                </b-tab>
+                <b-tab title="Risk">
+                </b-tab>
+                <b-tab title="Tax Consequences">
+                </b-tab>
+                -->
                 <b-tab title="Settings" v-if="portfolioId">
                   <portfolio-settings :portfolio-id="portfolioId" :portfolio-settings="portfolio" @settingsChanged="updateSettings"></portfolio-settings>
                 </b-tab>
@@ -57,11 +61,10 @@
 </template>
 
 <script>
-import ValueChart from "@/components/ValueChart.vue"
+import StrategySummary from "@/views/StrategySummary.vue"
+import ReturnHeatmap from "@/components/ReturnHeatmap.vue"
 import Portfolio from "@/components/Portfolio.vue"
 import PortfolioSettings from "@/components/PortfolioSettings.vue"
-import StatCard from "@/components/StatCard.vue"
-import PercentStatCard from "@/components/PercentStatCard.vue"
 import StrategyArguments from "@/components/StrategyArguments.vue"
 import Vue from 'vue'
 
@@ -92,6 +95,9 @@ export default {
   data() {
     return {
       args: [],
+      benchmark: {},
+      benchmarkTicker: "VFINX",
+      cagrItems: [],
       cagrSinceInception: 0.0,
       currentAsset: '',
       executedAsOf: null,
@@ -101,12 +107,6 @@ export default {
       simulationStart: new Date(1980, 0, 1),
       simulationEnd: new Date(),
       portfolio: null,
-      holdings: [],
-      series: [{
-          type: 'area',
-          name: 'strategy',
-          data: []
-        }],
       strategy: {
         name: "",
         shortcode: ""
@@ -203,7 +203,11 @@ export default {
     }
   },
   components: {
-    ValueChart, Portfolio, PortfolioSettings, StatCard, PercentStatCard, StrategyArguments
+    Portfolio,
+    PortfolioSettings,
+    ReturnHeatmap,
+    StrategyArguments,
+    StrategySummary
   },
   methods: {
     updateSettings: async function(settings) {
@@ -245,10 +249,11 @@ export default {
         return
       }
     },
-    onSubmit: async function (form, start, end) {
+    onSubmit: async function (form, start, end, benchmarkTicker) {
         var stratParams = Object.assign({}, form)
         this.simulationStart = new Date(start)
         this.simulationEnd = new Date(end)
+        this.benchmarkTicker = benchmarkTicker
         Object.entries(this.strategy.arguments).forEach( elem => {
           const [k, v] = elem;
           if (v.typecode == '[]string') {
@@ -287,26 +292,28 @@ export default {
           return
         }
 
-        // Reformat value data to match chart
-        var chartData = []
-        this.holdings = []
-        this.performance.value.forEach(elem => {
-          chartData.push([elem.time * 1000, elem.value])
-          this.holdings.push({
-            date: new Date(elem.time * 1000),
-            ticker: elem.holdings,
-            percentReturn: elem.percentReturn
-          })
-        })
-
-        this.series = [{
-          type: 'area',
-          name: 'strategy',
-          data: chartData
-        }]
-
         var start = new Date(this.performance.periodStart * 1000)
         var end = new Date(this.performance.periodEnd * 1000)
+
+        // Get benchmark data
+        var benchmarkUri = "/benchmark/?startDate=" + ymdString(start) + "&endDate=" + ymdString(end)
+        this.$axios.post(benchmarkUri, {
+          ticker: this.benchmarkTicker,
+          snapToDate: true
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }).then( resp => {
+          this.benchmark = resp.data
+        }).catch( err => {
+          this.$bvToast.toast(`Failed to get benchmark performance: ${err}`, {
+            title: 'Error',
+            variant: 'danger',
+            autoHideDelay: 5000,
+            appendToast: false
+          })
+        })
 
         var shortMonth = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
