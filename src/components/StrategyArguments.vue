@@ -18,6 +18,15 @@
             ></b-form-input>
             </b-form-group>
 
+            <b-form-group label="Benchmark" description="Symbol to compare performance against" label-for="benchmarkTickerId">
+            <b-form-input
+                id="benchmarkTickerId"
+                v-model="benchmarkTickerData"
+                type="text"
+                :disabled="disabled"
+            ></b-form-input>
+            </b-form-group>
+
             <b-form-group label="Date Range" label-for="simulationDates">
               <VueCtkDateTimePicker class="datePicker" id="simulationDates" v-model="simulationDates" formatted="DD MMM YY" :custom-shortcuts="shortcuts" :disabled="disabled" :disabled-weekly="disabledDates" noWeekendDays noLabel range />
             </b-form-group>
@@ -40,11 +49,16 @@ export default {
     callback: Function,
     disabled: Boolean,
     begin: Date,
-    end: Date
+    end: Date,
+    benchmarkTicker: {
+      type: String,
+      default: "VFINX"
+    }
   },
   data() {
     return {
       form: {},
+      benchmarkTickerData: this.benchmarkTicker,
       disabledDates: [0,6],
       shortcuts: [
         { key: 'thisYear', label: 'This year', value: 'year' },
@@ -109,7 +123,7 @@ export default {
   methods: {
       onSubmit: async function(e) {
           e.preventDefault()
-          this.$emit("execute", this.form, this.simulationDates.start, this.simulationDates.end)
+          this.$emit("execute", this.form, this.simulationDates.start, this.simulationDates.end, this.benchmarkTickerData)
       }
   }
 }

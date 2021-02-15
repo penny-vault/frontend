@@ -13,13 +13,14 @@
           </template>
           <b-dropdown-form>
             <b-form-checkbox v-model="isLog" size="sm" switch>Log Scale</b-form-checkbox>
+            <b-form-checkbox v-model="showDrawDowns" size="sm" switch>Show draw downs</b-form-checkbox>
           </b-dropdown-form>
         </b-dropdown>
       </b-col>
     </b-row>
     <b-row no-gutters>
       <b-col cols="12">
-        <highcharts ref="valueChart" height="300" :options="chartOptions"></highcharts>
+        <highcharts ref="valueChart" height="250" :options="chartOptions"></highcharts>
       </b-col>
     </b-row>
   </b-container>
@@ -28,6 +29,11 @@
 <script>
 export default {
   name: 'ValueChart',
+  props: {
+    measurements: Array,
+    benchmark: Array,
+    drawDowns: Array
+  },
   watch: {
     isLog: function(n) {
       if (n) {
@@ -36,16 +42,17 @@ export default {
         this.chartOptions.yAxis.type = "linear"
       }
     },
-    measurements: function(n) {
-      this.updateSeries(n)
-    }
-  },
-  props: {
-    measurements: {
-      type: Array,
-      default: function () {
-        return []
-      }
+    measurements: async function() {
+      this.updateSeries()
+    },
+    benchmark: async function() {
+      this.updateSeries()
+    },
+    showDrawDowns: async function () {
+      this.updatePlotBands(this.drawDowns)
+    },
+    drawDowns: async function(n) {
+      this.updatePlotBands(n)
     }
   },
   computed: {
@@ -56,23 +63,57 @@ export default {
   },
   mounted: async function() {
     this.updateSeries(this.measurements)
+    this.updatePlotBands(this.drawDowns)
   },
   methods: {
-    updateSeries: async function(m) {
+    getBenchmarkSeries: function() {
       var chartData = []
-      m.forEach(elem => {
+      this.benchmark.forEach(elem => {
         chartData.push([elem.time * 1000, elem.value])
       })
-      this.chartOptions.series = [{
-          type: 'area',
-          name: 'strategy',
-          data: chartData
-        }]
+      return {
+        type: "line",
+        name: "Benchmark",
+        dashStyle: "Solid",
+        marker: {
+          enabled: false
+        },
+        data: chartData
+      }
+    },
+    getStrategySeries: function() {
+      var chartData = []
+      this.measurements.forEach(elem => {
+        chartData.push([elem.time * 1000, elem.value])
+      })
+      return {
+        type: 'area',
+        name: 'Strategy',
+        data: chartData
+      }
+    },
+    updateSeries: async function() {
+      this.chartOptions.series = [this.getStrategySeries(), this.getBenchmarkSeries()]
+    },
+    updatePlotBands: async function(d) {
+      var plotBands = []
+      if (this.showDrawDowns) {
+        d.forEach(elem => {
+          plotBands.push({
+            color: '#d43d5144', // Color value
+            zIndex: 1,
+            from: new Date(elem.begin * 1000), // Start of the plot band
+            to: new Date(elem.end * 1000) // End of the plot band
+          })
+        })
+      }
+      this.chartOptions.xAxis.plotBands = plotBands
     }
   },
   data() {
     return {
       isLog: false,
+      showDrawDowns: false,
       chartOptions: {
         chart: {
           zoomType: 'x'
@@ -82,12 +123,7 @@ export default {
         },
         xAxis: {
             type: 'datetime',
-            plotBands: [{
-              color: '#d43d51', // Color value
-              zIndex: 1,
-              from: new Date(2000, 0, 1), // Start of the plot band
-              to: new Date(2003, 6, 1) // End of the plot band
-            }],
+            plotBands: [],
         },
         yAxis: {
           type: 'linear',
@@ -96,7 +132,7 @@ export default {
           }
         },
         legend: {
-          enabled: false
+          enabled: true
         },
         credits: {
           enabled: false
