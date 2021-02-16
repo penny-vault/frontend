@@ -251,8 +251,8 @@ export default {
     },
     onSubmit: async function (form, start, end, benchmarkTicker) {
         var stratParams = Object.assign({}, form)
-        this.simulationStart = new Date(start)
-        this.simulationEnd = new Date(end)
+        this.simulationStart = start
+        this.simulationEnd = end
         this.benchmarkTicker = benchmarkTicker
         Object.entries(this.strategy.arguments).forEach( elem => {
           const [k, v] = elem;
