@@ -123,7 +123,19 @@ export default {
   methods: {
       onSubmit: async function(e) {
           e.preventDefault()
-          this.$emit("execute", this.form, this.simulationDates.start, this.simulationDates.end, this.benchmarkTickerData)
+          var startDate
+          var endDate
+          if (this.simulationDates.start instanceof Date) {
+            startDate = this.simulationDates.start
+          } else {
+            startDate = new Date(this.simulationDates.start.split(" ")[0])
+          }
+          if (this.simulationDates.end instanceof Date) {
+            endDate = this.simulationDates.end
+          } else {
+            endDate = new Date(this.simulationDates.end.split(" ")[0])
+          }
+          this.$emit("execute", this.form, startDate, endDate, this.benchmarkTickerData)
       }
   }
 }
