@@ -26,7 +26,7 @@
                   <strategy-summary v-bind:performance="performance" v-bind:benchmark="benchmark"></strategy-summary>
                 </b-tab>
                 <b-tab title="Portfolio">
-                  <portfolio v-bind:measurements="performance.measurements"></portfolio>
+                  <portfolio-report v-bind:measurements="performance.measurements"></portfolio-report>
                 </b-tab>
                 <b-tab title="Returns">
                   <return-heatmap v-bind:measurements="performance.measurements" class="mt-3"></return-heatmap>
@@ -63,7 +63,7 @@
 <script>
 import StrategySummary from "@/views/StrategySummary.vue"
 import ReturnHeatmap from "@/components/ReturnHeatmap.vue"
-import Portfolio from "@/components/Portfolio.vue"
+import PortfolioReport from "@/views/PortfolioReport.vue"
 import PortfolioSettings from "@/components/PortfolioSettings.vue"
 import StrategyArguments from "@/components/StrategyArguments.vue"
 import Vue from 'vue'
@@ -203,7 +203,7 @@ export default {
     }
   },
   components: {
-    Portfolio,
+    PortfolioReport,
     PortfolioSettings,
     ReturnHeatmap,
     StrategyArguments,
