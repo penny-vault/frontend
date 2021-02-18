@@ -68,9 +68,11 @@ export default {
   methods: {
     getBenchmarkSeries: function() {
       var chartData = []
-      this.benchmark.forEach(elem => {
-        chartData.push([elem.time * 1000, elem.value])
-      })
+      if (this.benchmark !== undefined) {
+        this.benchmark.forEach(elem => {
+          chartData.push([elem.time * 1000, elem.value])
+        })
+      }
       return {
         type: "line",
         name: "Benchmark",
