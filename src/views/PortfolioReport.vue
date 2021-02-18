@@ -1,23 +1,35 @@
 <template>
-  <div>
-  <b-button-toolbar class="mb-1">
-    <b-button-group class="mr-1">
-      <b-button @click="exportCSV" title="Export CSV" variant="info">
-        <b-icon icon="cloud-download" aria-hidden="true"></b-icon>
-      </b-button>
-    </b-button-group>
-  </b-button-toolbar>
-  <ag-grid-vue style="width: 100%; height: 500px;"
-    class="ag-theme-alpine"
-    :columnDefs="columnDefs"
-    :rowData="rowData"
-    :gridOptions="gridOptions">
-  </ag-grid-vue>
-  </div>
+  <b-container>
+    <b-row no-gutters>
+      <b-col cols="12">
+        <b-button-toolbar class="mb-1">
+          <b-button-group class="mr-1">
+            <b-button @click="exportCSV" title="Export CSV" variant="info">
+              <b-icon icon="cloud-download" aria-hidden="true"></b-icon>
+            </b-button>
+          </b-button-group>
+        </b-button-toolbar>
+        <ag-grid-vue style="width: 100%; height: 500px;"
+          class="ag-theme-alpine mb-4"
+          :columnDefs="columnDefs"
+          :rowData="rowData"
+          :gridOptions="gridOptions">
+        </ag-grid-vue>
+      </b-col>
+    </b-row>
+    <b-row no-gutters>
+      <b-col cols="6">
+      </b-col>
+      <b-col cols="6">
+        <holdings-pie-chart width="150" height="150" v-bind:strategy="measurements"></holdings-pie-chart>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
 import { AgGridVue } from "ag-grid-vue"
+import HoldingsPieChart from "@/components/HoldingsPieChart.vue"
 
 Date.prototype.addDays = function(days) {
     var date = new Date(this.valueOf());
@@ -31,7 +43,8 @@ export default {
     measurements: Array
   },
   components: {
-    AgGridVue
+    AgGridVue,
+    HoldingsPieChart
   },
   watch: {
     measurements: async function (n) {
