@@ -29,7 +29,7 @@
                   <portfolio-report v-bind:measurements="performance.measurements"></portfolio-report>
                 </b-tab>
                 <b-tab title="Returns">
-                  <return-heatmap v-bind:measurements="performance.measurements" class="mt-3"></return-heatmap>
+                  <returns-report v-bind:performance="performance" v-bind:benchmark="benchmark"></returns-report>
                 </b-tab>
                 <!--
                 <b-tab title="Rolling">
@@ -62,7 +62,7 @@
 
 <script>
 import StrategySummary from "@/views/StrategySummary.vue"
-import ReturnHeatmap from "@/components/ReturnHeatmap.vue"
+import ReturnsReport from "@/views/ReturnsReport.vue"
 import PortfolioReport from "@/views/PortfolioReport.vue"
 import PortfolioSettings from "@/components/PortfolioSettings.vue"
 import StrategyArguments from "@/components/StrategyArguments.vue"
@@ -205,7 +205,7 @@ export default {
   components: {
     PortfolioReport,
     PortfolioSettings,
-    ReturnHeatmap,
+    ReturnsReport,
     StrategyArguments,
     StrategySummary
   },
