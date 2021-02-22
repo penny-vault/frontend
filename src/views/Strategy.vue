@@ -285,6 +285,9 @@ export default {
             }
           })
           this.executedAsOf = new Date()
+          if (data["metrics"]["drawDowns"].length === 0) {
+            data["metrics"]["drawDowns"] = [{lossPercent: 0.0}]
+          }
           this.performance = data
         } catch(error) {
           this.$bvToast.toast("Server failed to calculate strategy performance", {
