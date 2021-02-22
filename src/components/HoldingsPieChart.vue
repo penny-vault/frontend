@@ -43,9 +43,12 @@ export default {
     updateData: async function () {
         var counts = new Map()
         this.strategy.forEach( elem => {
-            var curr = counts.get(elem.holdings)
+          var h = elem.holdings.split(" ")
+          h.forEach( ticker => {
+            var curr = counts.get(ticker)
             if (curr === undefined) curr = 0
-            counts.set(elem.holdings, curr+1)
+            counts.set(ticker, curr+1)
+          })
         })
         var data = []
         counts.forEach( (v, k) => {
@@ -54,7 +57,7 @@ export default {
                 y: v
             })
         })
-        console.log(data)
+
         this.chartOptions.series = [
             {
                 name: "strategy",
