@@ -7,32 +7,37 @@
         class="ml-0"
     >
 
-        <b-form ref="params" @submit="onSubmit">
-            <b-form-group v-for="item in spec" :label="item.name" :description="item.description" :key="item.id" :label-for="item.inpid">
-            <b-form-input
-                :id="item.inpid"
-                v-model="form[item.arg]"
-                :type="item.inptype"
-                :required="item.required"
-                :disabled="disabled"
-            ></b-form-input>
-            </b-form-group>
 
-            <b-form-group label="Benchmark" description="Symbol to compare performance against" label-for="benchmarkTickerId">
-            <b-form-input
-                id="benchmarkTickerId"
-                v-model="benchmarkTickerData"
-                type="text"
-                :disabled="disabled"
-            ></b-form-input>
-            </b-form-group>
+    <b-form-group label="Frequently used parameters" label-for="frequentlyUsed">
+      <b-form-select id="frequentlyUsed" v-model="frequentlyUsed" :options="frequentlyUsedOptions" size="sm" class="mb-3">-- Frequently used parameters --</b-form-select>
+    </b-form-group>
+    <hr/>
+    <b-form ref="params" @submit="onSubmit">
+      <b-form-group v-for="item in spec" :label="item.name" :description="item.description" :key="item.id" :label-for="item.inpid">
+      <b-form-input
+          :id="item.inpid"
+          v-model="form[item.arg]"
+          :type="item.inptype"
+          :required="item.required"
+          :disabled="disabled"
+      ></b-form-input>
+      </b-form-group>
 
-            <b-form-group label="Date Range" label-for="simulationDates">
-              <VueCtkDateTimePicker class="datePicker" id="simulationDates" v-model="simulationDates" formatted="DD MMM YY" :custom-shortcuts="shortcuts" :disabled="disabled" :disabled-weekly="disabledDates" noWeekendDays noLabel range />
-            </b-form-group>
+      <b-form-group label="Benchmark" description="Symbol to compare performance against" label-for="benchmarkTickerId">
+      <b-form-input
+          id="benchmarkTickerId"
+          v-model="benchmarkTickerData"
+          type="text"
+          :disabled="disabled"
+      ></b-form-input>
+      </b-form-group>
 
-            <b-button v-if="!disabled" type="submit" class="mr-2" variant="info">Submit</b-button>
-        </b-form>
+      <b-form-group label="Date Range" label-for="simulationDates">
+        <VueCtkDateTimePicker class="datePicker" id="simulationDates" v-model="simulationDates" formatted="DD MMM YY" :custom-shortcuts="shortcuts" :disabled="disabled" :disabled-weekly="disabledDates" noWeekendDays noLabel range />
+      </b-form-group>
+
+      <b-button v-if="!disabled" type="submit" class="mr-2" variant="info">Submit</b-button>
+    </b-form>
 
     </b-card>
 </template>
@@ -46,6 +51,7 @@ export default {
   name: 'StrategyArguments',
   props: {
     spec: Array,
+    suggestions: Object,
     callback: Function,
     disabled: Boolean,
     begin: Date,
@@ -58,6 +64,8 @@ export default {
   data() {
     return {
       form: {},
+      frequentlyUsed: null,
+      frequentlyUsedOptions: [],
       benchmarkTickerData: this.benchmarkTicker,
       disabledDates: [0,6],
       shortcuts: [
@@ -111,6 +119,30 @@ export default {
       Object.entries(n).forEach( elem => {
         elem = elem[1]
         this.form[elem.arg] = elem.inpdefault
+      })
+    },
+    suggestions: function(n) {
+      Object.entries(n).forEach( elem => {
+        var opt = {
+          text: elem[0],
+          value: elem[1]
+        }
+        this.frequentlyUsedOptions.push(opt)
+      })
+    },
+    frequentlyUsed: function(n) {
+      this.spec.forEach( elem => {
+        let val = n[elem.arg]
+        switch (elem.typecode) {
+          case "[]string":
+            this.form[elem.arg] = JSON.parse(val).join(" ")
+            break
+          case "number":
+            this.form[elem.arg] = Number(val)
+            break
+          default:
+            this.form[elem.arg] = val
+        }
       })
     },
     begin: function(n) {

@@ -2,7 +2,7 @@
   <b-container>
     <b-row>
         <b-col>
-          <strategy-arguments :spec="args" :disabled="Boolean(portfolioId)" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit"></strategy-arguments>
+          <strategy-arguments :spec="args" :suggestions="strategy.suggestedParams" :disabled="Boolean(portfolioId)" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit"></strategy-arguments>
         </b-col>
 
         <b-col cols="9" class="left">
@@ -26,10 +26,13 @@
                   <strategy-summary v-bind:performance="performance" v-bind:benchmark="benchmark"></strategy-summary>
                 </b-tab>
                 <b-tab title="Portfolio">
-                  <portfolio v-bind:measurements="performance.measurements"></portfolio>
+                  <portfolio-report v-bind:measurements="performance.measurements"></portfolio-report>
+                </b-tab>
+                <b-tab title="Transactions">
+                  <transactions-report v-bind:transactions="performance.transactions"></transactions-report>
                 </b-tab>
                 <b-tab title="Returns">
-                  <return-heatmap v-bind:measurements="performance.measurements" class="mt-3"></return-heatmap>
+                  <returns-report v-bind:performance="performance" v-bind:benchmark="benchmark"></returns-report>
                 </b-tab>
                 <!--
                 <b-tab title="Rolling">
@@ -62,8 +65,9 @@
 
 <script>
 import StrategySummary from "@/views/StrategySummary.vue"
-import ReturnHeatmap from "@/components/ReturnHeatmap.vue"
-import Portfolio from "@/components/Portfolio.vue"
+import ReturnsReport from "@/views/ReturnsReport.vue"
+import PortfolioReport from "@/views/PortfolioReport.vue"
+import TransactionsReport from "@/views/TransactionsReport.vue"
 import PortfolioSettings from "@/components/PortfolioSettings.vue"
 import StrategyArguments from "@/components/StrategyArguments.vue"
 import Vue from 'vue'
@@ -179,6 +183,7 @@ export default {
         id: v.name + "_id",
         inpid: v.name + "_inp_id",
         inptype: "text",
+        typecode: v.typecode,
         inpdefault: v.default,
         required: true
       };
@@ -187,15 +192,20 @@ export default {
         item.inpdefault = this.portfolio.arguments[k]
       }
 
+      if (v.typecode == "number") {
+        item.inptype = "number"
+        item.inpdefault = Number(item.inpdefault)
+      }
+
       if (v.typecode == "[]string") {
         var val = item.inpdefault
         if (typeof item.inpdefault === "string") {
           val = JSON.parse(val)
         }
-        item.inpdefault = val.join(" ");
+        item.inpdefault = val.join(" ")
       }
 
-      this.args.push(item);
+      this.args.push(item)
     })
 
     if (this.portfolio !== null) {
@@ -203,11 +213,12 @@ export default {
     }
   },
   components: {
-    Portfolio,
+    PortfolioReport,
     PortfolioSettings,
-    ReturnHeatmap,
+    ReturnsReport,
     StrategyArguments,
-    StrategySummary
+    StrategySummary,
+    TransactionsReport
   },
   methods: {
     updateSettings: async function(settings) {
@@ -280,6 +291,9 @@ export default {
             }
           })
           this.executedAsOf = new Date()
+          if (data["metrics"]["drawDowns"].length === 0) {
+            data["metrics"]["drawDowns"] = [{lossPercent: 0.0}]
+          }
           this.performance = data
         } catch(error) {
           this.$bvToast.toast("Server failed to calculate strategy performance", {

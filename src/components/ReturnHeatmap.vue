@@ -105,6 +105,7 @@ export default {
         colorAxis: {
           ceiling: 10,
           floor: -10,
+          reversed: false,
           stops: [
             [0.075, "#d43d51"],
             [0.15, "#e0636b"],
