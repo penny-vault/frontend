@@ -85,7 +85,6 @@ export default {
             categories: []
         },
         yAxis: {
-            min: 0,
             title: {
                 text: 'Return'
             },
