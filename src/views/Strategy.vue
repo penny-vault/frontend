@@ -28,6 +28,9 @@
                 <b-tab title="Portfolio">
                   <portfolio-report v-bind:measurements="performance.measurements"></portfolio-report>
                 </b-tab>
+                <b-tab title="Transactions">
+                  <transactions-report v-bind:transactions="performance.transactions"></transactions-report>
+                </b-tab>
                 <b-tab title="Returns">
                   <returns-report v-bind:performance="performance" v-bind:benchmark="benchmark"></returns-report>
                 </b-tab>
@@ -64,6 +67,7 @@
 import StrategySummary from "@/views/StrategySummary.vue"
 import ReturnsReport from "@/views/ReturnsReport.vue"
 import PortfolioReport from "@/views/PortfolioReport.vue"
+import TransactionsReport from "@/views/TransactionsReport.vue"
 import PortfolioSettings from "@/components/PortfolioSettings.vue"
 import StrategyArguments from "@/components/StrategyArguments.vue"
 import Vue from 'vue'
@@ -207,7 +211,8 @@ export default {
     PortfolioSettings,
     ReturnsReport,
     StrategyArguments,
-    StrategySummary
+    StrategySummary,
+    TransactionsReport
   },
   methods: {
     updateSettings: async function(settings) {
