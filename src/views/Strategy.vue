@@ -2,7 +2,7 @@
   <b-container>
     <b-row>
         <b-col>
-          <strategy-arguments :spec="args" :disabled="Boolean(portfolioId)" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit"></strategy-arguments>
+          <strategy-arguments :spec="args" :suggestions="strategy.suggestedParams" :disabled="Boolean(portfolioId)" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit"></strategy-arguments>
         </b-col>
 
         <b-col cols="9" class="left">
@@ -183,6 +183,7 @@ export default {
         id: v.name + "_id",
         inpid: v.name + "_inp_id",
         inptype: "text",
+        typecode: v.typecode,
         inpdefault: v.default,
         required: true
       };
@@ -191,15 +192,20 @@ export default {
         item.inpdefault = this.portfolio.arguments[k]
       }
 
+      if (v.typecode == "number") {
+        item.inptype = "number"
+        item.inpdefault = Number(item.inpdefault)
+      }
+
       if (v.typecode == "[]string") {
         var val = item.inpdefault
         if (typeof item.inpdefault === "string") {
           val = JSON.parse(val)
         }
-        item.inpdefault = val.join(" ");
+        item.inpdefault = val.join(" ")
       }
 
-      this.args.push(item);
+      this.args.push(item)
     })
 
     if (this.portfolio !== null) {
