@@ -128,6 +128,7 @@ let GetRiskRatioLine = function (name, data) {
     try {
         return {
             "Risk Ratios": name,
+            "MAR": data.metrics.marRatio.toFixed(2),
             "Sharpe": data.metrics.sharpeRatio.toFixed(2),
             "Sortino": data.metrics.sortinoRatio.toFixed(2),
             "Ulcer Index": data.metrics.ulcerIndexAvg.toFixed(2)
@@ -135,8 +136,10 @@ let GetRiskRatioLine = function (name, data) {
     } catch (err) {
         return {
             "Risk Ratios": name,
+            "MAR": "",
             "Sharpe": "",
-            "Sortino": ""
+            "Sortino": "",
+            "Ulcer Index": ""
         }
     }
 }
