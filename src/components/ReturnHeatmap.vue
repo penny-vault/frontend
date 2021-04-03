@@ -103,8 +103,8 @@ export default {
           title: null
         },
         colorAxis: {
-          ceiling: 10,
-          floor: -10,
+          max: 10,
+          min: -10,
           reversed: false,
           stops: [
             [0.075, "#d43d51"],

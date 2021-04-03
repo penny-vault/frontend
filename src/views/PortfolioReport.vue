@@ -77,7 +77,7 @@ export default {
             return `${mo} ${ye}`
           }
         },
-        { field: 'ticker', width: 90, sortable: true, resizable: true, editable: false},
+        { field: 'ticker', width: 150, sortable: true, resizable: true, editable: false},
         { field: 'percentReturn', width: 90, headerName: 'Return', sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
             if (isNaN(params.value)) {
               return "-"
@@ -132,6 +132,9 @@ export default {
           if (typeof(justification[k]) == "number") {
             this.columnDefs.push({
               field: k,
+              sortable: true,
+              resizable: true,
+              width: 120,
               valueFormatter: (params) => {
                 return params.value.toFixed(2)
               }
