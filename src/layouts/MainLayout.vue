@@ -47,7 +47,7 @@
   </q-layout>
 </template>
 
-<script lang="ts">
+<script>
 import EssentialLink from 'components/EssentialLink.vue'
 
 const linksList = [

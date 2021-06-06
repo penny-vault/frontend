@@ -1,6 +1,6 @@
 # Penny Vault (penny-vault)
 
-Penny Vault is a portfolio visualizer and investment strategy analysis app.
+Penny Vault is a portfolio visualization and investment strategy application.
 
 ## Install the dependencies
 ```bash
