@@ -12,6 +12,23 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
+/* Penny Vault Theme */
+
+// Palette: https://coolors.co/fecb34-48d56b-d85a75-e63946-f1faee-a8dadc-457b9d-1d3557-1b2736
+
+$primary   : rgb(29,53,87);
+$secondary : rgb(69,123,157);
+$accent    : rgb(216,90,117);
+
+$dark      : #242A33;
+
+$positive  : rgb(72,213,107);
+$negative  : rgb(230,57,70);
+$info      : #31CCEC;
+$warning   : rgb(254,203,52);
+
+// DEFAULT QUASAR COLORS
+/*
 $primary   : #1976D2;
 $secondary : #26A69A;
 $accent    : #9C27B0;
@@ -22,3 +39,4 @@ $positive  : #21BA45;
 $negative  : #C10015;
 $info      : #31CCEC;
 $warning   : #F2C037;
+*/
