@@ -13,6 +13,17 @@ const routes = [
     ]
   },
 
+  {
+    path: '/legal',
+    component: () => import('layouts/LegalLayout.vue'),
+    children: [
+      {
+        path: 'tos',
+        component: () => import('pages/TermsOfService.vue'),
+      }
+    ]
+  },
+
   // Always leave this as last one,
   // but you can also remove it
   {
