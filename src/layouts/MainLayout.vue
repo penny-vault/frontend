@@ -5,14 +5,14 @@
       <q-toolbar>
         <q-btn dense flat round icon="menu" class="q-mr-sm" @click="toggleLeftDrawer" />
         <q-separator dark vertical inset />
-        <q-toolbar-title class="title">
+        <q-toolbar-title class="text-fancy">
           <q-avatar class="q-mr-sm">
             <img src="~assets/logo.webp">
           </q-avatar>
           Penny Vault
         </q-toolbar-title>
 
-      <q-btn-dropdown stretch flat :label="user.name">
+      <q-btn-dropdown v-if="authenticated" stretch flat :label="user.name">
       <div class="row no-wrap q-pa-md">
         <div class="column">
            <q-list>
@@ -60,6 +60,7 @@
         </div>
       </div>
       </q-btn-dropdown>
+      <q-btn v-else label="Login" @click="login()" />
 
       </q-toolbar>
     </q-header>
@@ -123,11 +124,23 @@ export default defineComponent({
       }
     })
 
+    const authenticated = computed({
+      get: () => $store.state.user.authenticated,
+      set: val => {
+        $store.commit('user/setAuthenticated', val)
+      }
+    })
+
+
     return {
+      authenticated,
       essentialLinks: Menu,
       leftDrawerOpen,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
+      },
+      login () {
+        this.$auth.loginWithRedirect({ appState: { targetUrl: window.location.pathname + window.location.hash } })
       },
       logout () {
         this.$auth.logout()

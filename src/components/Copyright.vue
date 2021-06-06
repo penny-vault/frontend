@@ -36,3 +36,14 @@ export default defineComponent({
 })
 
 </script>
+
+<style lang="scss" scoped>
+a {
+    text-decoration: none;
+    color: $secondary;
+}
+
+a:hover {
+    color: $accent;
+}
+</style>

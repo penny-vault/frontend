@@ -1,5 +1,6 @@
 export default function () {
   return {
+    authenticated: false,
     profile: {
       "email": "john.doe@protonmail.com",
       "email_verified": false,

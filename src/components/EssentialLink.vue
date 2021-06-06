@@ -48,3 +48,9 @@ export default defineComponent({
   }
 })
 </script>
+
+<style lang="scss" scoped>
+a:hover {
+    color: $info;
+}
+</style>

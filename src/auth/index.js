@@ -82,7 +82,7 @@ export const setupAuth = async (options, store, callbackRedirect) => {
   client = await createAuth0Client({
     ...options,
     client_id: options.clientId,
-    redirect_uri: window.location.origin
+    redirect_uri: window.location.origin + '/#/app'
   })
 
   try {
@@ -104,6 +104,7 @@ export const setupAuth = async (options, store, callbackRedirect) => {
   } finally {
     // Initialize our internal authentication state
     state.isAuthenticated = await client.isAuthenticated()
+    store.commit('user/setAuthenticated', state.isAuthenticated)
     state.user = await client.getUser()
     // TODO - Include this in the auth0 profile
     if (state.user !== undefined) {

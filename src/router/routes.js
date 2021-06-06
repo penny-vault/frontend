@@ -3,10 +3,20 @@ import { routeGuard } from '../auth'
 const routes = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => import('layouts/FrontLayout.vue'),
     children: [
       {
         path: '',
+        component: () => import('pages/Splash.vue')
+      }
+    ]
+  },
+  {
+    path: '/app',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'home',
         component: () => import('pages/Index.vue'),
         beforeEnter: routeGuard
       }
@@ -15,7 +25,7 @@ const routes = [
 
   {
     path: '/legal',
-    component: () => import('layouts/LegalLayout.vue'),
+    component: () => import('layouts/FrontLayout.vue'),
     children: [
       {
         path: 'tos',

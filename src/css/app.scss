@@ -8,17 +8,6 @@
 //@import "../../node_modules/ag-grid-community/dist/styles/ag-theme-alpine.css";
 
 // Styles
-$font-title: 'Sacramento', cursive;
-
-.title {
-    font-family: $font-title;
-}
-
-a {
-    text-decoration: none;
-    color: $secondary;
-}
-
-a:hover {
-    color: $accent;
+.text-fancy {
+    font-family: 'Sacramento';
 }
