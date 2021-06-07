@@ -69,22 +69,17 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered>
+    <q-drawer show-if-above v-model="leftDrawerOpen" class="bg-blue-8" width="170" :mini="miniDrawer" side="left" bordered>
       <!-- sidebar content begin -->
       <q-list>
-        <q-item-label
-          header
-          class="text-grey-8"
-        >
-          Navigation
-        </q-item-label>
-
         <EssentialLink
           v-for="link in essentialLinks"
           :key="link.title"
           v-bind="link"
         />
       </q-list>
+
+        <q-btn round flat @click="toggleMiniDrawer" icon="double_arrow" color="grey-4" :class="rotateDrawer" size="sm"></q-btn>
       <!-- sidebar content end -->
     </q-drawer>
 
@@ -121,6 +116,12 @@ export default defineComponent({
   setup () {
     const $store = useStore()
     const leftDrawerOpen = ref(false)
+    const miniDrawer = ref(true)
+
+    const rotateDrawer = computed({
+      get: () => miniDrawer.value ? 'q-ml-sm' : 'rotate-180 q-ml-sm',
+      set: val => {}
+    })
 
     const user = computed({
       get: () => $store.state.user.profile,
@@ -139,10 +140,15 @@ export default defineComponent({
 
     return {
       authenticated,
+      miniDrawer,
       essentialLinks: Menu,
       leftDrawerOpen,
+      rotateDrawer,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
+      },
+      toggleMiniDrawer() {
+        miniDrawer.value = !miniDrawer.value
       },
       login () {
         this.$auth.loginWithRedirect({ appState: { targetUrl: window.location.pathname + window.location.hash } })

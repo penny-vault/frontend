@@ -12,6 +12,7 @@ function normalizePortfolio(portfolio) {
   portfolio.start_date = new Date(portfolio.start_date * 1000)
   portfolio.lastchanged = new Date(portfolio.lastchanged * 1000)
 
+  var notification_opts = emptyPortfolio.notification_opts
   if ((portfolio.notifications & Daily) == Daily) {
     notification_opts.daily.state = true
   }
@@ -25,16 +26,18 @@ function normalizePortfolio(portfolio) {
     notification_opts.annually.state = true
   }
 
+  portfolio.notification_opts
+  return portfolio
 }
 
-async function lookupPortfolio($api, options, portfolioDict, currentPortfolio, portfolioId) {
+async function lookupPortfolio(api, options, portfolioDict, currentPortfolio, portfolioId) {
   return new Promise((resolve, reject) => {
     let portfolio = {}
     if (currentPortfolio.id == portfolioId) {
       Object.assign(portfolio, currentPortfolio)
       resolve(portfolio)
     } else if (portfolioDict[portfolioId] === undefined) {
-      $api.get(`/portfolio/${portfolioId}`, options).then(response => {
+      api.get(`/portfolio/${portfolioId}`, options).then(response => {
         portfolio = response.data
         portfolio = normalizePortfolio(portfolio)
         resolve(portfolio)
@@ -123,7 +126,7 @@ export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, 
     benchmark.start_date = new Date(benchmark.start_date * 1000)
     benchmark.lastchanged = new Date(benchmark.lastchanged * 1000)
 
-    dispatch('calculatemetrics', {
+    dispatch('calculateMetrics', {
       performance: benchmark,
       key: 'benchmark'
     })
@@ -132,7 +135,6 @@ export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, 
 }
 
 export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) {
-  console.log("hello")
   const accessToken = await authPlugin.getTokenSilently()
   let options = {
     headers: {
@@ -140,7 +142,7 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
     }
   }
 
-  let portfolio = await lookupPortfolio($api, options, state.portfolioDict, state.current, portfolioId)
+  let portfolio = await lookupPortfolio(api, options, state.portfolioDict, state.current, portfolioId)
 
   let now = new Date()
   if (portfolio.id != portfolioId ||
@@ -194,7 +196,7 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
   })
 }
 
-export async function calculatemetrics({ commit }, { performance, key }) {
+export async function calculateMetrics({ commit }, { performance, key }) {
   let metric = {
     key: key,
     name: 'finalBalance',

@@ -6,31 +6,26 @@
   },
   {
     "title": "Portfolios",
-    "caption": "View saved portfolios",
     "icon": "ion-albums",
     "link": "/app/portfolios"
   },
   {
     "title": "Strategies",
-    "caption": "Test different investment strategies",
     "icon": "ion-podium",
     "link": "/app/strategies"
   },
   {
     "title": "Screener",
-    "caption": "Find stocks that match criteria",
     "icon": "ion-search",
     "link": "/app/screener"
   },
   {
     "title": "Compare",
-    "caption": "Compare multiple portfolios",
     "icon": "ion-git-compare",
     "link": "/app/compare"
   },
   {
     "title": "API",
-    "caption": "Access penny vault programmatically",
     "icon": "ion-barcode",
     "link": "/app/api"
   }

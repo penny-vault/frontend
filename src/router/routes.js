@@ -24,6 +24,12 @@ const routes = [
         path: 'portfolios',
         component: () => import('pages/PortfolioList.vue'),
         beforeEnter: routeGuard
+      },
+      {
+        path: 'portfolios/:id',
+        component: () => import('pages/PortfolioSummary.vue'),
+        props: route => ({ portfolioId: route.params.id }),
+        beforeEnter: routeGuard
       }
     ]
   },
