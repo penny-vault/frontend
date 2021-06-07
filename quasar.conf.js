@@ -22,6 +22,7 @@ module.exports = configure(function (ctx) {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli/boot-files
     boot: [
+      'aggrid',
       'auth0',
       'axios',
     ],
@@ -48,6 +49,7 @@ module.exports = configure(function (ctx) {
     // Full list of options: https://v2.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
       vueRouterMode: 'hash', // available values: 'hash', 'history'
+      vueCompiler: true, // enable runtime compiler
 
       // transpile: false,
 

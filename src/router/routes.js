@@ -16,8 +16,13 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
-        path: 'home',
+        path: '',
         component: () => import('pages/Index.vue'),
+        beforeEnter: routeGuard
+      },
+      {
+        path: 'portfolios',
+        component: () => import('pages/PortfolioList.vue'),
         beforeEnter: routeGuard
       }
     ]

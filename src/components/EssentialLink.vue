@@ -51,6 +51,6 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 a:hover {
-    color: $info;
+    color: $accent;
 }
 </style>

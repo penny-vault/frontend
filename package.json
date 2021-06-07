@@ -10,12 +10,17 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@ag-grid-community/vue3": "^25.3.0",
     "@auth0/auth0-spa-js": "^1.15.0",
     "@quasar/extras": "^1.10.6",
+    "ag-grid-community": "^25.3.0",
+    "ag-grid-enterprise": "^25.3.0",
+    "ag-grid-vue3": "^25.3.0",
     "axios": "^0.21.1",
     "console": "^0.7.2",
     "core-js": "^3.6.5",
-    "quasar": "^2.0.0-beta.1"
+    "quasar": "^2.0.0-beta.1",
+    "vue-class-component": "^8.0.0-rc.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
