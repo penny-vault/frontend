@@ -2,12 +2,14 @@ import { store } from 'quasar/wrappers'
 import { createStore } from 'vuex'
 
 import app from './app'
+import portfolio from './portfolio'
 import user from './user'
 
 export default store(function (/* { ssrContext } */) {
   const Store = createStore({
     modules: {
       app,
+      portfolio,
       user
     },
 

@@ -12,6 +12,10 @@
           Penny Vault
         </q-toolbar-title>
 
+      <portfolio-dropdown />
+
+      <q-separator dark vertical inset />
+
       <q-btn-dropdown v-if="authenticated" stretch flat :label="user.name">
       <div class="row no-wrap q-pa-md">
         <div class="column">
@@ -95,22 +99,23 @@
   </q-layout>
 </template>
 
-<script lang="ts">
+<script>
 import EssentialLink from 'components/EssentialLink.vue'
 import Copyright from 'components/Copyright.vue'
+import PortfolioDropdown from 'components/PortfolioDropdown.vue'
 
 import { defineComponent, computed, ref } from 'vue'
 import { useStore } from 'vuex'
 
 import Menu from '../data/menu'
 
-
 export default defineComponent({
   name: 'MainLayout',
 
   components: {
     Copyright,
-    EssentialLink
+    EssentialLink,
+    PortfolioDropdown
   },
 
   setup () {
