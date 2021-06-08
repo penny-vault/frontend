@@ -2,7 +2,7 @@
   <q-btn-dropdown stretch flat no-icon-animation dropdown-icon="layers">
     <q-list>
       <q-item-label header>My Portfolios</q-item-label>
-      <q-item v-for="item in portfolioList" v-bind:key="item.id" clickable>
+      <q-item v-for="item in portfolioList" v-bind:key="item.id" :to="`/app/portfolios/${item.id}`" clickable>
         <q-item-section>
           <q-item-label>{{ item.name }}</q-item-label>
         </q-item-section>

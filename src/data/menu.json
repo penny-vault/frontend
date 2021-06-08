@@ -6,17 +6,17 @@
   },
   {
     "title": "Portfolios",
-    "icon": "ion-albums",
+    "icon": "app:portfolio",
     "link": "/app/portfolios"
   },
   {
     "title": "Strategies",
-    "icon": "ion-podium",
+    "icon": "app:strategy",
     "link": "/app/strategies"
   },
   {
     "title": "Screener",
-    "icon": "ion-search",
+    "icon": "app:screener",
     "link": "/app/screener"
   },
   {

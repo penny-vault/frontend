@@ -69,7 +69,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer show-if-above v-model="leftDrawerOpen" class="bg-blue-8" width="170" :mini="miniDrawer" side="left" bordered>
+    <q-drawer show-if-above v-model="leftDrawerOpen" class="bg-blue-8" :width="170" :mini="miniDrawer" side="left" bordered>
       <!-- sidebar content begin -->
       <q-list>
         <EssentialLink
@@ -119,7 +119,7 @@ export default defineComponent({
     const miniDrawer = ref(true)
 
     const rotateDrawer = computed({
-      get: () => miniDrawer.value ? 'q-ml-sm' : 'rotate-180 q-ml-sm',
+      get: () => miniDrawer.value ? 'sidebar-expand q-mb-xs fixed-bottom' : 'rotate-180 sidebar-expand q-mb-xs fixed-bottom',
       set: val => {}
     })
 
@@ -161,3 +161,9 @@ export default defineComponent({
   }
 })
 </script>
+
+<style lang="scss" scoped>
+  .sidebar-expand {
+    margin-left: 12px;
+  }
+</style>

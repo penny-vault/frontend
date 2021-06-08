@@ -1,6 +1,6 @@
 <template>
   <div class="q-pa-md">
-    <h4 class="q-mt-sm q-mb-sm"><q-icon name="ion-albums" color="blue" size="md" class="q-mr-sm" />My Portfolios</h4>
+    <h4 class="q-mt-sm q-mb-sm"><q-icon name="app:portfolio" color="grey-9" size="sm" class="q-mr-md q-mb-sm" />My Portfolios</h4>
     <q-breadcrumbs class="q-mb-lg">
       <q-breadcrumbs-el icon="home" to="/app" />
       <q-breadcrumbs-el label="My Portfolios" />

@@ -25,11 +25,13 @@ module.exports = configure(function (ctx) {
       'aggrid',
       'auth0',
       'axios',
+      'highcharts',
     ],
 
     // https://v2.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
     css: [
-      'app.scss'
+      'app.scss',
+      'pvico.css'
     ],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
