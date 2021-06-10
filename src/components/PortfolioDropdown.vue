@@ -18,7 +18,7 @@
 import { defineComponent, computed, ref } from 'vue'
 import { useStore } from 'vuex'
 
-import { formatPercent } from '../filters'
+import { formatPercent } from '../assets/filters'
 
 export default defineComponent({
   name: 'PortfolioDropdown',

@@ -74,7 +74,7 @@ function BestYear(measurements) {
       }
   })
 
-  ret = (ret - 1) * 100
+  ret = (ret - 1)
   return {value: ret, year: yr}
 }
 
@@ -89,7 +89,7 @@ function WorstYear(measurements) {
       }
   })
 
-  ret = (ret - 1) * 100
+  ret = (ret - 1)
   return {value: ret, year: yr}
 }
 
@@ -197,6 +197,20 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
 }
 
 export async function calculateMetrics({ commit }, { performance, key }) {
+  let currencyFormatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+
+  let percentFormatter = new Intl.NumberFormat('en-US', {
+    style: 'percent',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+
   let metric = {
     key: key,
     name: 'finalBalance',
@@ -204,44 +218,53 @@ export async function calculateMetrics({ commit }, { performance, key }) {
   }
 
   metric.value[`${key}Value`] = performance.measurements[performance.measurements.length-1].value
+  metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.measurements[performance.measurements.length-1].value)
+
   commit('setMetric', metric)
 
   metric.key = key
   metric.name = 'totalDeposited'
   metric.value[`${key}Value`] = performance.totalDeposited
+  metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.totalDeposited)
   commit('setMetric', metric)
 
   metric.key = key
   metric.name = 'totalWithdrawn'
   metric.value[`${key}Value`] = performance.totalWithdrawn
+  metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.totalWithdrawn)
   commit('setMetric', metric)
 
   metric.key = key
   metric.name = 'stdDev'
   metric.value[`${key}Value`] = performance.metrics.stdDev
+  metric.value[`${key}FormattedValue`] = percentFormatter.format(performance.metrics.stdDev)
   commit('setMetric', metric)
 
   metric.key = key
   metric.name = 'sharpeRatio'
   metric.value[`${key}Value`] = performance.metrics.sharpeRatio
+  metric.value[`${key}FormattedValue`] = performance.metrics.sharpeRatio.toFixed(2)
   commit('setMetric', metric)
 
   metric.key = key
   metric.name = 'sortinoRatio'
   metric.value[`${key}Value`] = performance.metrics.sortinoRatio
+  metric.value[`${key}FormattedValue`] = performance.metrics.sortinoRatio.toFixed(2)
   commit('setMetric', metric)
 
   let bestYear = BestYear(performance.measurements)
   metric.key = key
   metric.name = 'bestYear'
   metric.value[`${key}Value`] = bestYear.value
-  metric.value[`${key}Suffix`] = `% (${bestYear.year})`
+  metric.value[`${key}FormattedValue`] = percentFormatter.format(bestYear.value)
+  metric.value[`${key}Suffix`] = ` (${bestYear.year})`
   commit('setMetric', metric)
 
   let worstYear = WorstYear(performance.measurements)
   metric.key = key
   metric.name = 'worstYear'
   metric.value[`${key}Value`] = worstYear.value
-  metric.value[`${key}Suffix`] = `% (${worstYear.year})`
+  metric.value[`${key}FormattedValue`] = percentFormatter.format(worstYear.value)
+  metric.value[`${key}Suffix`] = ` (${worstYear.year})`
   commit('setMetric', metric)
 }

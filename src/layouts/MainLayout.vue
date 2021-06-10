@@ -1,7 +1,7 @@
 <template>
   <q-layout view="hHh lpR lFf">
 
-    <q-header bordered class="bg-dark text-white">
+    <q-header elevated class="bg-dark text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" class="q-mr-sm" @click="toggleLeftDrawer" />
         <q-separator dark vertical inset />
@@ -69,7 +69,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer show-if-above v-model="leftDrawerOpen" class="bg-blue-8" :width="170" :mini="miniDrawer" side="left" bordered>
+    <q-drawer show-if-above v-model="leftDrawerOpen" class="sidebar" :width="170" :mini="miniDrawer" side="left" bordered>
       <!-- sidebar content begin -->
       <q-list>
         <EssentialLink
@@ -116,7 +116,7 @@ export default defineComponent({
   setup () {
     const $store = useStore()
     const leftDrawerOpen = ref(false)
-    const miniDrawer = ref(true)
+    const miniDrawer = ref(false)
 
     const rotateDrawer = computed({
       get: () => miniDrawer.value ? 'sidebar-expand q-mb-xs fixed-bottom' : 'rotate-180 sidebar-expand q-mb-xs fixed-bottom',

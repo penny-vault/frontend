@@ -61,19 +61,16 @@ export const emptyPerformance = {
 export const emptyMetrics = {
   finalBalance: {
     "name": "Final Balance",
-    "prefix": "$",
     "portfolioValue": 0,
     "benchmarkValue": 0
   },
   totalDeposited: {
     "name": "Total Deposited",
-    "prefix": "$",
     "portfolioValue": 0,
     "benchmarkValue": 0
   },
   totalWithdrawn: {
     "name": "Total Withdrawn",
-    "prefix": "$",
     "portfolioValue": 0,
     "benchmarkValue": 0
   },
@@ -85,13 +82,11 @@ export const emptyMetrics = {
   bestYear: {
     "name": "Best Year",
     "portfolioValue": 0,
-    "portfolioSuffix": "%",
     "benchmarkValue": 0
   },
   worstYear: {
     "name": "Worst Year",
     "portfolioValue": 0,
-    "portfolioSuffix": "%",
     "benchmarkValue": 0
   },
   sharpeRatio: {
@@ -132,4 +127,5 @@ export const emptyPortfolio = {
   "created": 0,
   "lastchanged": "1982-07-27T00:00:00.000Z",
   "performance": emptyPerformance,
+  "benchmark": emptyPerformance,
 }
