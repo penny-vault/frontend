@@ -8,6 +8,16 @@
 @import "../../node_modules/ag-grid-community/dist/styles/ag-theme-alpine.css";
 
 // Styles
+
+body {
+    background: url("../assets/bg-squares.svg") no-repeat 50% -11px!important;
+}
+
+.sidebar {
+    background: rgb(20,83,122);
+    background: linear-gradient(0deg, rgba(20,83,122,1) 0%, rgba(34,112,134,1) 100%);
+}
+
 .text-fancy {
     font-family: 'Sacramento';
 }
