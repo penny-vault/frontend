@@ -18,7 +18,7 @@
 
       <q-btn-dropdown v-if="authenticated" stretch flat :label="user.name">
       <div class="row no-wrap q-pa-md">
-        <div class="column">
+        <div class="gt-xs column">
            <q-list>
 
             <q-item-label header>Profile</q-item-label>
@@ -45,7 +45,7 @@
           </q-list>
         </div>
 
-        <q-separator vertical inset class="q-mx-lg" />
+        <q-separator vertical inset class="gt-xs q-mx-lg" />
 
         <div class="column items-center">
           <q-avatar size="72px">
