@@ -108,7 +108,7 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref } from 'vue'
+import { defineComponent, computed, ref, watch, toRefs } from 'vue'
 import { useStore } from 'vuex'
 
 import { formatPercent } from '../assets/filters'
@@ -131,10 +131,16 @@ export default defineComponent({
   },
   setup (props) {
     const $store = useStore()
+    const { portfolioId } = toRefs(props)
 
     const tabModel = ref('summary')
 
     $store.dispatch('portfolio/fetchPortfolio', props.portfolioId)
+
+    // set a watcher on the Reactive Reference to portfolioId prop
+    watch(portfolioId, async (newValue, oldValue) => {
+      $store.dispatch('portfolio/fetchPortfolio', newValue)
+    })
 
     const portfolio = computed({
       get: () => $store.state.portfolio.current,
