@@ -2,27 +2,16 @@
   <q-card class="my-card">
     <q-card-section class="q-pb-none">
       <p class="text-weight-bold q-mb-none">{{ title }}</p>
-      <div class="setting-dot d-inline-block">
-        <div class="setting-bg setting-bg-primary"><i class="fa fa-spin fa-cog font-primary"></i></div>
-      </div>
     </q-card-section>
     <q-card-section class="q-pa-none">
-    <div :class="footer_class">
+    <div :class="footerClass">
       <div class="sass-footer">
-        <h4 class="text-weight-bolder q-mt-none q-mb-none">{{ stat }}</h4>
-        <!-- <p class="mb-0 d-inline-block mr-3">80,000</p><span><span class="d-inline-block"><i class="fa fa-sort-up mr-4"></i></span></span> -->
-        <!-- <p class="mb-0 d-inline-block b-l-primary pl-4 mr-3">566</p><span class="down-arrow-align"><span class="d-inline-block"><i class="fa fa-sort-down"></i></span></span> -->
-        <div class="small-sass">
-          <div class="small-sasschart flot-chart-container">
-            <!--
-              <chartist
-                ratio="ct-chart"
-                type="Bar"
-                :data="small_chart.chartData_1"
-                :options="small_chart.chartOptions"
-                :event-handlers="small_chart.eventHandlers"
-              ></chartist>
-            -->
+        <div class="row">
+          <div v-if="directionIndicator" class="col-2">
+            <q-icon size="lg" :name="directionIcon" />
+          </div>
+          <div class="col">
+            <h4 class="text-weight-bolder q-mt-none q-mb-none">{{ stat }}</h4>
           </div>
         </div>
       </div>
@@ -52,10 +41,21 @@ export default defineComponent({
     percent: {
       type: Boolean,
       default: false
+    },
+    directionIndicator: {
+      type: Boolean,
+      deafult: false
     }
   },
   computed: {
-    footer_class() {
+    directionIcon() {
+      if (this.value < 0) {
+        return 'ion-arrow-dropdown-circle'
+      } else {
+        return 'ion-arrow-dropup-circle'
+      }
+    },
+    footerClass() {
       return `bg-gradient-${this.color} footer-shape`
     },
     stat() {
@@ -128,33 +128,6 @@ $gradient-warning-direction: linear-gradient(to right, #ee933a, #ff7336);
       position: absolute;
       top: -15px;
       right: -18px;
-      .flot-chart-container {
-        height: 45px;
-        width: 60px;
-        svg {
-          position: relative;
-        }
-        .chartist-tooltip {
-          position: absolute;
-          opacity: 0;
-          .chartist-tooltip-value {
-              font-size: 10px;
-              padding: 5px;
-            border-radius: 4px;
-              background-color: rgba(0, 0, 0, 0.5);
-          }
-          &.tooltip-show {
-            opacity: 1;
-          }
-        }
-        svg {
-          .ct-series-a {
-            .ct-point, .ct-line, .ct-bar, .ct-slice-donut {
-              stroke: white;
-            }
-          }
-        }
-      }
     }
   }
 }
