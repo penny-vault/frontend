@@ -72,7 +72,6 @@ export default {
     },
     updateSeries: async function() {
       this.chartOptions.series = [this.getStrategySeries(), this.getBenchmarkSeries()]
-      console.log(this.chartOptions.series)
     },
     updatePlotBands: async function(d) {
       var plotBands = []
