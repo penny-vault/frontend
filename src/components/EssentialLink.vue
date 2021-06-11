@@ -41,3 +41,9 @@ export default defineComponent({
   }
 })
 </script>
+
+<style lang="scss" scoped>
+  a:hover {
+    background: rgba(.5, .5, .5, .2);
+  }
+</style>
