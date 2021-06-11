@@ -30,13 +30,13 @@
         <stat-card title="Current Asset" color="secondary" :value="portfolio.performance.currentAsset" />
       </div>
       <div class="col-xs-12 col-sm-6 col-lg-3">
-        <stat-card title="YTD Return" color="positive" :value="portfolio.performance.ytdReturn" percent />
+        <stat-card title="YTD Return" :direction-indicator="true" color="positive" :value="portfolio.performance.ytdReturn" percent />
       </div>
       <div class="col-xs-12 col-sm-6 col-lg-3">
-        <stat-card title="CAGR Since Inception" color="negative" :value="portfolio.performance.cagrSinceInception" percent />
+        <stat-card title="CAGR Since Inception" :direction-indicator="true" color="negative" :value="portfolio.performance.cagrSinceInception" percent />
       </div>
       <div class="col-xs-12 col-sm-6 col-lg-3">
-        <stat-card title="Max Draw Down" color="warning" :value="portfolio.performance.maxDrawDown" percent />
+        <stat-card title="Max Draw Down" :direction-indicator="true" color="warning" :value="portfolio.performance.maxDrawDown" percent />
       </div>
     </div>
 
