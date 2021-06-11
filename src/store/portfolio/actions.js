@@ -1,6 +1,9 @@
 import { emptyPortfolio, emptyPerformance, Daily, Weekly, Monthly, Annually } from './constants'
 import { api } from 'boot/axios'
 import { authPlugin } from '../../auth'
+import hash from 'object-hash'
+
+import { Loading } from 'quasar'
 
 // Helper functions
 
@@ -121,7 +124,8 @@ export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, 
     }
   }
 
-  api.post(`/benchmark/?startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}`, benchmarkArgs, options).then(response => {
+  let argsHash = hash(benchmarkArgs)
+  api.post(`/benchmark/?startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}&cache=${argsHash}`, benchmarkArgs, options).then(response => {
     let benchmark = response.data
     benchmark.start_date = new Date(benchmark.start_date * 1000)
     benchmark.lastchanged = new Date(benchmark.lastchanged * 1000)
@@ -142,6 +146,8 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
     }
   }
 
+  Loading.show()
+
   let portfolio = await lookupPortfolio(api, options, state.portfolioDict, state.current, portfolioId)
 
   let now = new Date()
@@ -158,7 +164,8 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
   }
 
   // load strategy
-  let endpoint = `/strategy/${portfolio.strategy}?startDate=${ymdString(portfolio.start_date)}&endDate=${ymdString(new Date())}`
+  let portfolioArgsHash = hash(portfolio.arguments)
+  let endpoint = `/strategy/${portfolio.strategy}?startDate=${ymdString(portfolio.start_date)}&endDate=${ymdString(new Date())}&cache=${portfolioArgsHash}`
   api.post(endpoint, portfolio.arguments, options).then(response => {
     let performance = response.data
     try {
@@ -193,6 +200,8 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
     portfolio.lastfetch = new Date()
     commit('setCurrentPortfolio', portfolio)
     commit('setPortfolioLoading', false)
+
+    Loading.hide()
   })
 }
 
