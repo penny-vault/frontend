@@ -72,6 +72,7 @@ export default {
     },
     updateSeries: async function() {
       this.chartOptions.series = [this.getStrategySeries(), this.getBenchmarkSeries()]
+      console.log(this.chartOptions.series)
     },
     updatePlotBands: async function(d) {
       var plotBands = []
@@ -135,7 +136,7 @@ export default {
             threshold: null
           }
         },
-        series: [{type: 'area', name: 'strategy', data: []}],
+        series: [{type: 'area', name: 'Strategy', data: []}, {type: 'line', name: 'Benchmark', dashStyle: 'Solid', data: []}],
       }
     }
   }
