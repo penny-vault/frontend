@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import Highcharts from "highcharts";
+import Highcharts from 'highcharts'
 import { defineComponent, ref, toRefs, watch, onMounted } from 'vue'
 
 var pieColors = (function () {
@@ -17,7 +17,7 @@ var pieColors = (function () {
     colors.push(Highcharts.color(base).brighten((i - 3) / 7).get());
   }
   return colors;
-}());
+}())
 
 export default defineComponent({
   name: "HoldingsPieChart",
@@ -43,7 +43,7 @@ export default defineComponent({
           type: "pie"
       },
       title: {
-          text: "Frequency Holdings Held"
+          text: undefined
       },
       tooltip: {
           pointFormat: "{series.name}: <b>{point.percentage:.1f}%</b>"

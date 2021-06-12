@@ -25,7 +25,7 @@
 
     <div class="row">
       <div class="col">
-        <p class="q-mb-sm">Updated on: {{ formatDate(portfolio.performance.computedOn) }}</p>
+        <p class="q-mb-sm text-grey-6">Computed at: {{ formatDate(portfolio.performance.computedOn) }}</p>
         <q-breadcrumbs class="q-mb-lg">
           <q-breadcrumbs-el icon="home" to="/app" />
           <q-breadcrumbs-el label="My Portfolios" to="/app/portfolio" />
@@ -35,6 +35,7 @@
     </div>
 
     <q-tab-panels
+      style="background: rgba(0,0,0,0)!important"
       v-model="tabModel"
       animated
       swipeable
@@ -48,11 +49,11 @@
       </q-tab-panel>
 
       <q-tab-panel name="transactions">
-        <h1>Transactions</h1>
+        <portfolio-transactions />
       </q-tab-panel>
 
       <q-tab-panel name="returns">
-        <h1>Returns</h1>
+        <portfolio-returns />
       </q-tab-panel>
 
       <q-tab-panel name="settings">
@@ -69,8 +70,10 @@ import { useStore } from 'vuex'
 
 import { formatDate } from '../assets/filters'
 
-import PortfolioSummary from './PortfolioSummary.vue'
 import PortfolioHoldings from './PortfolioHoldings.vue'
+import PortfolioReturns from './PortfolioReturns.vue'
+import PortfolioSummary from './PortfolioSummary.vue'
+import PortfolioTransactions from './PortfolioTransactions.vue'
 
 export default defineComponent({
   name: 'Portfolio',
@@ -79,7 +82,9 @@ export default defineComponent({
   },
   components: {
     PortfolioHoldings,
-    PortfolioSummary
+    PortfolioReturns,
+    PortfolioSummary,
+    PortfolioTransactions
   },
   setup (props) {
     const $store = useStore()
