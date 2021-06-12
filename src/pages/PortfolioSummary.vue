@@ -27,7 +27,7 @@
             <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 120, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">10y</q-btn>
             <q-btn @click="eventBus.emit('valueChart:zoom', {from: -1, to: -1})" size="md" color="secondary" dense flat class="q-ml-xs">All</q-btn>
 
-            <q-btn-dropdown rounded dense flat dropdown-icon="menu">
+            <q-btn-dropdown rounded dense flat dropdown-icon="menu" class="q-ml-sm">
                 <q-list>
                 <q-item-label header>Chart Settings</q-item-label>
 
@@ -42,7 +42,7 @@
 
                 <q-item tag="label" v-ripple>
                     <q-item-section>
-                    <q-item-label>Show draw downs</q-item-label>
+                    <q-item-label>Show top-10 draw downs</q-item-label>
                     </q-item-section>
                     <q-item-section side >
                     <q-toggle color="blue" v-model="showDrawDowns" />
