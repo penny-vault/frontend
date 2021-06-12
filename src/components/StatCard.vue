@@ -1,5 +1,5 @@
 <template>
-  <q-card class="my-card">
+  <q-card>
     <q-card-section class="q-pb-none">
       <p class="text-weight-bold q-mb-none">{{ title }}</p>
     </q-card-section>

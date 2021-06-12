@@ -1,5 +1,5 @@
 <template>
-  <q-card class="my-card full-height">
+  <q-card class="full-height">
     <q-toolbar>
       <card-title :title="title" />
       <q-space/>
