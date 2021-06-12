@@ -17,6 +17,7 @@
 
     <div class="row">
       <div class="col">
+        <p class="q-mb-sm">Updated on: {{ formatDate(portfolio.performance.computedOn) }}</p>
         <q-breadcrumbs class="q-mb-lg">
           <q-breadcrumbs-el icon="home" to="/app" />
           <q-breadcrumbs-el label="My Portfolios" to="/app/portfolios" />
@@ -137,7 +138,7 @@ let eventBus = require('tiny-emitter/instance')
 import { defineComponent, computed, ref, watch, toRefs } from 'vue'
 import { useStore } from 'vuex'
 
-import { formatPercent } from '../assets/filters'
+import { formatDate, formatPercent } from '../assets/filters'
 
 import PortfolioMetrics from 'components/PortfolioMetrics.vue'
 import PxCard from 'components/PxCard.vue'
@@ -192,6 +193,7 @@ export default defineComponent({
     return {
       benchmark,
       formatPercent,
+      formatDate,
       metrics,
       portfolio,
       tabModel,

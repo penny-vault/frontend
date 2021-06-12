@@ -21,12 +21,12 @@ const routes = [
         beforeEnter: routeGuard
       },
       {
-        path: 'portfolios',
+        path: 'portfolio',
         component: () => import('pages/PortfolioList.vue'),
         beforeEnter: routeGuard
       },
       {
-        path: 'portfolios/:id',
+        path: 'portfolio/:id',
         component: () => import('pages/PortfolioSummary.vue'),
         props: route => ({ portfolioId: route.params.id }),
         beforeEnter: routeGuard

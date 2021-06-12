@@ -48,7 +48,7 @@ export default defineComponent({
         cellRendererFramework: 'btnCellRenderer',
         cellRendererParams: {
           clicked: (function(field) {
-            $router.push({ path: `/app/portfolios/${field}` })
+            $router.push({ path: `/app/portfolio/${field}` })
           }).bind(this)
         },
         minWidth: 115,
