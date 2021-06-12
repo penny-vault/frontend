@@ -44,16 +44,40 @@
       <div class="col-xs-12 col-lg-8">
         <px-card class="my-card full-height" title="Value Chart">
           <template v-slot:toolbar>
-            <q-btn size="md" color="secondary" dense flat class="q-ml-xs">YTD</q-btn>
-            <q-btn size="md" color="secondary" dense flat class="q-ml-xs">1m</q-btn>
-            <q-btn size="md" color="secondary" dense flat class="q-ml-xs">3m</q-btn>
-            <q-btn size="md" color="secondary" dense flat class="q-ml-xs">1y</q-btn>
-            <q-btn size="md" color="secondary" dense flat class="q-ml-xs">3y</q-btn>
-            <q-btn size="md" color="secondary" dense flat class="q-ml-xs">5y</q-btn>
-            <q-btn size="md" color="secondary" dense flat class="q-ml-xs">10y</q-btn>
-            <q-btn size="md" icon="menu" dropdown-icon="" class="q-ml-sm" rounded dense flat />
+            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), 0, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">YTD</q-btn>
+            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 1, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">1m</q-btn>
+            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 3, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">3m</q-btn>
+            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 12, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">1y</q-btn>
+            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 24, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">3y</q-btn>
+            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 60, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">5y</q-btn>
+            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 120, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">10y</q-btn>
+            <q-btn @click="eventBus.emit('valueChart:zoom', {from: -1, to: -1})" size="md" color="secondary" dense flat class="q-ml-xs">All</q-btn>
+
+            <q-btn-dropdown rounded dense flat dropdown-icon="menu">
+              <q-list>
+                <q-item-label header>Chart Settings</q-item-label>
+
+                <q-item tag="label" v-ripple>
+                  <q-item-section>
+                    <q-item-label>Log Scale</q-item-label>
+                  </q-item-section>
+                  <q-item-section side >
+                    <q-toggle color="blue" v-model="logScale" />
+                  </q-item-section>
+                </q-item>
+
+                <q-item tag="label" v-ripple>
+                  <q-item-section>
+                    <q-item-label>Show draw downs</q-item-label>
+                  </q-item-section>
+                  <q-item-section side >
+                    <q-toggle color="blue" v-model="showDrawDowns" />
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-btn-dropdown>
           </template>
-          <value-chart v-bind:measurements="portfolio.performance.measurements" v-bind:benchmark="benchmark.measurements" v-bind:draw-downs="portfolio.performance.metrics.drawDowns" />
+          <value-chart :min-date="minDate" :max-date="maxDate" :log-scale="logScale" :show-draw-downs="showDrawDowns" :measurements="portfolio.performance.measurements" :benchmark="benchmark.measurements" :draw-downs="portfolio.performance.metrics.drawDowns" />
         </px-card>
       </div>
       <div class="col">
@@ -108,6 +132,8 @@
 </template>
 
 <script>
+let eventBus = require('tiny-emitter/instance')
+
 import { defineComponent, computed, ref, watch, toRefs } from 'vue'
 import { useStore } from 'vuex'
 
@@ -134,6 +160,12 @@ export default defineComponent({
     const { portfolioId } = toRefs(props)
 
     const tabModel = ref('summary')
+
+    // value chart properties
+    const logScale = ref(false)
+    const showDrawDowns = ref(false)
+    const minDate = ref(-1)
+    const maxDate = ref(-1)
 
     $store.dispatch('portfolio/fetchPortfolio', props.portfolioId)
 
@@ -162,7 +194,12 @@ export default defineComponent({
       formatPercent,
       metrics,
       portfolio,
-      tabModel
+      tabModel,
+      maxDate,
+      minDate,
+      logScale,
+      showDrawDowns,
+      eventBus
     }
   }
 })

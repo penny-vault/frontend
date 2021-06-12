@@ -3,52 +3,110 @@
 </template>
 
 <script>
-export default {
+let eventBus = require('tiny-emitter/instance')
+
+import { defineComponent, watch, ref, onMounted, toRefs } from 'vue'
+
+export default defineComponent({
   name: 'ValueChart',
   props: {
+    logScale: {
+      type: Boolean,
+      default: false
+    },
+    showDrawDowns: {
+      type: Boolean,
+      default: false
+    },
+    minDate: {
+      type: Number,
+      default: null
+    },
+    maxDate: {
+      type: Number,
+      default: null
+    },
     measurements: Array,
     benchmark: Array,
     drawDowns: Array
   },
-  watch: {
-    isLog: function(n) {
-      if (n) {
-        this.chartOptions.yAxis.type = "logarithmic"
+  setup (props) {
+    const { logScale, showDrawDowns, measurements, benchmark, drawDowns, minDate, maxDate } = toRefs(props)
+
+    // setup component data
+    const chartOptions = ref({
+      chart: {
+        zoomType: 'x'
+      },
+      title: {
+        text: undefined
+      },
+      xAxis: {
+          type: 'datetime',
+          min: null,
+          max: null,
+          plotBands: [],
+      },
+      yAxis: {
+        type: 'linear',
+        title: {
+          text: 'Value'
+        }
+      },
+      legend: {
+        enabled: true
+      },
+      credits: {
+        enabled: false
+      },
+      lang: {
+        thousandsSep: ','
+      },
+      tooltip: {
+        pointFormat: "{series.name}: <b>${point.y:,.2f}</b><br/>"
+      },
+      plotOptions: {
+        area: {
+          marker: {
+            radius: 2
+          },
+          lineWidth: 1,
+          states: {
+            hover: {
+              lineWidth: 1
+            }
+          },
+          threshold: null
+        }
+      },
+      series: [{type: 'area', name: 'Strategy', data: []}, {type: 'line', name: 'Benchmark', dashStyle: 'Solid', data: []}],
+    })
+
+    // handle events
+
+    eventBus.on('valueChart:zoom', ({from, to}) => {
+      minDate.value = from
+      maxDate.value = to
+
+      if (from != -1) {
+        chartOptions.value.xAxis.min = from
       } else {
-        this.chartOptions.yAxis.type = "linear"
+        chartOptions.value.xAxis.min = null
       }
-    },
-    measurements: async function() {
-      this.updateSeries()
-    },
-    benchmark: async function() {
-      this.updateSeries()
-    },
-    showDrawDowns: async function () {
-      this.updatePlotBands(this.drawDowns)
-    },
-    drawDowns: async function(n) {
-      this.updatePlotBands(n)
-    }
-  },
-  computed: {
-    subtitle: function () {
-      return document.ontouchstart === undefined ?
-        'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
-    }
-  },
-  mounted: async function() {
-    this.updateSeries(this.measurements)
-    this.updatePlotBands(this.drawDowns)
-  },
-  methods: {
-    getBenchmarkSeries: function() {
+
+      if (to != -1) {
+        chartOptions.value.xAxis.max = to
+      } else {
+        chartOptions.value.xAxis.max = null
+      }
+    })
+
+    // functions
+    function getBenchmarkSeries() {
       var chartData = []
-      if (this.benchmark !== undefined) {
-        this.benchmark.forEach(elem => {
-          chartData.push([elem.time * 1000, elem.value])
-        })
-      }
+      benchmark.value.forEach(elem => {
+        chartData.push([elem.time * 1000, elem.value])
+      })
       return {
         type: "line",
         name: "Benchmark",
@@ -58,10 +116,11 @@ export default {
         },
         data: chartData
       }
-    },
-    getStrategySeries: function() {
+    }
+
+    function getStrategySeries() {
       var chartData = []
-      this.measurements.forEach(elem => {
+      measurements.value.forEach(elem => {
         chartData.push([elem.time * 1000, elem.value])
       })
       return {
@@ -69,14 +128,16 @@ export default {
         name: 'Strategy',
         data: chartData
       }
-    },
-    updateSeries: async function() {
-      this.chartOptions.series = [this.getStrategySeries(), this.getBenchmarkSeries()]
-    },
-    updatePlotBands: async function(d) {
+    }
+
+    async function updateSeries() {
+      chartOptions.value.series = [getStrategySeries(), getBenchmarkSeries()]
+    }
+
+    async function updatePlotBands(showDrawDowns) {
       var plotBands = []
-      if (this.showDrawDowns) {
-        d.forEach(elem => {
+      if (showDrawDowns) {
+        drawDowns.value.forEach(elem => {
           plotBands.push({
             color: '#d43d5144', // Color value
             zIndex: 1,
@@ -85,59 +146,57 @@ export default {
           })
         })
       }
-      this.chartOptions.xAxis.plotBands = plotBands
+      chartOptions.value.xAxis.plotBands = plotBands
     }
-  },
-  data() {
-    return {
-      isLog: false,
-      showDrawDowns: false,
-      chartOptions: {
-        chart: {
-          zoomType: 'x'
-        },
-        title: {
-          text: undefined
-        },
-        xAxis: {
-            type: 'datetime',
-            plotBands: [],
-        },
-        yAxis: {
-          type: 'linear',
-          title: {
-            text: 'Value'
-          }
-        },
-        legend: {
-          enabled: true
-        },
-        credits: {
-          enabled: false
-        },
-        lang: {
-          thousandsSep: ','
-        },
-        tooltip: {
-          pointFormat: "{series.name}: <b>${point.y:,.2f}</b><br/>"
-        },
-        plotOptions: {
-          area: {
-            marker: {
-              radius: 2
-            },
-            lineWidth: 1,
-            states: {
-              hover: {
-                lineWidth: 1
-              }
-            },
-            threshold: null
-          }
-        },
-        series: [{type: 'area', name: 'Strategy', data: []}, {type: 'line', name: 'Benchmark', dashStyle: 'Solid', data: []}],
+
+    // creation hooks
+    onMounted(() => {
+      updateSeries(measurements)
+      updatePlotBands(drawDowns)
+    })
+
+    // set watchers
+    watch(minDate, async (n) => {
+      if (n != -1) {
+        chartOptions.value.xAxis.min = n
+      } else {
+        chartOptions.value.xAxis.min = null
       }
-    }
+    })
+
+    watch(maxDate, async (n) => {
+      if (n != -1) {
+        chartOptions.value.xAxis.max = n
+      } else {
+        chartOptions.value.xAxis.max = null
+      }
+    })
+
+    watch(logScale, async (n) => {
+      if (n) {
+        chartOptions.value.yAxis.type = "logarithmic"
+      } else {
+        chartOptions.value.yAxis.type = "linear"
+      }
+    })
+
+    watch(showDrawDowns, async (n) => {
+      updatePlotBands(n)
+    })
+
+    watch(measurements, async (n) => {
+      updateSeries()
+    })
+
+    watch(benchmark, async (n) => {
+      updateSeries()
+    })
+
+    watch(drawDowns, async (n) => {
+      updateSeries()
+    })
+
+    return { chartOptions, getBenchmarkSeries, getStrategySeries, updateSeries, updatePlotBands}
   }
-}
+})
 </script>
