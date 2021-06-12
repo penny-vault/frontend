@@ -160,6 +160,7 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
     commit('setBenchmark', emptyPerformance)
   } else {
     // don't bother
+    Loading.hide()
     return
   }
 
