@@ -15,17 +15,13 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useStore } from 'vuex'
 
 import { formatPercent } from '../assets/filters'
 
 export default defineComponent({
   name: 'PortfolioDropdown',
-
-  components: {
-  },
-
   setup () {
     const $store = useStore()
 
