@@ -134,9 +134,9 @@ export default defineComponent({
       chartOptions.value.series = [getStrategySeries(), getBenchmarkSeries()]
     }
 
-    async function updatePlotBands(showDrawDowns) {
+    async function updatePlotBands() {
       var plotBands = []
-      if (showDrawDowns) {
+      if (props.showDrawDowns) {
         drawDowns.value.forEach(elem => {
           plotBands.push({
             color: '#d43d5144', // Color value
@@ -149,10 +149,18 @@ export default defineComponent({
       chartOptions.value.xAxis.plotBands = plotBands
     }
 
+    function updateLogScale() {
+      if (props.logScale) {
+        chartOptions.value.yAxis.type = "logarithmic"
+      } else {
+        chartOptions.value.yAxis.type = "linear"
+      }
+    }
+
     // creation hooks
     onMounted(() => {
       updateSeries(measurements)
-      updatePlotBands(drawDowns)
+      updatePlotBands()
     })
 
     // set watchers
@@ -172,28 +180,29 @@ export default defineComponent({
       }
     })
 
-    watch(logScale, async (n) => {
-      if (n) {
-        chartOptions.value.yAxis.type = "logarithmic"
-      } else {
-        chartOptions.value.yAxis.type = "linear"
-      }
+    watch(logScale, async () => {
+      updateLogScale()
     })
 
-    watch(showDrawDowns, async (n) => {
-      updatePlotBands(n)
+    watch(showDrawDowns, async () => {
+      updatePlotBands()
     })
 
-    watch(measurements, async (n) => {
+    watch(measurements, async () => {
       updateSeries()
+      updatePlotBands()
+      updateLogScale()
     })
 
-    watch(benchmark, async (n) => {
+    watch(benchmark, async () => {
       updateSeries()
+      updatePlotBands()
+      updateLogScale()
     })
 
-    watch(drawDowns, async (n) => {
+    watch(drawDowns, async () => {
       updateSeries()
+      updatePlotBands()
     })
 
     return { chartOptions, getBenchmarkSeries, getStrategySeries, updateSeries, updatePlotBands}

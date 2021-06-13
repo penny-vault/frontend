@@ -42,7 +42,7 @@
 
                 <q-item tag="label" v-ripple>
                     <q-item-section>
-                    <q-item-label>Show top-10 draw downs</q-item-label>
+                    <q-item-label>Show top 10 draw downs</q-item-label>
                     </q-item-section>
                     <q-item-section side >
                     <q-toggle color="blue" v-model="showDrawDowns" />
