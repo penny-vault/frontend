@@ -19,6 +19,11 @@ const cache = setupCache({
   maxAge: 15 * 60 * 1000,
   store: forageStore,
   debug: false,
+  invalidate: async (config, request) => {
+    if (request.clearCacheEntry) {
+      await config.store.removeItem(config.uuid)
+    }
+  },
   exclude: {
     query: false,
     // Only exclude PUT, PATCH and DELETE methods from cache

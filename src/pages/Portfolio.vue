@@ -57,7 +57,7 @@
       </q-tab-panel>
 
       <q-tab-panel name="settings">
-        <h1>Settings</h1>
+        <portfolio-settings :portfolio-id="portfolioId" />
       </q-tab-panel>
     </q-tab-panels>
 
@@ -72,6 +72,7 @@ import { formatDate } from '../assets/filters'
 
 import PortfolioHoldings from './PortfolioHoldings.vue'
 import PortfolioReturns from './PortfolioReturns.vue'
+import PortfolioSettings from './PortfolioSettings.vue'
 import PortfolioSummary from './PortfolioSummary.vue'
 import PortfolioTransactions from './PortfolioTransactions.vue'
 
@@ -83,6 +84,7 @@ export default defineComponent({
   components: {
     PortfolioHoldings,
     PortfolioReturns,
+    PortfolioSettings,
     PortfolioSummary,
     PortfolioTransactions
   },

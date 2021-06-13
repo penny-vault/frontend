@@ -1,3 +1,4 @@
+export const NoNotify = 0x00000001
 export const Daily    = 0x00000010
 export const Weekly   = 0x00000100
 export const Monthly  = 0x00001000
@@ -118,12 +119,6 @@ export const emptyPortfolio = {
     "Valid": false
   },
   "notifications": 0,
-  "notification_opts": {
-    daily: { text: 'Daily', value: Daily, state: false },
-    weekly: { text: 'Weekly', value: Weekly, state: false },
-    monthly: { text: 'Monthly', value: Monthly, state: false },
-    annually: { text: 'Annually', value: Annually, state: false }
-  },
   "created": 0,
   "lastchanged": "1982-07-27T00:00:00.000Z",
   "performance": emptyPerformance,

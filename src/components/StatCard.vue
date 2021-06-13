@@ -74,15 +74,15 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-$gradient-primary: linear-gradient(#1693f8, #0d67e9);
-$gradient-danger: linear-gradient(#f73769, #f73869);
-$gradient-success: linear-gradient(#52b914, #2c9500);
-$gradient-warning: linear-gradient(#fb5c00, #cd3804);
+$gradient-primary: linear-gradient($color-primary-0, $color-primary-1);
+$gradient-danger: linear-gradient($color-complement-0, $color-complement-1);
+$gradient-success: linear-gradient($color-secondary-2-0, $color-secondary-2-1);
+$gradient-warning: linear-gradient($color-secondary-1-0, $color-secondary-1-1);
 $gradient-primary-direction: linear-gradient(to right, lighten($primary, 10%), darken($primary, 8%));
 $gradient-secondary-direction: linear-gradient(to right, lighten($secondary, 10%),  darken($secondary, 5%));
-$gradient-negative-direction: linear-gradient(to right, #ff3f70, #f73769);
-$gradient-positive-direction: linear-gradient(to right, #4bda6c, #3bc05b);
-$gradient-info-direction: linear-gradient(to right, #a76cff, #8d41ff);
+$gradient-negative-direction: linear-gradient(to right, $color-complement-2, $color-complement-3);
+$gradient-positive-direction: linear-gradient(to right, $color-secondary-2-2, $color-secondary-2-3);
+$gradient-info-direction: linear-gradient(to right, $color-secondary-1-2, $color-secondary-1-3);
 $gradient-warning-direction: linear-gradient(to right, #ee933a, #ff7336);
 
 @each $bg-gradient-name, $bg-gradient-color in (primary, $gradient-primary-direction),

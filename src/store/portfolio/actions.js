@@ -1,4 +1,4 @@
-import { emptyPortfolio, emptyPerformance, Daily, Weekly, Monthly, Annually } from './constants'
+import { emptyPortfolio, emptyPerformance } from './constants'
 import { api } from 'boot/axios'
 import { authPlugin } from '../../auth'
 import hash from 'object-hash'
@@ -14,22 +14,6 @@ function ymdString(dt) {
 function normalizePortfolio(portfolio) {
   portfolio.start_date = new Date(portfolio.start_date * 1000)
   portfolio.lastchanged = new Date(portfolio.lastchanged * 1000)
-
-  var notification_opts = emptyPortfolio.notification_opts
-  if ((portfolio.notifications & Daily) == Daily) {
-    notification_opts.daily.state = true
-  }
-  if ((portfolio.notifications & Weekly) == Weekly) {
-    notification_opts.weekly.state = true
-  }
-  if ((portfolio.notifications & Monthly) == Monthly) {
-    notification_opts.monthly.state = true
-  }
-  if ((portfolio.notifications & Annually) == Annually) {
-    notification_opts.annually.state = true
-  }
-
-  portfolio.notification_opts
   return portfolio
 }
 
@@ -101,6 +85,7 @@ function WorstYear(measurements) {
 export async function fetchPortfolios ({ commit }) {
   const accessToken = await authPlugin.getTokenSilently()
   api.get('/portfolio', {
+    clearCacheEntry: true,
     headers: {
         Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
     }

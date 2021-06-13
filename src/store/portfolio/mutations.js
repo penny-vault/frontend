@@ -7,6 +7,10 @@ export function setPortfolios (state, portfolios) {
   state.portfolios = portfolios
 }
 
+export function setPortfolioName (state, name) {
+  state.current.name = name
+}
+
 export function setNotifications (state, notifications) {
   state.current.notifications = notifications
 }
