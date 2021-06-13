@@ -12,6 +12,8 @@
           Penny Vault
         </q-toolbar-title>
 
+      <trading-view-ticker :show-symbol-logo="false" color-theme="dark" style="width: calc(100% - 500px)" class="q-mr-md q-mt-sm gt-sm" />
+
       <portfolio-dropdown />
 
       <q-separator dark vertical inset />
@@ -98,6 +100,7 @@
 import EssentialLink from 'components/EssentialLink.vue'
 import Copyright from 'components/Copyright.vue'
 import PortfolioDropdown from 'components/PortfolioDropdown.vue'
+import TradingViewTicker from 'components/TradingViewTicker.vue'
 
 import { defineComponent, computed, ref } from 'vue'
 import { useStore } from 'vuex'
@@ -110,7 +113,8 @@ export default defineComponent({
   components: {
     Copyright,
     EssentialLink,
-    PortfolioDropdown
+    PortfolioDropdown,
+    TradingViewTicker
   },
 
   setup () {
