@@ -26,7 +26,3 @@ export function setBenchmark (state, benchmark) {
 export function setMetric (state, metric) {
   Object.assign(state.metrics[metric.name], metric.value)
 }
-
-export function setPortfolioLoading (state, loading) {
-  state.loading = loading
-}

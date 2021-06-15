@@ -34,8 +34,8 @@ import { useStore } from 'vuex'
 import { formatPercent } from '../assets/filters'
 
 import { AgGridVue } from 'ag-grid-vue3'
-import HoldingsPieChart from "components/HoldingsPieChart.vue"
-import PxCard from "components/PxCard.vue"
+import HoldingsPieChart from 'components/HoldingsPieChart.vue'
+import PxCard from 'components/PxCard.vue'
 
 Date.prototype.addDays = function(days) {
     var date = new Date(this.valueOf());

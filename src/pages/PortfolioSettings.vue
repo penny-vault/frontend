@@ -13,7 +13,7 @@
 
     <!-- save button -->
     <div class="q-pt-lg">
-      <q-btn label="Save" type="submit" color="blue-9" />
+      <q-btn label="Save" type="submit" color="info" />
       <q-btn label="Delete" color="negative" class="q-ml-sm" @click="deletePortfolio" />
     </div>
   </q-form>

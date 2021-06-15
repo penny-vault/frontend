@@ -43,12 +43,12 @@ export default defineComponent({
     const columnDefs = ref([
 
       {
-        field: "id",
+        field: "shortcode",
         headerName: "",
         cellRendererFramework: 'btnCellRenderer',
         cellRendererParams: {
           clicked: (function(field) {
-            $router.push({ path: `/app/portfolio/${field}` })
+            $router.push({ path: `/app/strategy/${field}` })
           }).bind(this)
         },
         minWidth: 115,
@@ -66,72 +66,27 @@ export default defineComponent({
         filterParams: {
           buttons: ['reset', 'apply'],
         },
-        checkboxSelection: true },
-      { field: 'ytd_return',
-        headerName: 'YTD',
-        sortable: true,
-        minWidth: 100,
-        maxWidth: 100,
-        filter: 'agNumberColumnFilter',
+      },
+
+      { field: 'description',
+        sortable: false,
+        filter: 'agTextColumnFilter',
         filterParams: {
-          buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          buttons: ['reset', 'apply'],
         },
-        valueGetter: function (params) {
-          if (params.data.ytd_return.Valid) {
-            return params.data.ytd_return.Float64 * 100
-          } else {
-            return NaN
-          }
-        },
-        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : ''
       },
-      { field: 'cagr_since_inception',
-        headerName: 'CAGR',
-        sortable: true,
-        minWidth: 100,
-        maxWidth: 100,
-        filter: 'agNumberColumnFilter',
-        filterParams: {
-          buttons: ['apply', 'reset'],
-          closeOnApply: true,
-        },
-        valueGetter: function (params) {
-          if (params.data.cagr_since_inception.Valid) {
-            return params.data.cagr_since_inception.Float64 * 100
-          } else {
-            return NaN
-          }
-        },
-        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : ''
-      },
-      { field: 'strategy',
-        sortable: true,
-        filter: true,
-        minWidth: 50, maxWidth: 125,
-        enableRowGroup: true,
-        enablePivot: true
-      },
-      { field: 'start_date',
-        headerName: 'Beginning Date',
-        sortable: true,
-        filter: true,
-        minWidth: 100,
-        filter: 'agDateColumnFilter',
-        valueFormatter: params => params.value.toDateString()
-      }
     ])
 
     //const frameworkComponents = ref({ btnCellRenderer: AgGridBtnCellRenderer })
     const sideBar = ref(true)
 
     const rowData = computed({
-      get: () => $store.state.portfolio.portfolios,
+      get: () => $store.state.strategy.list,
       set: val => {
       }
     })
 
-    $store.dispatch('portfolio/fetchPortfolios')
+    $store.dispatch('strategy/fetchStrategies')
 
     onMounted(() => {
       gridApi.value = gridOptions.value.api;

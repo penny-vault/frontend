@@ -185,7 +185,6 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
 
     portfolio.lastfetch = new Date()
     commit('setCurrentPortfolio', portfolio)
-    commit('setPortfolioLoading', false)
 
     Loading.hide()
   })

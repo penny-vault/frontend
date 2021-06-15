@@ -3,6 +3,7 @@ import { createStore } from 'vuex'
 
 import app from './app'
 import portfolio from './portfolio'
+import strategy from './strategy'
 import user from './user'
 
 export default store(function (/* { ssrContext } */) {
@@ -10,6 +11,7 @@ export default store(function (/* { ssrContext } */) {
     modules: {
       app,
       portfolio,
+      strategy,
       user
     },
 

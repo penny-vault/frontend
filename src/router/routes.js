@@ -30,6 +30,17 @@ const routes = [
         component: () => import('src/pages/Portfolio.vue'),
         props: route => ({ portfolioId: route.params.id }),
         beforeEnter: routeGuard
+      },
+      {
+        path: 'strategies',
+        component: () => import('src/pages/StrategyList.vue'),
+        beforeEnter: routeGuard
+      },
+      {
+        path: 'strategy/:shortcode',
+        component: () => import('src/pages/Strategy.vue'),
+        props: route => ({ strategyShortCode: route.params.shortcode }),
+        beforeEnter: routeGuard
       }
     ]
   },

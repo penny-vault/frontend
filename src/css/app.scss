@@ -1,7 +1,13 @@
 // app global css in SCSS form
 
-// Fonts
-@import url('https://fonts.googleapis.com/css2?family=Sacramento&display=swap');
+// fonts
+
+@font-face {
+    font-family: 'Sacramento';
+    src: url('../assets/Sacramento-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
 
 // ag grid styles
 @import "../../node_modules/ag-grid-community/dist/styles/ag-grid.css";
@@ -20,4 +26,8 @@ body {
 
 .text-fancy {
     font-family: 'Sacramento';
+}
+
+.gradient-primary {
+  background: linear-gradient(90deg,var($gradient-2),var($gradient-1))
 }

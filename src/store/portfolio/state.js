@@ -6,7 +6,6 @@ export default function () {
     portfolioDict: {},
     current: emptyPortfolio,
     benchmark: emptyPerformance,
-    metrics: emptyMetrics,
-    loading: false
+    metrics: emptyMetrics
   }
 }

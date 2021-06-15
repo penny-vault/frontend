@@ -9,9 +9,26 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue';
+import { defineComponent, onMounted } from 'vue';
+import { api } from '../boot/axios'
+import { useQuasar } from 'quasar'
 
 export default defineComponent({
-  name: 'PageIndex'
+  name: 'PageIndex',
+  setup() {
+    const $q = useQuasar()
+    onMounted(async () => {
+      // Ping the server to make sure its working
+      api.get('/').catch((err) => {
+        $q.notify({
+          message: `The penny-vault API service is not reachable: ${err}`,
+          progress: true,
+          color: 'negative',
+          icon: 'error',
+          position: 'top'
+        })
+      })
+    })
+  }
 })
 </script>
