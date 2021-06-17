@@ -1,6 +1,6 @@
 <template>
     <px-card title="Parameters">
-      <div class="q-gutter-md">
+      <div v-if="!disabled" class="q-gutter-md">
         <q-select
           v-model="frequentlyUsed"
           size="sm"
@@ -12,7 +12,7 @@
         />
       </div>
 
-      <hr class="q-mb-md q-mt-md" />
+      <hr v-if="!disabled" class="q-mb-md q-mt-md" />
 
       <q-form @submit="onSubmit">
 
@@ -38,23 +38,64 @@
       />
 
       <!-- start date of simulation -->
-      <q-input class="q-mt-md" filled v-model="startDate" mask="date" label="Start Date">
+      <q-input class="q-mt-md q-mb-sm" filled v-model="startDate" mask="date" label="Start Date" :rules="['date', checkStartDate]">
         <template v-slot:append>
           <q-icon name="event" class="cursor-pointer">
             <q-popup-proxy ref="qStartDateProxy" transition-show="scale" transition-hide="scale">
-              <q-date v-model="startDate" today-btn />
+              <q-date v-model="startDate" minimal>
+                <div class="row">
+                  <div class="col-grow justify-center">
+                    <q-btn label="ytd" size="md" color="info" @click="dateRange(0)" dense flat/>
+                  </div>
+                  <div class="col-grow justify-center">
+                    <q-btn label="1y" size="md" color="info" @click="dateRange(12)" dense flat/>
+                  </div>
+                  <div class="col-grow justify-center">
+                    <q-btn label="3y" size="md" color="info" @click="dateRange(36)" dense flat/>
+                  </div>
+                  <div class="col-grow justify-center">
+                    <q-btn label="5y" size="md" color="info" @click="dateRange(60)" dense flat/>
+                  </div>
+                  <div class="col-grow justify-center">
+                    <q-btn label="10y" size="md" color="info" @click="dateRange(120)" dense flat/>
+                  </div>
+                  <div class="col-grow justify-center">
+                    <q-btn label="15y" size="md" color="info" @click="dateRange(180)" dense flat/>
+                  </div>
+                </div>
+              </q-date>
             </q-popup-proxy>
           </q-icon>
         </template>
       </q-input>
 
       <!-- end date of simulation -->
-      <q-input class="q-mt-md" filled v-model="endDate" mask="date" label="End Date">
+      <q-input class="q-my-sm" filled v-model="endDate" mask="date" label="End Date" :rules="['date', checkEndDate]">
         <template v-slot:append>
           <q-icon name="event" class="cursor-pointer">
             <q-popup-proxy ref="qEndDateProxy" transition-show="scale" transition-hide="scale">
-              <q-date v-model="endDate" today-btn />
-            </q-popup-proxy>
+              <q-date v-model="endDate" minimal>
+                <div class="row">
+                  <div class="col-grow justify-center">
+                    <q-btn label="ytd" size="md" color="info" @click="dateRange(0)" dense flat/>
+                  </div>
+                  <div class="col-grow justify-center">
+                    <q-btn label="1y" size="md" color="info" @click="dateRange(12)" dense flat/>
+                  </div>
+                  <div class="col-grow justify-center">
+                    <q-btn label="3y" size="md" color="info" @click="dateRange(36)" dense flat/>
+                  </div>
+                  <div class="col-grow justify-center">
+                    <q-btn label="5y" size="md" color="info" @click="dateRange(60)" dense flat/>
+                  </div>
+                  <div class="col-grow justify-center">
+                    <q-btn label="10y" size="md" color="info" @click="dateRange(120)" dense flat/>
+                  </div>
+                  <div class="col-grow justify-center">
+                    <q-btn label="15y" size="md" color="info" @click="dateRange(180)" dense flat/>
+                  </div>
+                </div>
+              </q-date>            </q-popup-proxy>
           </q-icon>
         </template>
       </q-input>
@@ -65,11 +106,10 @@
 </template>
 
 <script>
-import { format, parse } from 'date-fns'
+import { format, parse, subMonths } from 'date-fns'
+import { clone } from 'lodash'
 import { defineComponent, ref, watch, toRefs, onMounted } from 'vue'
 import PxCard from 'components/PxCard.vue'
-
-const DATE_FORMAT = 'yyyy/MM/dd'
 
 export default defineComponent({
   name: 'StrategyArguments',
@@ -99,13 +139,14 @@ export default defineComponent({
   setup(props, { emit }) {
     const { strategy, begin, end, benchmarkTicker } = toRefs(props)
 
+    const dateFmt = ref('yyyy/MM/dd')
     const form = ref({})
     const spec = ref([])
     const frequentlyUsed = ref('')
     const frequentlyUsedOptions = ref([])
     const benchmarkTickerData = ref(`${benchmarkTicker.value}`)
-    const startDate = ref(format(props.begin, DATE_FORMAT))
-    const endDate = ref(format(props.end, DATE_FORMAT))
+    const startDate = ref(format(props.begin, dateFmt.value))
+    const endDate = ref(format(props.end, dateFmt.value))
 
     const qStartDateProxy = ref(null)
     const qEndDateProxy = ref(null)
@@ -156,10 +197,10 @@ export default defineComponent({
     async function onSubmit(e) {
       e.preventDefault()
       let options = {
-        userArgs: form.value,
-        begin: parse(startDate.value, DATE_FORMAT, new Date()),
-        end: parse(endDate.value, DATE_FORMAT, new Date()),
-        benchmarkTicker: benchmarkTickerData.value
+        userArgs: clone(form.value),
+        begin: parse(startDate.value, dateFmt.value, new Date()),
+        end: parse(endDate.value, dateFmt.value, new Date()),
+        benchmarkTicker: clone(benchmarkTickerData.value)
       }
 
       Object.entries(strategy.value.arguments).forEach( elem => {
@@ -172,6 +213,35 @@ export default defineComponent({
       emit('execute', options)
     }
 
+    function checkStartDate(value) {
+      const v = parse(value, dateFmt.value, new Date())
+      let e = parse(endDate.value, dateFmt.value, new Date())
+      e = subMonths(e, 1)
+      return v < e || 'start > end - 1 month'
+    }
+
+    function checkEndDate(value) {
+      let v = parse(value, dateFmt.value, new Date())
+      const s = parse(startDate.value, dateFmt.value, new Date())
+      v = subMonths(v, 1)
+      return s < v || 'start > end - 1 month'
+    }
+
+    function dateRange(value) {
+      const today = new Date()
+      let start = null
+      if (value === 0) {
+        // ytd
+        start = new Date(today.getFullYear(), 0, 1)
+      } else {
+        start = subMonths(today, value)
+      }
+
+      startDate.value = format(start, dateFmt.value)
+      endDate.value = format(today, dateFmt.value)
+      qStartDateProxy.value.hide()
+      qEndDateProxy.value.hide()
+    }
 
     // watch parameters
     watch(strategy, (n) => {
@@ -197,11 +267,11 @@ export default defineComponent({
     })
 
     watch(begin, (n) => {
-      startDate.value = format(n, DATE_FORMAT)
+      startDate.value = format(n, dateFmt.value)
     })
 
     watch(end, (n) => {
-      endDate.value = format(n, DATE_FORMAT)
+      endDate.value = format(n, dateFmt.value)
     })
 
     watch(startDate, (n) => {
@@ -220,6 +290,9 @@ export default defineComponent({
 
     return {
       benchmarkTickerData,
+      checkStartDate,
+      checkEndDate,
+      dateRange,
       form,
       frequentlyUsed,
       frequentlyUsedOptions,
