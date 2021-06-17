@@ -1,8 +1,8 @@
 <template>
-  <q-page class="q-pa-md">
-    <div class="row q-col-gutter-md">
+  <q-page class="q-pa-xs">
+    <div class="row q-col-gutter-md q-pl-sm">
       <div class="col-lg-6 col-sm-4">
-        <h4 class="q-mt-sm q-mb-sm">{{ portfolio.name }}</h4>
+        <h4 class="q-mt-sm q-mb-sm">{{ portfolio.name }} <span style="font-size:1rem;">({{ format(portfolio.performance.periodStart, 'MMM') }} '{{ format(portfolio.performance.periodStart, 'yy') }} to {{ format(portfolio.performance.periodEnd, 'MMM') }} '{{ format(portfolio.performance.periodEnd, 'yy') }})</span></h4>
       </div>
       <div class="col-lg-6 col-sm-8 gt-xs self-end">
         <q-tabs
@@ -23,9 +23,8 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="row q-pl-sm">
       <div class="col">
-        <p class="q-mb-sm text-grey-6">Computed at: {{ formatDate(portfolio.performance.computedOn) }}</p>
         <q-breadcrumbs class="q-mb-lg">
           <q-breadcrumbs-el icon="home" to="/app" />
           <q-breadcrumbs-el label="My Portfolios" to="/app/portfolio" />
@@ -34,8 +33,27 @@
       </div>
     </div>
 
+    <div class="row xs">
+      <div class="col">
+        <q-tabs
+          dense
+          inside-arrows
+          align="right"
+          active-color="blue"
+          indicator-color="blue"
+          v-model="tabModel"
+        >
+          <q-tab name="summary" label="Summary" />
+          <q-tab name="holdings" label="Holdings" />
+          <q-tab name="transactions" label="Transactions" />
+          <q-tab name="returns" label="Returns" />
+          <q-tab name="settings" label="Settings" />
+        </q-tabs>
+      </div>
+    </div>
+
     <q-tab-panels
-      style="background: rgba(0,0,0,0)!important"
+      class="transparent"
       v-model="tabModel"
       animated
       swipeable
@@ -61,6 +79,8 @@
       </q-tab-panel>
     </q-tab-panels>
 
+    <span class="text-center q-ml-md q-mb-sm text-grey-6">Computed at: {{ format(portfolio.performance.computedOn, 'eeee, MMM eo yyyy HH:mm:ss') }}</span>
+
   </q-page>
 </template>
 
@@ -68,7 +88,7 @@
 import { defineComponent, computed, ref, watch, toRefs } from 'vue'
 import { useStore } from 'vuex'
 
-import { formatDate } from '../assets/filters'
+import { format } from 'date-fns'
 
 import PortfolioHoldings from './PortfolioHoldings.vue'
 import PortfolioReturns from './PortfolioReturns.vue'
@@ -107,7 +127,7 @@ export default defineComponent({
     })
 
     return {
-      formatDate,
+      format,
       portfolio,
       tabModel,
     }

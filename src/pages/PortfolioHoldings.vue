@@ -1,7 +1,7 @@
 <template>
 
   <div class="row q-col-gutter-lg">
-    <div class="col-lg-8 col-md-12">
+    <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
       <px-card title="Portfolio Holdings by Month">
         <template v-slot:toolbar>
           <q-btn @click="exportCSV" dense flat size="sm" icon="ion-cloud-download" label="Export CSV" />
@@ -18,7 +18,7 @@
       </px-card>
     </div>
 
-    <div class="col-lg-4 col-md-12">
+    <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
       <px-card title="Holdings Frequency">
         <holdings-pie-chart width="150" height="150" :holdings="rowData"></holdings-pie-chart>
       </px-card>

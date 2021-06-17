@@ -1,10 +1,10 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="q-pa-xs q-px-md">
     <div class="row q-col-gutter-md">
       <div class="col-lg-6 col-sm-4">
         <h4 class="q-mt-sm q-mb-sm">
           <!-- Strategy Name -->
-          {{ strategy.name }}
+          {{ strategy.name }} <span style="font-size:1rem;" v-if="simulationRun">({{ format(portfolio.performance.periodStart, 'MMM') }} '{{ format(portfolio.performance.periodStart, 'yy') }} to {{ format(portfolio.performance.periodEnd, 'MMM') }} '{{ format(portfolio.performance.periodEnd, 'yy') }})</span>
         </h4>
       </div>
       <div class="col-lg-6 col-sm-8 gt-xs self-end">
@@ -28,7 +28,6 @@
 
     <div class="row">
       <div class="col">
-        <p v-if="simulationRun" class="q-mb-sm text-grey-6">Computed at: {{ formatDate(portfolio.performance.computedOn) }}</p>
         <q-breadcrumbs class="q-mb-lg">
           <q-breadcrumbs-el icon="home" to="/app" />
           <q-breadcrumbs-el label="Strategies" to="/app/strategies" />
@@ -37,11 +36,29 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-2">
-        <strategy-arguments :disabled="simulationRun" :strategy="strategy" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" />
+    <div class="row xs q-col-gutter-md">
+      <div class="col-xs-12">
+        <q-tabs
+          dense
+          inside-arrows
+          active-color="blue"
+          indicator-color="blue"
+          v-model="tabModel"
+        >
+          <q-tab name="description" label="Description" />
+          <q-tab name="summary" label="Summary" />
+          <q-tab name="holdings" label="Holdings" />
+          <q-tab name="transactions" label="Transactions" />
+          <q-tab name="returns" label="Returns" />
+        </q-tabs>
       </div>
-      <div class="col-10">
+    </div>
+
+    <div class="row q-col-gutter-md q-row-gutter-md">
+      <div class="col-lg-2 col-md-4 col-sm-12 col-xs-12 q-pl-md">
+        <strategy-arguments :strategy="strategy" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" />
+      </div>
+      <div class="col-lg-10 col-md-8 col-sm-12 col-xs-12">
         <q-tab-panels
           style="background: rgba(0,0,0,0)!important"
           v-model="tabModel"
@@ -54,19 +71,19 @@
             </px-card>
           </q-tab-panel>
 
-          <q-tab-panel class="q-pt-none" name="summary">
+          <q-tab-panel class="q-pt-none q-px-none" name="summary">
             <portfolio-summary />
           </q-tab-panel>
 
-          <q-tab-panel class="q-pt-none" name="holdings">
+          <q-tab-panel class="q-pt-none q-pl-sm q-pr-none" name="holdings">
             <portfolio-holdings />
           </q-tab-panel>
 
-          <q-tab-panel class="q-pt-none" name="transactions">
+          <q-tab-panel class="q-pt-none q-px-none" name="transactions">
             <portfolio-transactions />
           </q-tab-panel>
 
-          <q-tab-panel class="q-pt-none" name="returns">
+          <q-tab-panel class="q-pt-none q-px-none" name="returns">
             <portfolio-returns />
           </q-tab-panel>
 
@@ -74,14 +91,16 @@
       </div>
     </div>
 
+    <div class="q-mt-lg">
+    <span v-if="simulationRun" class="text-grey-6">Computed at: {{ format(portfolio.performance.computedOn, 'eeee, MMM eo yyyy HH:mm:ss') }}</span>
+    </div>
   </q-page>
 </template>
 
 <script>
+import { format, parse } from 'date-fns'
 import { defineComponent, computed, ref, watch } from 'vue'
 import { useStore } from 'vuex'
-
-import { formatDate } from '../assets/filters'
 
 import PortfolioHoldings from './PortfolioHoldings.vue'
 import PortfolioReturns from './PortfolioReturns.vue'
@@ -111,6 +130,7 @@ export default defineComponent({
 
     const tabModel = ref('description')
 
+    $store.commit('strategy/setSimulationExecuted', false)
     $store.dispatch('strategy/fetchStrategy', props.strategyShortCode)
 
     const strategy = computed({
@@ -141,7 +161,7 @@ export default defineComponent({
     })
 
     return {
-      formatDate,
+      format,
       portfolio,
       simulationRun,
       simulationStart,
