@@ -16,6 +16,7 @@ export default {
 
 <style lang="sass" scoped>
 $title-color: $dark
+
 .doc-card-title
   margin-left: -24px
   padding: 2px 10px 2px 24px
