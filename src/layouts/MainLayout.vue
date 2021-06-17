@@ -105,7 +105,7 @@ import TradingViewTicker from 'components/TradingViewTicker.vue'
 import { defineComponent, computed, ref } from 'vue'
 import { useStore } from 'vuex'
 
-import Menu from '../data/menu'
+import Menu from '../assets/menu'
 
 export default defineComponent({
   name: 'MainLayout',

@@ -15,16 +15,19 @@
     "link": "/app/strategies"
   },
   {
+    "disabled": true,
     "title": "Screener",
     "icon": "app:screener",
     "link": "/app/screener"
   },
   {
+    "disabled": true,
     "title": "Compare",
     "icon": "ion-git-compare",
     "link": "/app/compare"
   },
   {
+    "disabled": true,
     "title": "API",
     "icon": "ion-barcode",
     "link": "/app/api"
