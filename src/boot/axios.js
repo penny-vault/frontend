@@ -39,7 +39,8 @@ const cache = setupCache({
 // for each client)
 const api = axios.create({
   adapter: cache.adapter,
-  baseURL: 'https://penny-vault.herokuapp.com/v1',
+//  baseURL: 'https://penny-vault.herokuapp.com/v1',
+  baseURL: 'http://localhost:3000/v1',
 })
 
 export default boot(({ app }) => {
