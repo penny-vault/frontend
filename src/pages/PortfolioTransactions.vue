@@ -1,5 +1,5 @@
 <template>
-  <px-card title="Portfolio Holdings by Month">
+  <px-card title="Transactions">
     <template v-slot:toolbar>
       <q-btn @click="exportCSV" dense flat size="sm" icon="ion-cloud-download" label="Export CSV" />
     </template>

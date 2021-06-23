@@ -14,6 +14,17 @@ export function formatPercent (value) {
   }
 }
 
+export function formatNumber (value) {
+  let numberFormatter = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2})
+  if (typeof value === "number") {
+    return numberFormatter.format(value)
+  } else if (typeof value === "object") {
+    if (value["Valid"]) {
+      return numberFormatter.format(value["Float64"])
+    }
+  }
+}
+
 export function formatDate (date) {
   let options = {
     day: 'numeric', month: 'short', year: 'numeric',

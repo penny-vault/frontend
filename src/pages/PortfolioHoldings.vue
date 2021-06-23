@@ -20,6 +20,13 @@
 
     <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
       <px-card title="Holdings Frequency">
+        <ag-grid-vue style="width: 100%;"
+          class="ag-theme-alpine"
+          :columnDefs="holdingsColumnDefs"
+          :rowData="holdingsRowData"
+          domLayout="autoHeight">
+        </ag-grid-vue>
+
         <holdings-pie-chart width="150" height="150" :holdings="rowData"></holdings-pie-chart>
       </px-card>
     </div>
@@ -31,7 +38,7 @@
 import { defineComponent, computed, ref, onMounted, watch } from 'vue'
 import { useStore } from 'vuex'
 
-import { formatPercent } from '../assets/filters'
+import { formatPercent, formatNumber } from '../assets/filters'
 
 import { AgGridVue } from 'ag-grid-vue3'
 import HoldingsPieChart from 'components/HoldingsPieChart.vue'
@@ -122,7 +129,55 @@ export default defineComponent({
         }
       }
     ])
-    const dynamicColumns = ref(new Map())
+    const dynamicColumns = new Map()
+
+    const holdingsColumnDefs = ref([
+      {
+        field: 'ticker',
+        width: 100,
+        sortable: true,
+        resizable: true,
+        editable: false,
+      },
+      {
+        field: 'shares',
+        width: 100,
+        sortable: true,
+        resizable: true,
+        editable: false,
+        valueFormatter: (params) => {
+          return formatNumber(params.value)
+        }
+      },
+      {
+        field: 'percentPortfolio',
+        headerName: '%',
+        width: 80,
+        sortable: true,
+        resizable: true,
+        editable: false,
+        valueFormatter: (params) => {
+          if (isNaN(params.value)) {
+            return "-"
+          }
+          return formatPercent(params.value)
+        }
+      },
+      {
+        field: 'value',
+        width: 150,
+        headerName: 'Value',
+        sortable: true,
+        resizable: true,
+        editable: false,
+        valueFormatter: (params) => {
+          if (isNaN(params.value)) {
+            return "-"
+          }
+          return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.data.value)
+        }
+      }
+    ])
 
     const gridOptions = ref({
       rowClassRules: {
@@ -146,6 +201,11 @@ export default defineComponent({
       }
     })
 
+    const holdingsRowData = computed({
+      get: () => $store.state.portfolio.current.performance.currentAssets,
+      set: _ => {}
+    })
+
     // watch properties
     watch(rowData, async () => {
       getDynamicColumns()
@@ -155,17 +215,19 @@ export default defineComponent({
     onMounted(() => {
       gridApi = gridOptions.value.api;
       columnApi = gridOptions.value.columnApi;
+
+      getDynamicColumns()
     })
 
     // methods
     function getDynamicColumns() {
-      if (this.rowData.length > 0) {
-        let justificationTmpl = this.rowData[0].justification
+      if (rowData.value.length > 0) {
+        let justificationTmpl = rowData.value[0].justification
         if (justificationTmpl !== undefined) {
           Object.keys(justificationTmpl).forEach((k) => {
-            if (!this.dynamicColumns.has(k)) {
-              this.dynamicColumns.set(k, 1)
-              this.columnDefs.push({
+            if (!dynamicColumns.has(k)) {
+              dynamicColumns.set(k, 1)
+              columnDefs.value.push({
                 field: k,
                 valueGetter: (params) => {
                   return params.data.justification[k]
@@ -183,6 +245,8 @@ export default defineComponent({
           })
         }
       }
+
+      gridApi.setColumnDefs(columnDefs.value)
     }
 
     function exportCSV(e) {
@@ -197,12 +261,13 @@ export default defineComponent({
     return {
       columnApi,
       columnDefs,
-      dynamicColumns,
+      holdingsColumnDefs,
       exportCSV,
       gridApi,
       gridOptions,
       onGridReady,
       rowData,
+      holdingsRowData,
       sideBar
     }
   }

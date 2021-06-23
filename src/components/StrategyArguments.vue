@@ -185,6 +185,7 @@ export default defineComponent({
     }
 
     async function initializeFrequentlyUsed() {
+      frequentlyUsedOptions.value = []
       Object.entries(strategy.value.suggestedParams).forEach( elem => {
         var opt = {
           label: elem[0],

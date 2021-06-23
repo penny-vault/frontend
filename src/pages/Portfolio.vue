@@ -56,7 +56,6 @@
       class="transparent"
       v-model="tabModel"
       animated
-      swipeable
     >
       <q-tab-panel name="summary">
         <portfolio-summary />

@@ -34,6 +34,7 @@ export const emptyPerformance = {
   "cagrSinceInception": 0,
   "ytdReturn": 0,
   "currentAsset": "",
+  "currentAssets": [],
   "totalDeposited": 0,
   "totalWithdrawn": 0,
   "metrics": {
