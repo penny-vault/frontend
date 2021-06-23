@@ -16,7 +16,8 @@ var pieColors = (function () {
     // up with a much brighter color
     colors.push(Highcharts.color(base).brighten((i - 3) / 7).get());
   }
-  return colors;
+  return ["#003f5c", "#2f4b7c", "#665191", "#a05195", "#d45087", "#f95d6a", "#ff7c43", "#ffa600"]
+  //return colors;
 }())
 
 export default defineComponent({
