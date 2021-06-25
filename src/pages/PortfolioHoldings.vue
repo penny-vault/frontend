@@ -2,11 +2,12 @@
 
   <div class="row q-col-gutter-lg">
     <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
-      <px-card title="Portfolio Holdings by Month">
+      <px-card title="Portfolio Holdings by Month" :class="{'full-screen': fullscreenClass}">
         <template v-slot:toolbar>
           <q-btn @click="exportCSV" dense flat size="sm" icon="ion-cloud-download" label="Export CSV" />
+          <q-btn @click="fullscreen" dense flat size="sm" :icon="fullscreenIcon" class="q-ml-md" />
         </template>
-        <ag-grid-vue style="width: 100%; height: 500px;"
+        <ag-grid-vue style="width: 100%; height: 600px;"
           class="ag-theme-alpine"
           :columnDefs="columnDefs"
           :rowData="rowData"
@@ -20,11 +21,10 @@
 
     <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
       <px-card title="Holdings Frequency">
-        <ag-grid-vue style="width: 100%;"
+        <ag-grid-vue style="width: 100%; height: 400px"
           class="ag-theme-alpine"
           :columnDefs="holdingsColumnDefs"
-          :rowData="holdingsRowData"
-          domLayout="autoHeight">
+          :rowData="holdingsRowData">
         </ag-grid-vue>
 
         <holdings-pie-chart width="150" height="150" :holdings="rowData"></holdings-pie-chart>
@@ -59,6 +59,9 @@ export default defineComponent({
   },
   setup () {
     const $store = useStore()
+
+    const fullscreenIcon = ref('fullscreen')
+    const fullscreenClass = ref(false)
 
     const columnDefs = ref([
       {
@@ -130,7 +133,6 @@ export default defineComponent({
       }
     ])
     const dynamicColumns = new Map()
-
     const holdingsColumnDefs = ref([
       {
         field: 'ticker',
@@ -209,6 +211,14 @@ export default defineComponent({
     // watch properties
     watch(rowData, async () => {
       getDynamicColumns()
+
+      var allColumnIds = []
+      gridOptions.value.columnApi.getAllColumns().forEach(function (column) {
+        allColumnIds.push(column.colId);
+      })
+
+      gridOptions.value.columnApi.autoSizeColumns(allColumnIds, true)
+
     })
 
     // creation events
@@ -220,6 +230,27 @@ export default defineComponent({
     })
 
     // methods
+    function fullscreen() {
+      if (fullscreenClass.value) {
+        fullscreenClass.value = false
+        fullscreenIcon.value = 'fullscreen'
+      } else {
+        fullscreenClass.value = true
+        fullscreenIcon.value = 'fullscreen_exit'
+      }
+
+      setTimeout(function() {
+        var allColumnIds = []
+        gridOptions.value.columnApi.getAllColumns().forEach(function (column) {
+          allColumnIds.push(column.colId);
+        })
+
+        console.log(allColumnIds)
+
+        gridOptions.value.columnApi.autoSizeColumns(allColumnIds, true)
+      }, 500)
+    }
+
     function getDynamicColumns() {
       if (rowData.value.length > 0) {
         let justificationTmpl = rowData.value[0].justification
@@ -256,6 +287,12 @@ export default defineComponent({
 
     function onGridReady(params) {
       gridApi.closeToolPanel()
+      var allColumnIds = []
+      gridOptions.value.columnApi.getAllColumns().forEach(function (column) {
+        allColumnIds.push(column.colId);
+      })
+
+      gridOptions.value.columnApi.autoSizeColumns(allColumnIds, true)
     }
 
     return {
@@ -263,6 +300,9 @@ export default defineComponent({
       columnDefs,
       holdingsColumnDefs,
       exportCSV,
+      fullscreen,
+      fullscreenClass,
+      fullscreenIcon,
       gridApi,
       gridOptions,
       onGridReady,
@@ -273,3 +313,16 @@ export default defineComponent({
   }
 })
 </script>
+
+<style lang="scss" scoped>
+  .full-screen {
+    position: fixed;
+    top: 0;
+    z-index: 99999;
+    box-shadow: none;
+    right: 0;
+    margin: 5px;
+    width: calc(100vw - 12px);
+    height: calc(100vh);
+  }
+</style>
