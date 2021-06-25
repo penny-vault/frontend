@@ -11,7 +11,10 @@
             <q-icon size="lg" :name="directionIcon" />
           </div>
           <div class="col">
-            <h4 class="text-weight-bolder q-mt-none q-mb-none">{{ stat }}</h4>
+            <q-tooltip :delay="500">
+              {{ stat }}
+            </q-tooltip>
+            <h4 class="ellipsis text-weight-bolder q-mt-none q-mb-none">{{ stat }}</h4>
           </div>
         </div>
       </div>
