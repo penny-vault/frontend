@@ -70,6 +70,8 @@ export default defineComponent({
 
       { field: 'description',
         sortable: false,
+        resizable: true,
+        minWidth: 600,
         filter: 'agTextColumnFilter',
         filterParams: {
           buttons: ['reset', 'apply'],
