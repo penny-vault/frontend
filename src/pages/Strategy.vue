@@ -63,11 +63,10 @@
           style="background: rgba(0,0,0,0)!important"
           v-model="tabModel"
           animated
-          swipeable
         >
           <q-tab-panel class="q-pt-none" name="description">
             <px-card title="Description">
-              {{ strategy.description }}
+              <q-markdown :src="strategy.longDescription" />
             </px-card>
           </q-tab-panel>
 

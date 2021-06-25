@@ -36,6 +36,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
     "@quasar/app": "^3.0.0",
+    "@quasar/quasar-app-extension-qmarkdown": "^2.0.0-alpha.4",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^7.0.0",
