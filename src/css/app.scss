@@ -20,7 +20,7 @@ body {
 }
 
 .sidebar {
-    background: rgb(20,83,122);
+    background: rgb(15, 15, 15);
     background: linear-gradient(0deg, rgba(20,83,122,1) 0%, rgba(34,112,134,1) 100%);
 }
 
@@ -30,4 +30,20 @@ body {
 
 .gradient-primary {
   background: linear-gradient(90deg,var($gradient-2),var($gradient-1))
+}
+
+.full-screen {
+  position: fixed;
+  top: 0;
+  z-index: 99999;
+  box-shadow: none;
+  right: 0;
+  margin: 5px;
+  width: calc(100vw - 12px);
+  height: calc(100vh);
+}
+
+.predicted-asset {
+  color: #aaa !important;
+  font-style: italic !important;
 }

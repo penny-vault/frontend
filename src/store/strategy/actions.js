@@ -113,12 +113,26 @@ export async function executeStrategy ({ commit, dispatch }, { shortCode, name, 
       key: 'portfolio'
     }, { root: true })
 
+    // remove marker transactions
     performance.transactions = performance.transactions.filter(item => {
       let dt = new Date(item.date)
       let now = new Date()
       if (item.kind !== "MARKER" && dt <= now) {
         return item
       }
+    })
+
+    // cleanup measurements
+    performance.measurements = performance.measurements.map((item, idx, arr) => {
+      let next = arr[idx+1]
+      if (next !== undefined) {
+        item.valueAdjusted = next.value
+        item.percentReturnAdjusted = next.percentReturn
+      } else {
+        item.valueAdjusted = undefined
+        item.percentReturnAdjusted = undefined
+      }
+      return item
     })
 
     commit('portfolio/setCurrentPortfolio', portfolio, { root: true })

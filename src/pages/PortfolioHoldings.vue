@@ -94,7 +94,7 @@ export default defineComponent({
 
       },
       {
-        field: 'percentReturn',
+        field: 'percentReturnAdjusted',
         minWidth: 100,
         maxWidth: 150,
         headerName: 'Return',
@@ -118,7 +118,7 @@ export default defineComponent({
         }
       },
       {
-        field: 'value',
+        field: 'valueAdjusted',
         width: 150,
         headerName: 'Value',
         sortable: true,
@@ -128,7 +128,7 @@ export default defineComponent({
           if (isNaN(params.value)) {
             return "-"
           }
-          return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.data.value)
+          return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
       }
     ])
@@ -313,16 +313,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style lang="scss" scoped>
-  .full-screen {
-    position: fixed;
-    top: 0;
-    z-index: 99999;
-    box-shadow: none;
-    right: 0;
-    margin: 5px;
-    width: calc(100vw - 12px);
-    height: calc(100vh);
-  }
-</style>
