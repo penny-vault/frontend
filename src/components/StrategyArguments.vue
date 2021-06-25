@@ -1,105 +1,129 @@
 <template>
     <px-card title="Parameters">
-      <div v-if="!disabled" class="q-gutter-md">
-        <q-select
-          v-model="frequentlyUsed"
-          size="sm"
-          :options="frequentlyUsedOptions"
-          options-cover
-          stack-label
-          outlined
-          label="Frequently used parameters"
-        />
-      </div>
-
-      <hr v-if="!disabled" class="q-mb-md q-mt-md" />
+      <template v-slot:toolbar>
+        <q-btn @click="panel='standard'" dense flat size="sm" icon="dashboard" color="grey-6"><q-tooltip>Main Settings</q-tooltip></q-btn>
+        <q-btn @click="panel='benchmark'" dense flat size="sm" icon="assessment" color="grey-6"><q-tooltip>Benchmark</q-tooltip></q-btn>
+        <q-btn @click="panel='advanced'" dense flat size="sm" icon="settings" color="grey-6"><q-tooltip>Advanced Settings</q-tooltip></q-btn>
+      </template>
 
       <q-form @submit="onSubmit">
 
-      <q-input
-        outlined
-        v-for="item in spec"
-        :key="item.id"
-        :name="item.inpid"
-        :label="item.name"
-        v-model="form[item.arg]"
-        :type="item.inptype"
-        :disable="disabled"
-        :rules="[val => !!val || 'Field is required']"
-      />
+      <q-tab-panels class="q-mt-sm" v-model="panel" animated>
+        <q-tab-panel name="standard" class="q-pa-none">
+          <div v-if="!disabled" class="q-gutter-md">
+            <q-select
+              v-model="frequentlyUsed"
+              size="sm"
+              :options="frequentlyUsedOptions"
+              options-cover
+              stack-label
+              outlined
+              label="Frequently used parameters"
+            />
+          </div>
 
-      <q-input
-        outlined
-        name="benchmarkTickerId"
-        label="Benchmark"
-        v-model="benchmarkTickerData"
-        type="text"
-        :disable="disabled"
-      />
+          <hr v-if="!disabled" class="q-mb-md q-mt-md" />
 
-      <!-- start date of simulation -->
-      <q-input class="q-mt-md q-mb-sm" filled v-model="startDate" mask="date" label="Start Date" :rules="['date', checkStartDate]">
-        <template v-slot:append>
-          <q-icon name="event" class="cursor-pointer">
-            <q-popup-proxy ref="qStartDateProxy" transition-show="scale" transition-hide="scale">
-              <q-date v-model="startDate" minimal>
-                <div class="row">
-                  <div class="col-grow justify-center">
-                    <q-btn label="ytd" size="md" color="info" @click="dateRange(0)" dense flat/>
-                  </div>
-                  <div class="col-grow justify-center">
-                    <q-btn label="1y" size="md" color="info" @click="dateRange(12)" dense flat/>
-                  </div>
-                  <div class="col-grow justify-center">
-                    <q-btn label="3y" size="md" color="info" @click="dateRange(36)" dense flat/>
-                  </div>
-                  <div class="col-grow justify-center">
-                    <q-btn label="5y" size="md" color="info" @click="dateRange(60)" dense flat/>
-                  </div>
-                  <div class="col-grow justify-center">
-                    <q-btn label="10y" size="md" color="info" @click="dateRange(120)" dense flat/>
-                  </div>
-                  <div class="col-grow justify-center">
-                    <q-btn label="15y" size="md" color="info" @click="dateRange(180)" dense flat/>
-                  </div>
-                </div>
-              </q-date>
-            </q-popup-proxy>
-          </q-icon>
-        </template>
-      </q-input>
+          <q-input
+            outlined
+            v-for="item in standard"
+            :key="item.id"
+            :name="item.inpid"
+            :label="item.name"
+            v-model="form[item.arg]"
+            :type="item.inptype"
+            :disable="disabled"
+            :rules="[val => !!val || 'Field is required']"
+          />
 
-      <!-- end date of simulation -->
-      <q-input class="q-my-sm" filled v-model="endDate" mask="date" label="End Date" :rules="['date', checkEndDate]">
-        <template v-slot:append>
-          <q-icon name="event" class="cursor-pointer">
-            <q-popup-proxy ref="qEndDateProxy" transition-show="scale" transition-hide="scale">
-              <q-date v-model="endDate" minimal>
-                <div class="row">
-                  <div class="col-grow justify-center">
-                    <q-btn label="ytd" size="md" color="info" @click="dateRange(0)" dense flat/>
-                  </div>
-                  <div class="col-grow justify-center">
-                    <q-btn label="1y" size="md" color="info" @click="dateRange(12)" dense flat/>
-                  </div>
-                  <div class="col-grow justify-center">
-                    <q-btn label="3y" size="md" color="info" @click="dateRange(36)" dense flat/>
-                  </div>
-                  <div class="col-grow justify-center">
-                    <q-btn label="5y" size="md" color="info" @click="dateRange(60)" dense flat/>
-                  </div>
-                  <div class="col-grow justify-center">
-                    <q-btn label="10y" size="md" color="info" @click="dateRange(120)" dense flat/>
-                  </div>
-                  <div class="col-grow justify-center">
-                    <q-btn label="15y" size="md" color="info" @click="dateRange(180)" dense flat/>
-                  </div>
-                </div>
-              </q-date>            </q-popup-proxy>
-          </q-icon>
-        </template>
-      </q-input>
+          <!-- start date of simulation -->
+          <q-input class="q-my-none" filled v-model="startDate" mask="date" label="Start Date" :rules="['date', checkStartDate]">
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer">
+                <q-popup-proxy ref="qStartDateProxy" transition-show="scale" transition-hide="scale">
+                  <q-date v-model="startDate" minimal>
+                    <div class="row">
+                      <div class="col-grow justify-center">
+                        <q-btn label="ytd" size="md" color="info" @click="dateRange(0)" dense flat/>
+                      </div>
+                      <div class="col-grow justify-center">
+                        <q-btn label="1y" size="md" color="info" @click="dateRange(12)" dense flat/>
+                      </div>
+                      <div class="col-grow justify-center">
+                        <q-btn label="3y" size="md" color="info" @click="dateRange(36)" dense flat/>
+                      </div>
+                      <div class="col-grow justify-center">
+                        <q-btn label="5y" size="md" color="info" @click="dateRange(60)" dense flat/>
+                      </div>
+                      <div class="col-grow justify-center">
+                        <q-btn label="10y" size="md" color="info" @click="dateRange(120)" dense flat/>
+                      </div>
+                      <div class="col-grow justify-center">
+                        <q-btn label="15y" size="md" color="info" @click="dateRange(180)" dense flat/>
+                      </div>
+                    </div>
+                  </q-date>
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
 
+          <!-- end date of simulation -->
+          <q-input class="q-my-none" filled v-model="endDate" mask="date" label="End Date" :rules="['date', checkEndDate]">
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer">
+                <q-popup-proxy ref="qEndDateProxy" transition-show="scale" transition-hide="scale">
+                  <q-date v-model="endDate" minimal>
+                    <div class="row">
+                      <div class="col-grow justify-center">
+                        <q-btn label="ytd" size="md" color="info" @click="dateRange(0)" dense flat/>
+                      </div>
+                      <div class="col-grow justify-center">
+                        <q-btn label="1y" size="md" color="info" @click="dateRange(12)" dense flat/>
+                      </div>
+                      <div class="col-grow justify-center">
+                        <q-btn label="3y" size="md" color="info" @click="dateRange(36)" dense flat/>
+                      </div>
+                      <div class="col-grow justify-center">
+                        <q-btn label="5y" size="md" color="info" @click="dateRange(60)" dense flat/>
+                      </div>
+                      <div class="col-grow justify-center">
+                        <q-btn label="10y" size="md" color="info" @click="dateRange(120)" dense flat/>
+                      </div>
+                      <div class="col-grow justify-center">
+                        <q-btn label="15y" size="md" color="info" @click="dateRange(180)" dense flat/>
+                      </div>
+                    </div>
+                  </q-date>
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
+        </q-tab-panel>
+        <q-tab-panel name="benchmark" class="q-pa-none">
+          <q-input
+            outlined
+            name="benchmarkTickerId"
+            label="Benchmark"
+            v-model="benchmarkTickerData"
+            type="text"
+            :disable="disabled"
+          />
+        </q-tab-panel>
+        <q-tab-panel name="advanced" class="q-pa-none">
+          <q-input
+            outlined
+            v-for="item in advanced"
+            :key="item.id"
+            :name="item.inpid"
+            :label="item.name"
+            v-model="form[item.arg]"
+            :type="item.inptype"
+            :disable="disabled"
+            :rules="[val => !!val || 'Field is required']"
+          />
+        </q-tab-panel>
+      </q-tab-panels>
       <q-btn class="q-mt-sm" v-if="!disabled" type="submit" color="info" label="Run Strategy" />
     </q-form>
   </px-card>
@@ -142,6 +166,9 @@ export default defineComponent({
     const dateFmt = ref('yyyy/MM/dd')
     const form = ref({})
     const spec = ref([])
+    const standard = ref([])
+    const advanced = ref([])
+    const panel = ref('standard')
     const frequentlyUsed = ref('')
     const frequentlyUsedOptions = ref([])
     const benchmarkTickerData = ref(`${benchmarkTicker.value}`)
@@ -152,13 +179,15 @@ export default defineComponent({
     const qEndDateProxy = ref(null)
 
     async function initializeArguments() {
-      spec.value = []
+      advanced.value = []
+      standard.value = []
       Object.entries(strategy.value.arguments).forEach( elem => {
         const [k, v] = elem
         var item = {
           arg: k,
           name: v.name,
           description: v.description,
+          advanced: v.advanced,
           id: v.name + "_id",
           inpid: v.name + "_inp_id",
           inptype: "text",
@@ -179,7 +208,15 @@ export default defineComponent({
           }
           item.inpdefault = val.join(" ")
         }
+
         spec.value.push(item)
+
+        if (item.advanced) {
+          advanced.value.push(item)
+        } else {
+          standard.value.push(item)
+        }
+
         form.value[item.arg] = item.inpdefault
       })
     }
@@ -290,6 +327,7 @@ export default defineComponent({
     })
 
     return {
+      advanced,
       benchmarkTickerData,
       checkStartDate,
       checkEndDate,
@@ -298,7 +336,9 @@ export default defineComponent({
       frequentlyUsed,
       frequentlyUsedOptions,
       onSubmit,
+      panel,
       spec,
+      standard,
       startDate,
       endDate,
       qStartDateProxy,
