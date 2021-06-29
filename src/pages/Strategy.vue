@@ -91,7 +91,7 @@
     </div>
 
     <div class="q-mt-lg">
-    <span v-if="simulationRun" class="text-grey-6">Computed on: {{ format(portfolio.performance.computedOn, 'eeee, MMM eo yyyy HH:mm:ss') }}</span>
+    <span v-if="simulationRun" class="text-grey-6">Computed on: {{ format(portfolio.performance.computedOn, 'eeee, MMM do yyyy HH:mm:ss') }}</span>
     </div>
   </q-page>
 </template>
