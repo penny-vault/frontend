@@ -14,21 +14,31 @@
           :gridOptions="gridOptions"
           @grid-ready="onGridReady"
           :sideBar="sideBar"
-          rowSelection="multiple">
+          rowSelection="single"
+          @selection-changed="onSelectionChanged">
         </ag-grid-vue>
       </px-card>
     </div>
 
-    <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
-      <px-card title="Holdings Frequency">
-        <ag-grid-vue style="width: 100%; height: 400px"
-          class="ag-theme-alpine"
-          :columnDefs="holdingsColumnDefs"
-          :rowData="holdingsRowData">
-        </ag-grid-vue>
-
-        <holdings-pie-chart width="150" height="150" :holdings="rowData"></holdings-pie-chart>
-      </px-card>
+    <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12 q-gutter-y-md">
+      <div class="row">
+        <div class="col-12">
+        <px-card :title="format(holdingsDate, '\'Holdings detail for\' MMM yyyy')">
+          <ag-grid-vue style="width: 100%; height: 400px"
+            class="ag-theme-alpine"
+            :columnDefs="holdingsColumnDefs"
+            :rowData="holdings">
+          </ag-grid-vue>
+        </px-card>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+        <px-card title="Holdings Frequency">
+          <holdings-pie-chart width="150" height="150" :holdings="rowData"></holdings-pie-chart>
+        </px-card>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -39,6 +49,7 @@ import { defineComponent, computed, ref, onMounted, watch } from 'vue'
 import { useStore } from 'vuex'
 
 import { formatPercent, formatNumber } from '../assets/filters'
+import { format, addDays } from 'date-fns'
 
 import { AgGridVue } from 'ag-grid-vue3'
 import HoldingsPieChart from 'components/HoldingsPieChart.vue'
@@ -156,7 +167,7 @@ export default defineComponent({
       {
         field: 'percentPortfolio',
         headerName: '%',
-        width: 80,
+        width: 85,
         sortable: true,
         resizable: true,
         editable: false,
@@ -196,6 +207,8 @@ export default defineComponent({
     let gridApi = {}
     let columnApi = {}
     const sideBar = ref(true)
+    const holdings = ref($store.state.portfolio.current.performance.currentAssets)
+    const holdingsDate = ref(new Date())
 
     // Computed properties
     const rowData = computed({
@@ -203,11 +216,6 @@ export default defineComponent({
       set: val => {
         $store.commit('portfolio/setPortfolios', val)
       }
-    })
-
-    const holdingsRowData = computed({
-      get: () => $store.state.portfolio.current.performance.currentAssets,
-      set: _ => {}
     })
 
     // watch properties
@@ -225,13 +233,21 @@ export default defineComponent({
 
     // creation events
     onMounted(() => {
-      gridApi = gridOptions.value.api;
-      columnApi = gridOptions.value.columnApi;
+      gridApi = gridOptions.value.api
+      columnApi = gridOptions.value.columnApi
 
       getDynamicColumns()
     })
 
     // methods
+    function onSelectionChanged() {
+      var selectedRows = gridApi.getSelectedRows()
+      if (selectedRows.length === 1) {
+        holdings.value = selectedRows[0].holdings
+        holdingsDate.value = addDays(new Date(selectedRows[0].time * 1000), 5)
+      }
+    }
+
     function fullscreen() {
       if (fullscreenClass.value) {
         fullscreenClass.value = false
@@ -243,13 +259,13 @@ export default defineComponent({
 
       setTimeout(function() {
         var allColumnIds = []
-        gridOptions.value.columnApi.getAllColumns().forEach(function (column) {
+        columnApi.getAllColumns().forEach(function (column) {
           allColumnIds.push(column.colId);
         })
 
         console.log(allColumnIds)
 
-        gridOptions.value.columnApi.autoSizeColumns(allColumnIds, true)
+        columnApi.autoSizeColumns(allColumnIds, true)
       }, 500)
     }
 
@@ -302,14 +318,17 @@ export default defineComponent({
       columnDefs,
       holdingsColumnDefs,
       exportCSV,
+      format,
       fullscreen,
       fullscreenClass,
       fullscreenIcon,
       gridApi,
       gridOptions,
+      holdings,
+      holdingsDate,
       onGridReady,
+      onSelectionChanged,
       rowData,
-      holdingsRowData,
       sideBar
     }
   }
