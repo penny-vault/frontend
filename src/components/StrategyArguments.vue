@@ -243,8 +243,13 @@ export default defineComponent({
 
       Object.entries(strategy.value.arguments).forEach( elem => {
         const [k, v] = elem;
-        if (v.typecode == '[]string') {
-          options.userArgs[k] = options.userArgs[k].split(' ');
+        switch (v.typecode) {
+          case "[]string":
+            options.userArgs[k] = options.userArgs[k].split(' ')
+            break
+          case "number":
+            options.userArgs[k] = Number(options.userArgs[k])
+            break
         }
       })
 

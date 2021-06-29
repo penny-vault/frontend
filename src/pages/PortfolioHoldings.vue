@@ -91,7 +91,9 @@ export default defineComponent({
         sortable: true,
         resizable: true,
         editable: false,
-
+        valueFormatter: (params) => {
+          return params.value.map((item) => { return item.ticker }).sort().join(' ')
+        }
       },
       {
         field: 'percentReturnAdjusted',

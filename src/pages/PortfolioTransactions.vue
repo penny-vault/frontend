@@ -73,7 +73,7 @@ export default defineComponent({
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
       },
-      { field: 'totalValue', width: 200, headerName: 'Portfolio Value', sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
+      { field: 'totalValue', width: 200, headerName: 'Total', sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
           if (isNaN(params.value)) {
             return "-"
           }

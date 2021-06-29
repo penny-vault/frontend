@@ -78,7 +78,7 @@
       </q-tab-panel>
     </q-tab-panels>
 
-    <span class="text-center q-ml-md q-mb-sm text-grey-6">Computed at: {{ format(portfolio.performance.computedOn, 'eeee, MMM eo yyyy HH:mm:ss') }}</span>
+    <span class="text-center q-ml-md q-mb-sm text-grey-6">Computed on: {{ format(portfolio.performance.computedOn, 'eeee, MMM eo yyyy HH:mm:ss') }}</span>
 
   </q-page>
 </template>

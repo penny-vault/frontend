@@ -89,11 +89,11 @@ export default defineComponent({
     async function updateData() {
       var counts = new Map()
       holdings.value.forEach( elem => {
-        var h = elem.holdings.split(" ")
-        h.forEach( ticker => {
+        elem.holdings.forEach( item => {
+          let ticker = item.ticker
           var curr = counts.get(ticker)
-          if (curr === undefined) curr = 0
-          counts.set(ticker, curr+1)
+          if (curr === undefined || isNaN(curr)) curr = 0
+          counts.set(ticker, curr+item.percentPortfolio)
         })
       })
       var data = []
