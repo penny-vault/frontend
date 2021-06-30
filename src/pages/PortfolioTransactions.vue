@@ -98,12 +98,7 @@ export default defineComponent({
     const sideBar = ref(true)
 
     // Computed properties
-    const rowData = computed({
-      get: () => $store.state.portfolio.current.performance.transactions,
-      set: val => {
-        $store.commit('portfolio/setPortfolios', val)
-      }
-    })
+    const rowData = computed(() => $store.state.portfolio.current.performance.transactions)
 
     // creation events
     onMounted(() => {

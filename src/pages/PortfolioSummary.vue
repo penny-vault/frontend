@@ -136,20 +136,9 @@ export default defineComponent({
     const maxDate = ref(-1)
 
     // Computed properties
-    const portfolio = computed({
-      get: () => $store.state.portfolio.current,
-      set: val => {}
-    })
-
-    const metrics = computed({
-      get: () => $store.state.portfolio.metrics,
-      set: val => {}
-    })
-
-    const benchmark = computed({
-      get: () => $store.state.portfolio.benchmark,
-      set: val => {}
-    })
+    const benchmark = computed(() => $store.state.portfolio.benchmark)
+    const metrics = computed(() => $store.state.portfolio.metrics)
+    const portfolio = computed(() => $store.state.portfolio.current)
 
     return {
       benchmark,

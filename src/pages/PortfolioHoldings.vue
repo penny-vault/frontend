@@ -211,12 +211,7 @@ export default defineComponent({
     const holdingsDate = ref(new Date())
 
     // Computed properties
-    const rowData = computed({
-      get: () => $store.state.portfolio.current.performance.measurements,
-      set: val => {
-        $store.commit('portfolio/setPortfolios', val)
-      }
-    })
+    const rowData = computed(() => $store.state.portfolio.current.performance.measurements)
 
     // watch properties
     watch(rowData, async () => {

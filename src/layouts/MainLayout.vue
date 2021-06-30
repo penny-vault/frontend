@@ -122,25 +122,9 @@ export default defineComponent({
     const leftDrawerOpen = ref(false)
     const miniDrawer = ref(false)
 
-    const rotateDrawer = computed({
-      get: () => miniDrawer.value ? 'sidebar-expand q-mb-xs fixed-bottom' : 'rotate-180 sidebar-expand q-mb-xs fixed-bottom',
-      set: val => {}
-    })
-
-    const user = computed({
-      get: () => $store.state.user.profile,
-      set: val => {
-        $store.commit('user/setProfile', val)
-      }
-    })
-
-    const authenticated = computed({
-      get: () => $store.state.user.authenticated,
-      set: val => {
-        $store.commit('user/setAuthenticated', val)
-      }
-    })
-
+    const authenticated = computed(() => $store.state.user.authenticated)
+    const rotateDrawer = computed(() => miniDrawer.value ? 'sidebar-expand q-mb-xs fixed-bottom' : 'rotate-180 sidebar-expand q-mb-xs fixed-bottom')
+    const user = computed(() => $store.state.user.profile)
 
     return {
       authenticated,

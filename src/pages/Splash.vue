@@ -16,12 +16,7 @@ export default defineComponent({
     const $store = useStore()
     const $router = useRouter()
 
-    const authenticated = computed({
-      get: () => $store.state.user.authenticated,
-      set: val => {
-        $store.commit('user/setAuthenticated', val)
-      }
-    })
+    const authenticated = computed(() => $store.state.user.authenticated)
 
     if (authenticated.value) {
       $router.push({

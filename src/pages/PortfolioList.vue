@@ -125,11 +125,7 @@ export default defineComponent({
     //const frameworkComponents = ref({ btnCellRenderer: AgGridBtnCellRenderer })
     const sideBar = ref(true)
 
-    const rowData = computed({
-      get: () => $store.state.portfolio.portfolios,
-      set: val => {
-      }
-    })
+    const rowData = computed(() => $store.state.portfolio.portfolios)
 
     $store.dispatch('portfolio/fetchPortfolios')
 

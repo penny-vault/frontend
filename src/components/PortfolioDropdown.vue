@@ -25,12 +25,7 @@ export default defineComponent({
   setup () {
     const $store = useStore()
 
-    const portfolioList = computed({
-      get: () => $store.state.portfolio.portfolios,
-      set: val => {
-        $store.commit('portfolio/setPortfolios', val)
-      }
-    })
+    const portfolioList = computed(() => $store.state.portfolio.portfolios)
 
     $store.dispatch('portfolio/fetchPortfolios')
 

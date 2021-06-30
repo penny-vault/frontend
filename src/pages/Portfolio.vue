@@ -120,10 +120,7 @@ export default defineComponent({
       $store.dispatch('portfolio/fetchPortfolio', newValue)
     })
 
-    const portfolio = computed({
-      get: () => $store.state.portfolio.current,
-      set: val => {}
-    })
+    const portfolio = computed(() => $store.state.portfolio.current)
 
     return {
       format,

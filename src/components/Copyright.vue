@@ -20,13 +20,9 @@ export default defineComponent({
   setup () {
     const $store = useStore()
 
-    const appVersion = computed({
-      get: () => $store.state.app.version
-    })
+    const appVersion = computed(() => $store.state.app.version)
 
-    const changelog = computed({
-      get: () => $store.state.app.changelog
-    })
+    const changelog = computed(() => $store.state.app.changelog)
 
     return {
       appVersion,
