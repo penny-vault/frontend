@@ -78,7 +78,8 @@ export default defineComponent({
       {
         field: 'time',
         headerName: 'Date',
-        width: 110,
+        width: 100,
+        pinned: 'left',
         filter: 'agDateColumnFilter',
         sortable: true,
         sortingOrder: ['desc', 'asc'],
@@ -149,7 +150,9 @@ export default defineComponent({
     const holdingsColumnDefs = ref([
       {
         field: 'ticker',
-        width: 100,
+        width: 95,
+        pinned: 'left',
+        sort: 'desc',
         sortable: true,
         resizable: true,
         editable: false,
@@ -223,7 +226,6 @@ export default defineComponent({
       })
 
       gridOptions.value.columnApi.autoSizeColumns(allColumnIds, true)
-
     })
 
     // creation events

@@ -39,8 +39,9 @@ export default defineComponent({
 
     const columnDefs = ref([
       { field: 'date',
-        minWidth: 125,
+        minWidth: 110,
         maxWidth: 150,
+        pinned: 'left',
         filter: 'agDateColumnFilter',
         sortable: true,
         sort: 'desc',
@@ -63,7 +64,7 @@ export default defineComponent({
           if (isNaN(params.value)) {
             return "-"
           }
-          return new Intl.NumberFormat('en-US', {maximumFractionDigits: 0}).format(params.value)
+          return new Intl.NumberFormat('en-US', {maximumFractionDigits: 5}).format(params.value)
         }
       },
       { field: 'pricePerShare', width: 100, headerName: 'Price', sortable: false, resizable: true, editable: false, valueFormatter: (params) => {
