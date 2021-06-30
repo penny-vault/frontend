@@ -88,20 +88,35 @@ export default defineComponent({
     // methods
     async function updateData() {
       var counts = new Map()
+      var total = 0
       holdings.value.forEach( elem => {
         elem.holdings.forEach( item => {
           let ticker = item.ticker
           var curr = counts.get(ticker)
           if (curr === undefined || isNaN(curr)) curr = 0
           counts.set(ticker, curr+item.percentPortfolio)
+          total += item.percentPortfolio
         })
       })
+
+      // determine which ones have less than 5% of the pie
+      // these go into other
       var data = []
+      var other = 0
       counts.forEach( (v, k) => {
-        data.push({
-          name: k,
-          y: v
-        })
+        if ((v / total) < .05) {
+          other += v
+        } else {
+          data.push({
+            name: k,
+            y: v
+          })
+        }
+      })
+
+      data.push({
+        name: 'Other',
+        y: other
       })
 
       chartOptions.value.series = [
