@@ -124,13 +124,15 @@
           />
         </q-tab-panel>
       </q-tab-panels>
-      <q-btn class="q-mt-sm" v-if="!disabled" type="submit" color="info" label="Run Strategy" />
+      <q-btn class="q-mt-sm" v-if="!disabled" icon="bolt" type="submit" color="primary" label="Run Strategy" />
+      <q-btn  class="q-mt-sm" v-if="!disabled" icon="ion-bookmark" type="button" color="info" label="Save as portfolio" @click="onSave" />
+
     </q-form>
   </px-card>
 </template>
 
 <script>
-import { format, parse, subMonths } from 'date-fns'
+import { format, parse, subMonths, getUnixTime } from 'date-fns'
 import { clone } from 'lodash'
 import { defineComponent, ref, watch, toRefs, onMounted } from 'vue'
 import PxCard from 'components/PxCard.vue'
@@ -159,7 +161,7 @@ export default defineComponent({
   components: {
     PxCard
   },
-  emits: ['execute'],
+  emits: ['execute', 'save'],
   setup(props, { emit }) {
     const { strategy, begin, end, benchmarkTicker } = toRefs(props)
 
@@ -230,6 +232,29 @@ export default defineComponent({
         }
         frequentlyUsedOptions.value.push(opt)
       })
+    }
+
+    async function onSave(e) {
+      e.preventDefault()
+      let options = {
+        args: clone(form.value),
+        begin: getUnixTime(parse(startDate.value, dateFmt.value, new Date())),
+        benchmarkTicker: clone(benchmarkTickerData.value)
+      }
+
+      Object.entries(strategy.value.arguments).forEach( elem => {
+        const [k, v] = elem;
+        switch (v.typecode) {
+          case "[]string":
+            options.args[k] = options.args[k].split(' ')
+            break
+          case "number":
+            options.args[k] = Number(options.args[k])
+            break
+        }
+      })
+
+      emit('save', options)
     }
 
     async function onSubmit(e) {
@@ -340,6 +365,7 @@ export default defineComponent({
       form,
       frequentlyUsed,
       frequentlyUsedOptions,
+      onSave,
       onSubmit,
       panel,
       spec,

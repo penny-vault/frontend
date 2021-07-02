@@ -94,12 +94,10 @@ export async function fetchPortfolios ({ commit }) {
   })
 }
 
-export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, endDate } ) {
+export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, endDate, symbol } ) {
   // load benchmark
-  // TODO allow user to set these parameters
-  let benchmarkArgs = {
-    ticker: 'VFINX',
-    snapToDate: true
+  if (symbol === undefined || symbol === '') {
+    symbol = 'VFINX'
   }
 
   const accessToken = await authPlugin.getTokenSilently()
@@ -109,8 +107,7 @@ export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, 
     }
   }
 
-  let argsHash = hash(benchmarkArgs)
-  api.post(`/benchmark/?startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}&cache=${argsHash}`, benchmarkArgs, options).then(response => {
+  api.get(`/benchmark/${symbol.toLowerCase()}?snapToStart=true&startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}`, options).then(response => {
     let benchmark = response.data
     benchmark.start_date = new Date(benchmark.start_date * 1000)
     benchmark.lastchanged = new Date(benchmark.lastchanged * 1000)
@@ -140,7 +137,6 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
       portfolio.lastfetch === undefined ||
       (now - portfolio.lastfetch) > (15 * 60 * 1000))
   {
-    commit('setPortfolioLoading', true)
     commit('setCurrentPortfolio', emptyPortfolio)
     commit('setBenchmark', emptyPerformance)
   } else {
@@ -150,9 +146,8 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
   }
 
   // load strategy
-  let portfolioArgsHash = hash(portfolio.arguments)
-  let endpoint = `/strategy/${portfolio.strategy}?startDate=${ymdString(portfolio.start_date)}&endDate=${ymdString(new Date())}&cache=${portfolioArgsHash}`
-  api.post(endpoint, portfolio.arguments, options).then(response => {
+  let endpoint = `/strategy/${portfolio.strategy}/execute?startDate=${ymdString(portfolio.start_date)}&endDate=${ymdString(new Date())}&arguments=${JSON.stringify(portfolio.arguments)}`
+  api.get(endpoint, options).then(response => {
     let performance = response.data
     try {
       performance.maxDrawDown = performance.metrics.drawDowns[0].lossPercent

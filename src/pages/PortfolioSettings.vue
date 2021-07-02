@@ -114,7 +114,7 @@ export default defineComponent({
             })
 
             $store.dispatch('portfolio/fetchPortfolios')
-            $router.replace("/portfolio/")
+            $router.replace("/app/portfolio/")
           }).catch( err => {
             $q.notify({
               message: `Failed to delete portfolio settings: ${err}`,

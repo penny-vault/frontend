@@ -58,13 +58,12 @@ export async function fetchStrategy ({ commit }, shortCode) {
   })
 }
 
-export async function executeStrategy ({ commit, dispatch }, { shortCode, name, stratParams, startDate, endDate } ) {
+export async function executeStrategy ({ commit, dispatch }, { shortCode, name, stratParams, startDate, endDate, benchmark } ) {
   const accessToken = await authPlugin.getTokenSilently()
   Loading.show()
 
-  const portfolioArgsHash = hash(stratParams)
-  const endpoint = `/strategy/${shortCode}?startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}&cache=${portfolioArgsHash}`
-  api.post(endpoint, stratParams, {
+  const endpoint = `/strategy/${shortCode}/execute?startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}&arguments=${JSON.stringify(stratParams)}`
+  api.get(endpoint, {
     headers: {
       Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
     }
@@ -104,7 +103,8 @@ export async function executeStrategy ({ commit, dispatch }, { shortCode, name, 
 
     dispatch('portfolio/fetchBenchmark', {
       startDate: performance.periodStart,
-      endDate: performance.periodEnd
+      endDate: performance.periodEnd,
+      symbol: benchmark
     }, { root: true })
 
     // calculate metrics

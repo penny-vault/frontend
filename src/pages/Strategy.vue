@@ -23,6 +23,7 @@
           <q-tab :disable="!simulationRun" name="transactions" label="Transactions" />
           <q-tab :disable="!simulationRun" name="returns" label="Returns" />
         </q-tabs>
+
       </div>
     </div>
 
@@ -56,7 +57,7 @@
 
     <div class="row q-col-gutter-md q-row-gutter-md">
       <div class="col-lg-2 col-md-4 col-sm-12 col-xs-12 q-pl-md">
-        <strategy-arguments :strategy="strategy" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" />
+        <strategy-arguments :strategy="strategy" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" @save="onSave" />
       </div>
       <div class="col-lg-10 col-md-8 col-sm-12 col-xs-12">
         <q-tab-panels
@@ -97,9 +98,12 @@
 </template>
 
 <script>
-import { format, parse } from 'date-fns'
+import { format } from 'date-fns'
 import { defineComponent, computed, ref, watch } from 'vue'
 import { useStore } from 'vuex'
+import { useQuasar } from 'quasar'
+import { authPlugin } from '../auth'
+import { api } from '../boot/axios'
 
 import PortfolioHoldings from './PortfolioHoldings.vue'
 import PortfolioReturns from './PortfolioReturns.vue'
@@ -123,6 +127,7 @@ export default defineComponent({
   },
   setup (props) {
     const $store = useStore()
+    const $q = useQuasar()
 
     const simulationStart = ref(new Date(1980,0,1))
     const simulationEnd = ref(new Date())
@@ -149,8 +154,41 @@ export default defineComponent({
 
     // methods
 
+    async function onSave({args, begin}) {
+      const accessToken = await authPlugin.getTokenSilently()
+      var params = {
+        name: strategy.value.name,
+        arguments: args,
+        strategy: strategy.value.shortcode,
+        start_date: begin
+      }
+
+      const endpoint = `/portfolio/`
+      api.post(endpoint, params, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
+        }
+      }).then(response => {
+        $q.notify({
+          message: `Saved portfolio`,
+          progress: true,
+          color: 'positive',
+          icon: 'success',
+          position: 'top'
+        })
+      }).catch(err => {
+        $q.notify({
+          message: `Failed to save portfolio: ${err}`,
+          progress: true,
+          color: 'negative',
+          icon: 'error',
+          position: 'top'
+        })
+      })
+    }
+
     async function onSubmit({userArgs, begin, end, benchmarkTicker}) {
-      $store.dispatch('strategy/executeStrategy', { shortCode: props.strategyShortCode, name: strategy.value.name, stratParams: userArgs, startDate: begin, endDate: end})
+      $store.dispatch('strategy/executeStrategy', { shortCode: props.strategyShortCode, name: strategy.value.name, stratParams: userArgs, startDate: begin, endDate: end, benchmark: benchmarkTicker })
     }
 
     // watchers
@@ -167,6 +205,7 @@ export default defineComponent({
       simulationEnd,
       strategy,
       tabModel,
+      onSave,
       onSubmit
     }
   }

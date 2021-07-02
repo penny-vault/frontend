@@ -25,9 +25,7 @@ const cache = setupCache({
     }
   },
   exclude: {
-    query: false,
-    // Only exclude PUT, PATCH and DELETE methods from cache
-    methods: ['put', 'patch', 'delete']
+    query: false
   }
 })
 
