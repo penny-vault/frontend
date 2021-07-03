@@ -14,8 +14,8 @@ export default boot(async ({ app, router, store }) => {
         : '/'
     )
   })
+
   app.config.globalProperties.$auth = auth0
-  app.use(auth0)
 })
 
 export { auth0 }

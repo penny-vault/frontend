@@ -82,7 +82,7 @@ export const setupAuth = async (options, store, callbackRedirect) => {
   client = await createAuth0Client({
     ...options,
     client_id: options.clientId,
-    redirect_uri: window.location.origin + '/#/app'
+    redirect_uri: window.location.origin
   })
 
   try {
@@ -114,9 +114,5 @@ export const setupAuth = async (options, store, callbackRedirect) => {
     state.loading = false
   }
 
-  return {
-    install: (app) => {
-      app.config.globalProperties.$auth = authPlugin
-    },
-  }
+  return authPlugin
 }
