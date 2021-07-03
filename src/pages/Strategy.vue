@@ -57,7 +57,7 @@
 
     <div class="row q-col-gutter-md q-row-gutter-md">
       <div class="col-lg-2 col-md-4 col-sm-12 col-xs-12 q-pl-md">
-        <strategy-arguments :strategy="strategy" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" @save="onSave" />
+        <strategy-arguments :strategy="strategy" :benchmark-ticker="strategy.benchmark" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" @save="onSave" />
       </div>
       <div class="col-lg-10 col-md-8 col-sm-12 col-xs-12">
         <q-tab-panels
@@ -137,20 +137,11 @@ export default defineComponent({
     $store.commit('strategy/setSimulationExecuted', false)
     $store.dispatch('strategy/fetchStrategy', props.strategyShortCode)
 
-    const strategy = computed({
-      get: () => $store.state.strategy.current,
-      set: val => {}
-    })
+    const strategy = computed(() => $store.state.strategy.current)
 
-    const simulationRun = computed({
-      get: () => $store.state.strategy.simulation.executed,
-      set: val => {}
-    })
+    const simulationRun = computed(() => $store.state.strategy.simulation.executed)
 
-    const portfolio = computed({
-      get: () => $store.state.portfolio.current,
-      set: val => {}
-    })
+    const portfolio = computed(() => $store.state.portfolio.current)
 
     // methods
 
