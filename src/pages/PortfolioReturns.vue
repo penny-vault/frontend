@@ -1,12 +1,12 @@
 <template>
 
   <div class="row q-col-gutter-lg">
-    <div class="col-xl-8 col-lg-8 col-md-12">
+    <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12 col-xs-12">
       <px-card title="Returns by Year">
         <annual-returns :portfolio="portfolio.measurements" :benchmark="benchmark.measurements" />
       </px-card>
     </div>
-    <div class="col-xl-4 col-lg-4 col-md-12">
+    <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12 col-xs-12">
       <px-card title="Draw Downs">
         <ag-grid-vue style="width: 100%; height: 400px"
           class="ag-theme-alpine"
