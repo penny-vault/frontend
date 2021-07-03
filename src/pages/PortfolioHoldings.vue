@@ -4,7 +4,7 @@
     <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
       <px-card title="Portfolio Holdings by Month" :class="{'full-screen': fullscreenClass}">
         <template v-slot:toolbar>
-          <q-btn @click="exportCSV" dense flat size="sm" icon="ion-cloud-download" label="Export CSV" />
+          <q-btn @click="exportExcel" dense flat size="sm" icon="ion-cloud-download" label="Export Excel" />
           <q-btn @click="fullscreen" dense flat size="sm" :icon="fullscreenIcon" class="q-ml-md" />
         </template>
         <ag-grid-vue style="width: 100%; height: 600px;"
@@ -76,9 +76,9 @@ export default defineComponent({
 
     const columnDefs = ref([
       {
-        field: 'time',
         headerName: 'Date',
         width: 100,
+        cellClass: 'dateType',
         pinned: 'left',
         filter: 'agDateColumnFilter',
         sortable: true,
@@ -86,8 +86,12 @@ export default defineComponent({
         sort: 'desc',
         resizable: true,
         editable: false,
-        valueFormatter: (params) => {
+        valueGetter: (params) => {
           var d = new Date(params.data.time * 1000)
+          return d
+        },
+        valueFormatter: (params) => {
+          var d = params.value
           // add a few days to the date - data comes from pv-api as month-end
           // but that's misleading in the portfolio table view which only
           // shows month year
@@ -98,13 +102,13 @@ export default defineComponent({
         }
       },
       {
-        field: 'holdings',
+        headerName: 'Holdings',
         width: 150,
         sortable: true,
         resizable: true,
         editable: false,
-        valueFormatter: (params) => {
-          return params.value.map((item) => { return item.ticker }).sort().join(' ')
+        valueGetter: (params) => {
+          return params.data.holdings.map((item) => { return item.ticker }).sort().join(' ')
         }
       },
       {
@@ -135,6 +139,7 @@ export default defineComponent({
         field: 'valueAdjusted',
         width: 150,
         headerName: 'Value',
+        cellClass: 'currencyType',
         sortable: true,
         resizable: true,
         editable: false,
@@ -152,7 +157,7 @@ export default defineComponent({
         field: 'ticker',
         width: 95,
         pinned: 'left',
-        sort: 'desc',
+        sort: 'asc',
         sortable: true,
         resizable: true,
         editable: false,
@@ -204,7 +209,42 @@ export default defineComponent({
           var rowDt = new Date(params.data.time * 1000)
           return (rowDt.getFullYear() === dt.getFullYear()) && (rowDt.getMonth() === dt.getMonth())
         },
-      }
+      },
+      excelStyles: [
+        {
+            id: 'numberType',
+            numberFormat: {
+                format: '0',
+            },
+        },
+        {
+          id: 'percentType',
+          numberFormat: {
+            format: '#,##0.00%'
+          }
+        },
+        {
+            id: 'currencyType',
+            numberFormat: {
+                format: '$#,##0.00',
+            },
+        },
+        {
+            id: 'booleanType',
+            dataType: 'boolean',
+        },
+        {
+            id: 'stringType',
+            dataType: 'String',
+        },
+        {
+            id: 'dateType',
+            dataType: 'DateTime',
+            numberFormat: {
+              format: 'mm/dd/yyy'
+            }
+        }
+      ]
     })
 
     let gridApi = {}
@@ -260,8 +300,6 @@ export default defineComponent({
           allColumnIds.push(column.colId);
         })
 
-        console.log(allColumnIds)
-
         columnApi.autoSizeColumns(allColumnIds, true)
       }, 500)
     }
@@ -295,9 +333,17 @@ export default defineComponent({
       gridApi.setColumnDefs(columnDefs.value)
     }
 
-    function exportCSV(e) {
+    function exportExcel(e) {
       e.preventDefault()
-      gridApi.exportDataAsCsv({})
+      gridApi.exportDataAsExcel({
+        processCellCallback: ({column, value}) => {
+          switch (column.colDef.cellClass) {
+            case "dateType":
+              return value.toISOString()
+          }
+          return value
+        },
+      })
     }
 
     function onGridReady(params) {
@@ -314,7 +360,7 @@ export default defineComponent({
       columnApi,
       columnDefs,
       holdingsColumnDefs,
-      exportCSV,
+      exportExcel,
       format,
       fullscreen,
       fullscreenClass,
