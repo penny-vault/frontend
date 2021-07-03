@@ -59,7 +59,6 @@ export default defineComponent({
 
     // methods
     function unpackNotifications() {
-      console.log('unpackNotifications')
       notifications.value.daily.state = (portfolio.value.notifications & Daily) == Daily
       notifications.value.weekly.state = (portfolio.value.notifications & Weekly) == Weekly
       notifications.value.monthly.state = (portfolio.value.notifications & Monthly) == Monthly
