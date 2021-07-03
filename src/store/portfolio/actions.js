@@ -170,12 +170,26 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
       key: 'portfolio'
     })
 
+    // remove marker transactions
     performance.transactions = performance.transactions.filter(item => {
       let dt = new Date(item.date)
       let now = new Date()
       if (item.kind !== "MARKER" && dt <= now) {
         return item
       }
+    })
+
+    // adjust measurements
+    performance.measurements = performance.measurements.map((item, idx, arr) => {
+      let next = arr[idx+1]
+      if (next !== undefined) {
+        item.valueAdjusted = next.value
+        item.percentReturnAdjusted = next.percentReturn
+      } else {
+        item.valueAdjusted = undefined
+        item.percentReturnAdjusted = undefined
+      }
+      return item
     })
 
     portfolio.lastfetch = new Date()
