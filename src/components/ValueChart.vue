@@ -5,7 +5,7 @@
 <script>
 let eventBus = require('tiny-emitter/instance')
 
-import { defineComponent, watch, ref, onMounted, toRefs } from 'vue'
+import { defineComponent, watch, ref, onMounted, onUnmounted, toRefs } from 'vue'
 
 import * as am4core from '@amcharts/amcharts4/core'
 import * as am4charts from '@amcharts/amcharts4/charts'
@@ -165,6 +165,12 @@ export default defineComponent({
     onMounted(() => {
       renderChart()
       updatePlotBands()
+    })
+
+    onUnmounted(() => {
+      if (chart) {
+        chart.dispose()
+      }
     })
 
     // set watchers
