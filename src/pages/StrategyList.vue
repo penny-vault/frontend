@@ -32,7 +32,7 @@
       </div>
       <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12 col-xs-12">
         <px-card title="Risk vs Return">
-            <am-scatter-plot style="height: 435px" labels="{shortcode}" x-title="Risk (ulcer index)" y-title="Return (10-yr CAGR)" :series-config="series" :data="data" />
+            <am-scatter-plot style="height: 435px" labels="{shortcode}" x-title="Risk: Ulcer Index (%)" y-title="Return: CAGR (%)" :series-config="series" :data="data" />
         </px-card>
       </div>
     </div>

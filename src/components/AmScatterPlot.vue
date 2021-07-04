@@ -66,19 +66,6 @@ export default defineComponent({
         lineSeries.dataFields.valueX = elem.valueX || 'x'
         lineSeries.dataFields.valueY = elem.valueY || 'y'
         lineSeries.strokeOpacity = elem.strokeOpacity || 0
-        lineSeries.tooltipText = elem.tooltipText || 'X: {valueX} / Y: {valueY}'
-
-        lineSeries.tooltip.background.cornerRadius = 5
-        lineSeries.tooltip.background.strokeOpacity = 0
-        lineSeries.tooltip.pointerOrientation = "vertical"
-        lineSeries.tooltip.label.minWidth = 40
-        lineSeries.tooltip.label.minHeight = 40
-        lineSeries.tooltip.label.textAlign = "left"
-        lineSeries.tooltip.label.textValign = "middle"
-
-        lineSeries.tooltip.getFillFromObject = false
-        lineSeries.tooltip.label.fill = am4core.color("black")
-        lineSeries.tooltip.background.fill = am4core.color("#FFFFFF")
 
         // configure symbology
         if (labels.value !== "") {
@@ -129,6 +116,22 @@ export default defineComponent({
         symbol.width = elem.width || 12
         symbol.height = elem.height || 12
 
+        let symbolState = symbol.states.create("hover")
+        symbolState.properties.scale = 1.7
+
+        symbol.tooltipText = elem.tooltipText || 'X: {valueX} / Y: {valueY}'
+        symbol.tooltipX = -10
+        lineSeries.tooltip.background.cornerRadius = 5
+        lineSeries.tooltip.background.strokeOpacity = 0
+        lineSeries.tooltip.pointerOrientation = "right"
+        lineSeries.tooltip.label.minWidth = 40
+        lineSeries.tooltip.label.minHeight = 40
+        lineSeries.tooltip.label.textAlign = "left"
+        lineSeries.tooltip.label.textValign = "middle"
+        lineSeries.tooltip.getFillFromObject = false
+        lineSeries.tooltip.label.fill = am4core.color("black")
+        lineSeries.tooltip.background.fill = am4core.color("#FFFFFF")
+
         series.push(lineSeries)
       })
     }
@@ -154,6 +157,7 @@ export default defineComponent({
       valueAxisY.title.text = yTitle.value
 
       // Add cursor and series tooltip support
+      /*
       chart.cursor = new am4charts.XYCursor()
       chart.cursor.maxTooltipDistance = -1
 
@@ -165,6 +169,7 @@ export default defineComponent({
         }, "any"));
         return dataItem;
       }
+      */
 
       // create the series
       let series = createSeries()
