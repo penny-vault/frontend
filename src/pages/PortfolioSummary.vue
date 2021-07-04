@@ -19,10 +19,8 @@
       <px-card class="full-height" title="Value Chart">
           <template v-slot:toolbar>
             <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), 0, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">YTD</q-btn>
-            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 1, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs gt-xs">1m</q-btn>
-            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 3, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs gt-xs">3m</q-btn>
             <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 12, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">1y</q-btn>
-            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 24, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs gt-xs">3y</q-btn>
+            <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 36, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs gt-xs">3y</q-btn>
             <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 60, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">5y</q-btn>
             <q-btn @click="eventBus.emit('valueChart:zoom', {from: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth() - 120, 1), to: Date.UTC((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate())})" size="md" color="secondary" dense flat class="q-ml-xs">10y</q-btn>
             <q-btn @click="eventBus.emit('valueChart:zoom', {from: -1, to: -1})" size="md" color="secondary" dense flat class="q-ml-xs">All</q-btn>
@@ -51,7 +49,7 @@
                 </q-list>
             </q-btn-dropdown>
           </template>
-          <value-chart :min-date="minDate" :max-date="maxDate" :log-scale="logScale" :show-draw-downs="showDrawDowns" :measurements="portfolio.performance.measurements" :benchmark="benchmark.measurements" :draw-downs="portfolio.performance.metrics.drawDowns" />
+          <value-chart :date-range="dateRange" :log-scale="logScale" :show-draw-downs="showDrawDowns" :measurements="portfolio.performance.measurements" :benchmark="benchmark.measurements" :draw-downs="portfolio.performance.metrics.drawDowns" />
       </px-card>
       </div>
       <div class="col">
@@ -132,8 +130,10 @@ export default defineComponent({
     // value chart properties
     const logScale = ref(false)
     const showDrawDowns = ref(false)
-    const minDate = ref(-1)
-    const maxDate = ref(-1)
+    const dateRange = ref({
+        min: -1,
+        max: -1
+    })
 
     // Computed properties
     const benchmark = computed(() => $store.state.portfolio.benchmark)
@@ -146,8 +146,7 @@ export default defineComponent({
       metrics,
       portfolio,
       tabModel,
-      maxDate,
-      minDate,
+      dateRange,
       logScale,
       showDrawDowns,
       eventBus
