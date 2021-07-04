@@ -85,7 +85,7 @@ export default defineComponent({
       pieSeries.dataFields.category = "name"
 
       // Let's cut a hole in our Pie chart the size of 40% the radius
-      //chart.innerRadius = am4core.percent(20)
+      chart.innerRadius = am4core.percent(40)
 
       // Put a thick white border around each Slice
       pieSeries.slices.template.stroke = am4core.color("#fff")
