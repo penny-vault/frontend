@@ -35,7 +35,7 @@
       <div class="row">
         <div class="col-12">
         <px-card title="Holdings Frequency">
-          <holdings-pie-chart width="150" height="150" :holdings="rowData"></holdings-pie-chart>
+          <holdings-pie-chart width="100%" height="250px" :holdings="rowData"></holdings-pie-chart>
         </px-card>
         </div>
       </div>
