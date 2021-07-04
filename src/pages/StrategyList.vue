@@ -44,7 +44,7 @@
 import { defineComponent, computed, ref, onMounted, watch } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import { formatPercent, formatNumber } from '../assets/filters'
+import { formatPercent, formatNumber, wordWrap } from '../assets/filters'
 
 import { AgGridVue } from 'ag-grid-vue3'
 import AgGridBtnCellRenderer from "components/AgGridBtnCellRenderer.vue"
@@ -69,7 +69,7 @@ export default defineComponent({
     const series = ref([{
       valueX: 'x',
       valueY: 'y',
-      tooltipText: '[bold]{strategy}[/]\nReturn: {valueY}%\nRisk: {valueX}'
+      tooltipText: '[bold]{strategy}[/]\n\n{description}\n\n[bold]Return:[/] {valueY}%   [bold]Risk:[/] {valueX}'
     }])
 
     const gridOptions = ref({
@@ -366,7 +366,8 @@ export default defineComponent({
           x: (elem.metrics.ulcer_index.Float64).toFixed(2),
           y: (elem.metrics.cagr_10yr.Float64 * 100).toFixed(2),
           strategy: elem.name,
-          shortcode: elem.shortcode
+          shortcode: elem.shortcode,
+          description: wordWrap(elem.description, 30)
         })
       })
     }
