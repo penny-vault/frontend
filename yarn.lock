@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@ag-grid-community/vue3@^25.3.0":
+"@ag-grid-community/vue3@^25.3.1":
   version "25.3.1"
   resolved "https://registry.yarnpkg.com/@ag-grid-community/vue3/-/vue3-25.3.1.tgz#9bf122c24c1b0d8381f3173723d6b4b52767de6c"
   integrity sha512-PfJ1hUDGsV7st1L+nC0Zo13YEvTtL6KCKbDDMwA5xHTTwguVQ5pvRynAmPyr/qXFuXFoAB4OKCbSrXPvhNUNfg==
@@ -12,7 +12,7 @@
   resolved "https://registry.yarnpkg.com/@amcharts/amcharts4-fonts/-/amcharts4-fonts-4.0.1.tgz#f68f0571497d8925b9cbf53199de6b27d7b6d526"
   integrity sha512-IUpBxtgzrScWDMoA2Ma4NIV9Uhd6VxJu3vn+hF5ObdTXAiwzj6gnVawEhrh8zojWumVIb5IZ0EvuCWRjEIWhIg==
 
-"@amcharts/amcharts4@^4.10.19":
+"@amcharts/amcharts4@^4.10.20":
   version "4.10.20"
   resolved "https://registry.yarnpkg.com/@amcharts/amcharts4/-/amcharts4-4.10.20.tgz#140efe53d41df534886873584d54c3dcd5df95f0"
   integrity sha512-btjGR+LcdC4pD7u7ShlWPlr8TuewDrD0R4ShyIBX41P74kw3LJYgF8q8kG97MdLW4DQlF+UZLUicZPLnxbOaHw==
@@ -85,7 +85,7 @@
     semver "^6.3.0"
     source-map "^0.5.0"
 
-"@babel/eslint-parser@^7.13.14":
+"@babel/eslint-parser@^7.14.7":
   version "7.14.7"
   resolved "https://registry.yarnpkg.com/@babel/eslint-parser/-/eslint-parser-7.14.7.tgz#91be59a4f7dd60d02a3ef772d156976465596bda"
   integrity sha512-6WPwZqO5priAGIwV6msJcdc9TsEPzYeYdS/Xuoap+/ihkgN6dzHp2bcAAwyWZ5bLzk0vvjDmKvRwkqNaiJ8BiQ==
@@ -1778,7 +1778,7 @@ ag-grid-enterprise@^25.3.0:
   resolved "https://registry.yarnpkg.com/ag-grid-enterprise/-/ag-grid-enterprise-25.3.0.tgz#13f24b29a12b835b7e0afdbf8b7822cc161e02cc"
   integrity sha512-eIC0kjPkDnS6nJEsueIT3HbPwr+vFunNiJY7DMEB5D4fAh7GEK9Ds0VMYtqZobLcKQgbqcJAH8ZhFRAHS+bIDA==
 
-ag-grid-vue3@^25.3.0:
+ag-grid-vue3@^25.3.1:
   version "25.3.1"
   resolved "https://registry.yarnpkg.com/ag-grid-vue3/-/ag-grid-vue3-25.3.1.tgz#2c90d18e5b709e2b6892cef5581fdfd57d78dce3"
   integrity sha512-n5Zk2PXHd+nTyNwamRq9HUPo1vNKhhL5Wyv/Z5S9kwhcEgWh3XeqioEbQZctQ4MC8ZPk9DS93zNzYMqPKRhiaA==
@@ -2786,7 +2786,7 @@ core-js@^2.4.0:
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.12.tgz#d9333dfa7b065e347cc5682219d6f690859cc2ec"
   integrity sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==
 
-core-js@^3.0.0, core-js@^3.6.5:
+core-js@^3.0.0, core-js@^3.15.2, core-js@^3.6.5:
   version "3.15.2"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.15.2.tgz#740660d2ff55ef34ce664d7e2455119c5bdd3d61"
   integrity sha512-tKs41J7NJVuaya8DxIOCnl8QuPHx5/ZVbFo1oKgVl1qHFBBrDctzQGtuLjPpRdNTWmKPH6oEvgN/MUID+l485Q==
@@ -3716,7 +3716,7 @@ eslint-config-prettier@^8.1.0:
   resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-8.3.0.tgz#f7471b20b6fe8a9a9254cc684454202886a2dd7a"
   integrity sha512-BgZuLUSeKzvlL/VUjx/Yb787VQ26RU3gGjA3iiFvdsp/2bMfVIWUVP7tjxtjS0e+HP409cPlPvNkQloz8C91ew==
 
-eslint-plugin-vue@^7.0.0:
+eslint-plugin-vue@^7.12.1:
   version "7.12.1"
   resolved "https://registry.yarnpkg.com/eslint-plugin-vue/-/eslint-plugin-vue-7.12.1.tgz#ef6499ce4fe0566659c8e12c71713f5308630a76"
   integrity sha512-xHf/wCt88qmzqQerjaSteUFGASj7fPreglKD4ijnvoKRkoSJ3/H3kuJE8QFFtc+2wjw6hRDs834HH7vpuTJQzg==
@@ -3763,7 +3763,7 @@ eslint-webpack-plugin@^2.4.0:
     normalize-path "^3.0.0"
     schema-utils "^3.0.0"
 
-eslint@^7.14.0:
+eslint@^7.30.0:
   version "7.30.0"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-7.30.0.tgz#6d34ab51aaa56112fd97166226c9a97f505474f8"
   integrity sha512-VLqz80i3as3NdloY44BQSJpFw534L9Oh+6zJOUaViV4JPd+DaHwutqP7tcpkW3YiXbK6s05RZl7yl7cQn+lijg==
@@ -4494,11 +4494,6 @@ hex-color-regex@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/hex-color-regex/-/hex-color-regex-1.1.0.tgz#4c06fccb4602fe2602b3c93df82d7e7dbf1a8a8e"
   integrity sha512-l9sfDFsuqtOqKDsQdqrMRk0U85RZc0RtOR9yPI7mRVOa4FsR/BVnZ0shmQRM96Ji99kYZP/7hn1cedc1+ApsTQ==
-
-highcharts@^9.1.1:
-  version "9.1.2"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-9.1.2.tgz#c9b15390a10acb274a941d2aa5bc05c0889646d9"
-  integrity sha512-RwCnJnxAUCGG4R/WDG+QP/4VJNtOpkQTkXcuf58DjDvm9ZILplSMdZvrbMRC9Y9ecuJQCjjZsiifvyS5E2IBvQ==
 
 hpack.js@^2.1.6:
   version "2.1.6"
@@ -8215,11 +8210,6 @@ vue-style-loader@4.1.3:
     hash-sum "^1.0.2"
     loader-utils "^1.0.2"
 
-vue3-highcharts@^0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/vue3-highcharts/-/vue3-highcharts-0.1.3.tgz#f6d464f3ae8f18ab2ddd3af2fdc67e66d285b2ea"
-  integrity sha512-cxfU5bZiMRT+uAsZD7iVuPmJuZnsgkIrwzmH11NOCS/TbYq+lJ9FJDxUFqY1ZF2p6JyzzDzHJARSghUVV4YJlg==
-
 vue@3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.1.2.tgz#647f8e3949a3d600771dca25d50225dc3e594c64"
@@ -8229,7 +8219,7 @@ vue@3.1.2:
     "@vue/runtime-dom" "3.1.2"
     "@vue/shared" "3.1.2"
 
-vuex@^4.0.1:
+vuex@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/vuex/-/vuex-4.0.2.tgz#f896dbd5bf2a0e963f00c67e9b610de749ccacc9"
   integrity sha512-M6r8uxELjZIK8kTKDGgZTYX/ahzblnzC4isU1tpmEuOIIKmV+TRdc+H4s8ds2NuZ7wpUTdGRzJRtoj+lI+pc0Q==
