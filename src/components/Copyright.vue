@@ -1,11 +1,17 @@
 <template>
 <div class="row">
-  <div class="col">
+  <div class="col gt-xs">
     Penny Vault v{{ appVersion }} <a :href="changelog" target="_blank">Changelog</a>.
   </div>
+  <div class="col-2 xs">
+    v{{ appVersion }}
+  </div>
 
-  <div class="col text-right">
+  <div class="col gt-xs text-right">
     Copyright &copy; 2021. All rights reserved. <router-link to="/legal/tos">Terms of Service</router-link>.
+  </div>
+  <div class="col-10 xs text-right">
+    &copy; 2021 All rights reserved. <router-link to="/legal/tos">Terms of Service</router-link>
   </div>
 </div>
 </template>

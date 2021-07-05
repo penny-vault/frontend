@@ -2,10 +2,14 @@
   <q-page class="q-pa-xs q-px-md">
     <div class="row q-col-gutter-md">
       <div class="col-lg-6 col-sm-4">
-        <h4 class="q-mt-sm q-mb-sm">
+        <h4 class="q-mt-sm gt-sm q-mb-sm">
           <!-- Strategy Name -->
           {{ strategy.name }} <span style="font-size:1rem;" v-if="simulationRun">({{ format(portfolio.performance.periodStart, 'MMM') }} '{{ format(portfolio.performance.periodStart, 'yy') }} to {{ format(portfolio.performance.periodEnd, 'MMM') }} '{{ format(portfolio.performance.periodEnd, 'yy') }})</span>
         </h4>
+        <div class="q-mt-sm lt-md q-mb-md">
+          <!-- Strategy Name -->
+          <span style="font-size: 1.25rem">{{ strategy.name }}</span> <span style="font-size:.75rem;" v-if="simulationRun">({{ format(portfolio.performance.periodStart, 'MMM') }} '{{ format(portfolio.performance.periodStart, 'yy') }} to {{ format(portfolio.performance.periodEnd, 'MMM') }} '{{ format(portfolio.performance.periodEnd, 'yy') }})</span>
+        </div>
       </div>
       <div class="col-lg-6 col-sm-8 gt-xs self-end">
         <q-tabs
@@ -27,7 +31,7 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="row gt-xs">
       <div class="col">
         <q-breadcrumbs class="q-mb-lg">
           <q-breadcrumbs-el icon="home" to="/app" />
@@ -38,7 +42,7 @@
     </div>
 
     <div class="row xs q-col-gutter-md">
-      <div class="col-xs-12">
+      <div class="col-xs-12 q-pb-md" style="padding-top: 4px">
         <q-tabs
           dense
           inside-arrows
@@ -47,17 +51,28 @@
           v-model="tabModel"
         >
           <q-tab name="description" label="Description" />
-          <q-tab name="summary" label="Summary" />
-          <q-tab name="holdings" label="Holdings" />
-          <q-tab name="transactions" label="Transactions" />
-          <q-tab name="returns" label="Returns" />
+          <q-tab :disable="!simulationRun" name="summary" label="Summary" />
+          <q-tab :disable="!simulationRun" name="holdings" label="Holdings" />
+          <q-tab :disable="!simulationRun" name="transactions" label="Transactions" />
+          <q-tab :disable="!simulationRun" name="returns" label="Returns" />
         </q-tabs>
       </div>
     </div>
 
     <div class="row q-col-gutter-md q-row-gutter-md">
-      <div class="col-lg-2 col-md-4 col-sm-12 col-xs-12 q-pl-md">
+      <div class="col-lg-2 col-md-4 gt-sm q-pl-md">
         <strategy-arguments :strategy="strategy" :benchmark-ticker="strategy.benchmark" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" @save="onSave" />
+      </div>
+      <div class="col-sm-12 col-xs-12 lt-md q-pl-md">
+        <q-expansion-item
+          v-model="expandedParameters"
+          icon="ion-options"
+          label="Parameters"
+          dense>
+
+          <strategy-arguments :strategy="strategy" :benchmark-ticker="strategy.benchmark" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" @save="onSave" />
+
+        </q-expansion-item>
       </div>
       <div class="col-lg-10 col-md-8 col-sm-12 col-xs-12">
         <q-tab-panels
@@ -129,6 +144,8 @@ export default defineComponent({
     const $store = useStore()
     const $q = useQuasar()
 
+    const expandedParameters = ref(true)
+
     const simulationStart = ref(new Date(1980,0,1))
     const simulationEnd = ref(new Date())
 
@@ -180,6 +197,7 @@ export default defineComponent({
 
     async function onSubmit({userArgs, begin, end, benchmarkTicker}) {
       $store.dispatch('strategy/executeStrategy', { shortCode: props.strategyShortCode, name: strategy.value.name, stratParams: userArgs, startDate: begin, endDate: end, benchmark: benchmarkTicker })
+      expandedParameters.value = false
     }
 
     // watchers
@@ -189,6 +207,7 @@ export default defineComponent({
     })
 
     return {
+      expandedParameters,
       format,
       portfolio,
       simulationRun,
