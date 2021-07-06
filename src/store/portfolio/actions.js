@@ -12,8 +12,8 @@ function ymdString(dt) {
 }
 
 function normalizePortfolio(portfolio) {
-  portfolio.start_date = new Date(portfolio.start_date * 1000)
-  portfolio.lastchanged = new Date(portfolio.lastchanged * 1000)
+  portfolio.startDate = new Date(portfolio.startDate * 1000)
+  portfolio.lastChanged = new Date(portfolio.lastChanged * 1000)
   return portfolio
 }
 
@@ -109,8 +109,8 @@ export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, 
 
   api.get(`/benchmark/${symbol.toLowerCase()}?snapToStart=true&startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}`, options).then(response => {
     let benchmark = response.data
-    benchmark.start_date = new Date(benchmark.start_date * 1000)
-    benchmark.lastchanged = new Date(benchmark.lastchanged * 1000)
+    benchmark.startDate = new Date(benchmark.startDate * 1000)
+    benchmark.lastChanged = new Date(benchmark.lastChanged * 1000)
 
     dispatch('calculateMetrics', {
       performance: benchmark,
@@ -146,7 +146,7 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
   }
 
   // load strategy
-  let endpoint = `/strategy/${portfolio.strategy}/execute?startDate=${ymdString(portfolio.start_date)}&endDate=${ymdString(new Date())}&arguments=${JSON.stringify(portfolio.arguments)}`
+  let endpoint = `/strategy/${portfolio.strategy}/execute?startDate=${ymdString(portfolio.startDate)}&endDate=${ymdString(new Date())}&arguments=${JSON.stringify(portfolio.arguments)}`
   api.get(endpoint, options).then(response => {
     let performance = response.data
     try {

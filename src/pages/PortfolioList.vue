@@ -67,7 +67,7 @@ export default defineComponent({
           buttons: ['reset', 'apply'],
         },
         checkboxSelection: true },
-      { field: 'ytd_return',
+      { field: 'ytdReturn',
         headerName: 'YTD',
         sortable: true,
         minWidth: 100,
@@ -78,15 +78,15 @@ export default defineComponent({
           closeOnApply: true,
         },
         valueGetter: function (params) {
-          if (params.data.ytd_return.Valid) {
-            return params.data.ytd_return.Float64 * 100
+          if (params.data.ytdReturn.Valid) {
+            return params.data.ytdReturn.Float64 * 100
           } else {
             return NaN
           }
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : ''
       },
-      { field: 'cagr_since_inception',
+      { field: 'cagrSinceInception',
         headerName: 'CAGR',
         sortable: true,
         minWidth: 100,
@@ -97,8 +97,8 @@ export default defineComponent({
           closeOnApply: true,
         },
         valueGetter: function (params) {
-          if (params.data.cagr_since_inception.Valid) {
-            return params.data.cagr_since_inception.Float64 * 100
+          if (params.data.cagrSinceInception.Valid) {
+            return params.data.cagrSinceInception.Float64 * 100
           } else {
             return NaN
           }
@@ -112,7 +112,7 @@ export default defineComponent({
         enableRowGroup: true,
         enablePivot: true
       },
-      { field: 'start_date',
+      { field: 'startDate',
         headerName: 'Beginning Date',
         sortable: true,
         filter: true,

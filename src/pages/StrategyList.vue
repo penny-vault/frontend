@@ -118,8 +118,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.ytd_return.Valid) {
-            return params.data.metrics.ytd_return.Float64
+          if (params.data.metrics.ytdReturn.Valid) {
+            return params.data.metrics.ytdReturn.Float64
           }
           return NaN
         },
@@ -138,8 +138,8 @@ export default defineComponent({
         hide: true,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.cagr_since_inception.Valid) {
-            return params.data.metrics.cagr_since_inception.Float64
+          if (params.data.metrics.cagrSinceInception.Valid) {
+            return params.data.metrics.cagrSinceInception.Float64
           }
           return NaN
         },

@@ -168,7 +168,7 @@ export default defineComponent({
         name: strategy.value.name,
         arguments: args,
         strategy: strategy.value.shortcode,
-        start_date: begin
+        startDate: begin
       }
 
       const endpoint = `/portfolio/`

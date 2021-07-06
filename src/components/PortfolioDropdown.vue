@@ -7,7 +7,7 @@
           <q-item-label>{{ item.name }}</q-item-label>
         </q-item-section>
         <q-item-section side>
-           <q-badge color="blue" text-color="white" :label="formatPercent(item.ytd_return)" />
+           <q-badge color="blue" text-color="white" :label="formatPercent(item.ytdReturn)" />
         </q-item-section>
       </q-item>
     </q-list>

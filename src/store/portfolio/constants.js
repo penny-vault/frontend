@@ -110,18 +110,18 @@ export const emptyPortfolio = {
   "lastfetch": new Date(0),
   "arguments": {
   },
-  "start_date": "1982-07-27T00:00:00.000Z",
-  "ytd_return": {
+  "startDate": "1982-07-27T00:00:00.000Z",
+  "ytdReturn": {
     "Float64": 0.0,
     "Valid": false
   },
-  "cagr_since_inception": {
+  "cagrSinceInception": {
     "Float64": 0.0,
     "Valid": false
   },
   "notifications": 0,
   "created": 0,
-  "lastchanged": "1982-07-27T00:00:00.000Z",
+  "lastChanged": "1982-07-27T00:00:00.000Z",
   "performance": emptyPerformance,
   "benchmark": emptyPerformance,
 }

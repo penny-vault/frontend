@@ -1,7 +1,7 @@
 export function setPortfolios (state, portfolios) {
   portfolios.forEach((element) => {
-    element.start_date = new Date(element.start_date * 1000)
-    element.lastchanged = new Date(element.lastchanged * 1000)
+    element.startDate = new Date(element.startDate * 1000)
+    element.lastChanged = new Date(element.lastChanged * 1000)
     state.portfolioDict[element.id] = element
   })
   state.portfolios = portfolios

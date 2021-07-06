@@ -75,18 +75,18 @@ export async function executeStrategy ({ commit, dispatch }, { shortCode, name, 
       "name": name,
       "strategy": shortCode,
       "arguments": stratParams,
-      "start_date": startDate,
-      "ytd_return": {
+      "startDate": startDate,
+      "ytdReturn": {
         "Float64": 0.0,
         "Valid": false
       },
-      "cagr_since_inception": {
+      "cagrSinceInception": {
         "Float64": 0.0,
         "Valid": false
       },
       "notifications": 0,
       "created": 0,
-      "lastchanged": endDate,
+      "lastChanged": endDate,
       "performance": performance,
       "benchmark": emptyPerformance,
     }
