@@ -80,8 +80,6 @@
           v-bind="link"
         />
       </q-list>
-
-        <q-btn round flat @click="toggleMiniDrawer" icon="double_arrow" color="grey-4" :class="rotateDrawer" size="sm"></q-btn>
       <!-- sidebar content end -->
     </q-drawer>
 

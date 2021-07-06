@@ -1,17 +1,17 @@
 <template>
   <q-page class="q-pa-xs q-px-md">
     <div class="row q-col-gutter-md">
-      <div class="col-lg-6 col-sm-4">
-        <h4 class="q-mt-sm gt-sm q-mb-sm">
+      <div class="col-lg-6 col-md-5 col-sm-4">
+        <h4 class="q-mt-sm gt-md q-mb-sm">
           <!-- Strategy Name -->
           {{ strategy.name }} <span style="font-size:1rem;" v-if="simulationRun">({{ format(portfolio.performance.periodStart, 'MMM') }} '{{ format(portfolio.performance.periodStart, 'yy') }} to {{ format(portfolio.performance.periodEnd, 'MMM') }} '{{ format(portfolio.performance.periodEnd, 'yy') }})</span>
         </h4>
-        <div class="q-mt-sm lt-md q-mb-md">
+        <div class="q-mt-sm lt-lg q-mb-md">
           <!-- Strategy Name -->
           <span style="font-size: 1.25rem">{{ strategy.name }}</span> <span style="font-size:.75rem;" v-if="simulationRun">({{ format(portfolio.performance.periodStart, 'MMM') }} '{{ format(portfolio.performance.periodStart, 'yy') }} to {{ format(portfolio.performance.periodEnd, 'MMM') }} '{{ format(portfolio.performance.periodEnd, 'yy') }})</span>
         </div>
       </div>
-      <div class="col-lg-6 col-sm-8 gt-xs self-end">
+      <div class="col-lg-6 col-md-7 col-sm-8 gt-xs self-end">
         <q-tabs
           inline-label
           outside-arrows
@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <div class="row gt-xs">
+    <div class="row gt-md">
       <div class="col">
         <q-breadcrumbs class="q-mb-lg">
           <q-breadcrumbs-el icon="home" to="/app" />
