@@ -152,10 +152,6 @@ export default defineComponent({
     end: {
       type: Date,
       default: new Date()
-    },
-    benchmarkTicker: {
-      type: String,
-      default: "VFINX"
     }
   },
   components: {
@@ -173,7 +169,7 @@ export default defineComponent({
     const panel = ref('standard')
     const frequentlyUsed = ref('')
     const frequentlyUsedOptions = ref([])
-    const benchmarkTickerData = ref(`${benchmarkTicker.value}`)
+    const benchmarkTickerData = ref(`${strategy.value.benchmark}`)
     const startDate = ref(format(props.begin, dateFmt.value))
     const endDate = ref(format(props.end, dateFmt.value))
 
@@ -315,6 +311,7 @@ export default defineComponent({
     watch(strategy, (n) => {
       initializeArguments()
       initializeFrequentlyUsed()
+      benchmarkTickerData.value = `${strategy.value.benchmark}`
     })
 
     watch(frequentlyUsed, (n) => {

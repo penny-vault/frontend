@@ -61,7 +61,7 @@
 
     <div class="row q-col-gutter-md q-row-gutter-md">
       <div class="col-lg-2 col-md-4 gt-sm q-pl-md">
-        <strategy-arguments :strategy="strategy" :benchmark-ticker="strategy.benchmark" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" @save="onSave" />
+        <strategy-arguments :strategy="strategy" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" @save="onSave" />
       </div>
       <div class="col-sm-12 col-xs-12 lt-md q-pl-md">
         <q-expansion-item
