@@ -151,7 +151,11 @@ export default defineComponent({
 
     const tabModel = ref('description')
 
+    // clear existing state
     $store.commit('strategy/setSimulationExecuted', false)
+    $store.commit('portfolio/clearCurrentPortfolio')
+    $store.commit('portfolio/clearBenchmark')
+
     $store.dispatch('strategy/fetchStrategy', props.strategyShortCode)
 
     const strategy = computed(() => $store.state.strategy.current)

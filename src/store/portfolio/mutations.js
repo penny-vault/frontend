@@ -1,3 +1,5 @@
+import { emptyPortfolio, emptyPerformance } from './constants'
+
 export function setPortfolios (state, portfolios) {
   portfolios.forEach((element) => {
     element.startDate = new Date(element.startDate * 1000)
@@ -19,8 +21,16 @@ export function setCurrentPortfolio (state, portfolio) {
   state.current = portfolio
 }
 
+export function clearCurrentPortfolio (state) {
+  state.current = emptyPortfolio
+}
+
 export function setBenchmark (state, benchmark) {
   state.benchmark = benchmark
+}
+
+export function clearBenchmark (state) {
+  state.benchmark = emptyPerformance
 }
 
 export function setMetric (state, metric) {

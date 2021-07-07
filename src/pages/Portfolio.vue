@@ -113,6 +113,10 @@ export default defineComponent({
 
     const tabModel = ref('summary')
 
+    // clear existing state
+    $store.commit('portfolio/clearCurrentPortfolio')
+    $store.commit('portfolio/clearBenchmark')
+
     $store.dispatch('portfolio/fetchPortfolio', props.portfolioId)
 
     // set a watcher on the Reactive Reference to portfolioId prop
