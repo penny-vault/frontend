@@ -6,6 +6,7 @@
 let eventBus = require('tiny-emitter/instance')
 
 import { defineComponent, watch, ref, onMounted, onUnmounted, toRefs } from 'vue'
+import { format, fromUnixTime, parse } from 'date-fns'
 
 import * as am4core from '@amcharts/amcharts4/core'
 import * as am4charts from '@amcharts/amcharts4/charts'
@@ -35,9 +36,17 @@ export default defineComponent({
     var benchmarkValueSeries
     var dateAxis
     var valueAxis
+    var referenceMarker
+    var strategyData = new Map()
 
     // reactive data
     const { logScale, showDrawDowns, measurements, benchmark, drawDowns } = toRefs(props)
+
+    let cursorPosition = {
+      x: null,
+      y: null,
+      seriesValue: null,
+    }
 
     // handle events
 
@@ -61,6 +70,8 @@ export default defineComponent({
         am4charts.XYChart
       )
 
+      chart.numberFormatter.numberFormat = "#,###.##a"
+
       // Create axes
       dateAxis = chart.xAxes.push(new am4charts.DateAxis())
       valueAxis = chart.yAxes.push(new am4charts.ValueAxis())
@@ -74,6 +85,35 @@ export default defineComponent({
       strategyValueSeries.data = getStrategyValueData()
       strategyValueSeries.dataFields.dateX = "date"
       strategyValueSeries.dataFields.valueY = "value"
+      strategyValueSeries.dataItems.template.locations.dateX = 1
+
+      strategyValueSeries.showPercentDiff = false
+      strategyValueSeries.referencePercentDiff = NaN
+
+      chart.events.on("hit", function(ev) {
+        if (!strategyValueSeries.showPercentDiff) {
+          strategyValueSeries.showPercentDiff = true
+
+          // put a line at the reference point
+          referenceMarker = dateAxis.axisRanges.create()
+          referenceMarker.value = cursorPosition.x
+          referenceMarker.grid.above = true
+          referenceMarker.grid.stroke = am4core.color('black')
+          referenceMarker.grid.strokeDasharray = '3,3'
+          referenceMarker.grid.strokeWidth = 2
+          referenceMarker.grid.strokeOpacity = 1
+
+          strategyValueSeries.referenceValue = cursorPosition.seriesValue
+          strategyValueSeries.referenceDate = format(cursorPosition.x, 'MMM yyyy')
+          strategyValueSeries.tooltipText = `[bold]{dateX}[/]\n[${strategyValueSeries.stroke.hex}]●[/] ${strategyValueSeries.name}: \${${strategyValueSeries.dataFields.valueY}.formatNumber("#,###.00")}\n\n[bold]% chg since {referenceDate}[/]: {referencePercentDiff}%`
+        } else {
+          strategyValueSeries.showPercentDiff = false
+          dateAxis.axisRanges.removeValue(referenceMarker)
+          strategyValueSeries.referenceValue = NaN
+          strategyValueSeries.referencePercentDiff = NaN
+          strategyValueSeries.tooltipText = `[bold]{dateX}[/]\n[${strategyValueSeries.stroke.hex}]●[/] ${strategyValueSeries.name}: \${${strategyValueSeries.dataFields.valueY}.formatNumber("#,###.00")}\n`
+        }
+      }, this);
 
       strategyValueSeries.tooltipText = `[bold]{dateX}[/]\n[${strategyValueSeries.stroke.hex}]●[/] ${strategyValueSeries.name}: \${${strategyValueSeries.dataFields.valueY}.formatNumber("#,###.00")}\n`
 
@@ -114,6 +154,15 @@ export default defineComponent({
       chart.scrollbarX.parent = chart.bottomAxesContainer
       chart.scrollbarX.series.push(strategyValueSeries)
 
+      chart.cursor.events.on("cursorpositionchanged", function(ev) {
+        let xAxis = ev.target.chart.xAxes.getIndex(0)
+        let yAxis = ev.target.chart.yAxes.getIndex(0)
+        cursorPosition.x = dateAxis.positionToDate(xAxis.toAxisPosition(ev.target.xPosition))
+        cursorPosition.y = valueAxis.positionToValue(yAxis.toAxisPosition(ev.target.yPosition))
+        cursorPosition.seriesValue = strategyData.get(format(cursorPosition.x, 'yyyy-MM'))
+        strategyValueSeries.referencePercentDiff = ((cursorPosition.seriesValue / strategyValueSeries.referenceValue - 1) * 100).toFixed(2)
+      })
+
       dateAxis.keepSelection = true
 
       chart.legend = new am4charts.Legend()
@@ -122,8 +171,9 @@ export default defineComponent({
     function getBenchmarkValueData() {
       var chartData = []
       benchmark.value.forEach(elem => {
+        let dt = parse(format(fromUnixTime(elem.time), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
         chartData.push({
-          date: new Date(elem.time * 1000),
+          date: dt,
           value: elem.value
         })
       })
@@ -133,9 +183,11 @@ export default defineComponent({
     function getStrategyValueData() {
       var chartData = []
       measurements.value.forEach(elem => {
+        let dt = parse(format(fromUnixTime(elem.time), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
+        strategyData.set(format(dt, 'yyyy-MM'), elem.value)
         chartData.push({
-          date: new Date(elem.time * 1000),
-          value: elem.value.toFixed(2)
+          date: dt,
+          value: elem.value
         })
       })
       return chartData
@@ -151,9 +203,14 @@ export default defineComponent({
       }
       if (props.showDrawDowns) {
         drawDowns.value.forEach(elem => {
+          // NOTE: Adding 2.5 days to make things line up. Note sure why this is necessary
+          let begin = parse(format(fromUnixTime(elem.begin + (86400*2.5)), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
+          let end = parse(format(fromUnixTime(elem.end + (86400*2.5)), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
+
           let range = dateAxis.createSeriesRange(strategyValueSeries)
-          range.date = new Date(elem.begin * 1000)
-          range.endDate = new Date(elem.end * 1000)
+
+          range.date = begin
+          range.endDate = end
           range.contents.stroke = am4core.color("#A60017")
           range.contents.fill = am4core.color("#D5001D")
           range.contents.fillOpacity = 0.5
@@ -175,7 +232,9 @@ export default defineComponent({
 
     // set watchers
     watch(logScale, async (n) => {
-      valueAxis.logarithmic = n
+      if (valueAxis !== undefined) {
+        valueAxis.logarithmic = n
+      }
     })
 
     watch(showDrawDowns, async () => {
@@ -183,12 +242,16 @@ export default defineComponent({
     })
 
     watch(measurements, async () => {
-      strategyValueSeries.data = getStrategyValueData()
-      updatePlotBands()
+      if (strategyValueSeries !== undefined) {
+        strategyValueSeries.data = getStrategyValueData()
+        updatePlotBands()
+      }
     })
 
     watch(benchmark, async () => {
-      benchmarkValueSeries.data = getBenchmarkValueData()
+      if (benchmarkValueSeries !== undefined) {
+        benchmarkValueSeries.data = getBenchmarkValueData()
+      }
     })
 
     watch(drawDowns, async () => {
