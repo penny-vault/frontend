@@ -158,8 +158,8 @@ export default defineComponent({
         hide: true,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.cagr_3yr.Valid) {
-            return params.data.metrics.cagr_3yr.Float64
+          if (params.data.metrics.cagr3yr.Valid) {
+            return params.data.metrics.cagr3yr.Float64
           }
           return NaN
         },
@@ -178,8 +178,8 @@ export default defineComponent({
         hide: true,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.cagr_5yr.Valid) {
-            return params.data.metrics.cagr_5yr.Float64
+          if (params.data.metrics.cagr5yr.Valid) {
+            return params.data.metrics.cagr5yr.Float64
           }
           return NaN
         },
@@ -198,8 +198,8 @@ export default defineComponent({
         hide: false,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.cagr_10yr.Valid) {
-            return params.data.metrics.cagr_10yr.Float64
+          if (params.data.metrics.cagr10yr.Valid) {
+            return params.data.metrics.cagr10yr.Float64
           }
           return NaN
         },
@@ -219,7 +219,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
           if (params.data.metrics.std_dev.Valid) {
-            return params.data.metrics.std_dev.Float64
+            return params.data.metrics.stdDev.Float64
           }
           return NaN
         },
@@ -239,7 +239,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
           if (params.data.metrics.downside_deviation.Valid) {
-            return params.data.metrics.downside_deviation.Float64
+            return params.data.metrics.downsideDeviation.Float64
           }
           return NaN
         },
@@ -257,8 +257,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.max_draw_down.Valid) {
-            return params.data.metrics.max_draw_down.Float64
+          if (params.data.metrics.maxDrawDown.Valid) {
+            return params.data.metrics.maxDrawDown.Float64
           }
           return NaN
         },
@@ -277,8 +277,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.avg_draw_down.Valid) {
-            return params.data.metrics.avg_draw_down.Float64
+          if (params.data.metrics.avgDrawDown.Valid) {
+            return params.data.metrics.avgDrawDown.Float64
           }
           return NaN
         },
@@ -297,8 +297,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.sharpe_ratio.Valid) {
-            return params.data.metrics.sharpe_ratio.Float64
+          if (params.data.metrics.sharpeRatio.Valid) {
+            return params.data.metrics.sharpeRatio.Float64
           }
           return NaN
         },
@@ -316,8 +316,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.sortino_ratio.Valid) {
-            return params.data.metrics.sortino_ratio.Float64
+          if (params.data.metrics.sortinoRatio.Valid) {
+            return params.data.metrics.sortinoRatio.Float64
           }
           return NaN
         },
@@ -335,8 +335,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.ulcer_index.Valid) {
-            return params.data.metrics.ulcer_index.Float64
+          if (params.data.metrics.ulcerIndex.Valid) {
+            return params.data.metrics.ulcerIndex.Float64
           }
           return NaN
         },
@@ -363,8 +363,8 @@ export default defineComponent({
       data.value = new Array()
       rowData.value.forEach((elem) => {
         data.value.push({
-          x: (elem.metrics.ulcer_index.Float64).toFixed(2),
-          y: (elem.metrics.cagr_10yr.Float64 * 100).toFixed(2),
+          x: (elem.metrics.ulcerIndex.Float64).toFixed(2),
+          y: (elem.metrics.cagr10yr.Float64 * 100).toFixed(2),
           strategy: elem.name,
           shortcode: elem.shortcode,
           description: wordWrap(elem.description, 30)
