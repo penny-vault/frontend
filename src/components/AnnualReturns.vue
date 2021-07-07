@@ -131,8 +131,8 @@ export default defineComponent({
       benchmarkSeries.events.on("shown", arrangeColumns)
 
       // setup tooltips
-      strategySeries.columns.template.tooltipText = `[bold]{year}[/]\n[${strategySeries.stroke.hex}]●[/] ${strategySeries.name}: {strategy.formatNumber("#,###.")}%\n[${benchmarkSeries.stroke.hex}]●[/] ${benchmarkSeries.name}: {benchmark.formatNumber("#,###.")}%\n`
-      benchmarkSeries.columns.template.tooltipText = `[bold]{year}[/]\n[${strategySeries.stroke.hex}]●[/] ${strategySeries.name}: {strategy.formatNumber("#,###.")}%\n[${benchmarkSeries.stroke.hex}]●[/] ${benchmarkSeries.name}: {benchmark.formatNumber("#,###.")}%\n`
+      strategySeries.columns.template.tooltipText = `[bold]{year}[/]\n[${strategySeries.stroke.hex}]●[/] ${strategySeries.name}: {strategy.formatNumber("#,###.#")}%\n[${benchmarkSeries.stroke.hex}]●[/] ${benchmarkSeries.name}: {benchmark.formatNumber("#,###.#")}%\n`
+      benchmarkSeries.columns.template.tooltipText = `[bold]{year}[/]\n[${strategySeries.stroke.hex}]●[/] ${strategySeries.name}: {strategy.formatNumber("#,###.#")}%\n[${benchmarkSeries.stroke.hex}]●[/] ${benchmarkSeries.name}: {benchmark.formatNumber("#,###.#")}%\n`
 
       chart.data = await buildData()
     }
