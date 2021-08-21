@@ -21,6 +21,11 @@ const routes = [
         beforeEnter: routeGuard
       },
       {
+        path: 'api',
+        component: () => import('pages/ApiKey.vue'),
+        beforeEnter: routeGuard
+      },
+      {
         path: 'portfolio',
         component: () => import('pages/PortfolioList.vue'),
         beforeEnter: routeGuard

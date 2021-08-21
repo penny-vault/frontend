@@ -1,8 +1,8 @@
 import { emptyPerformance } from '../portfolio/constants'
 import { api } from 'boot/axios'
 import { authPlugin } from '../../auth'
-import hash from 'object-hash'
-
+import { colfer } from "../../assets/colfer.js"
+import { toHexString } from "../../assets/util.js"
 import { Notify } from 'quasar'
 import { Loading } from 'quasar'
 
@@ -66,10 +66,13 @@ export async function executeStrategy ({ commit, dispatch }, { shortCode, name, 
   api.get(endpoint, {
     headers: {
       Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
-    }
+    },
+    responseType: 'arraybuffer'
   }).then(response => {
-    // Create a mock portfolio
-    let performance = response.data
+    // Create a mock portfolio and fill out the info
+    let performance = new colfer.Performance({})
+    var uint8View = new Uint8Array(response.data)
+    performance.unmarshal(uint8View)
     let portfolio = {
       "id": "",
       "name": name,
@@ -92,48 +95,31 @@ export async function executeStrategy ({ commit, dispatch }, { shortCode, name, 
     }
 
     try {
-      performance.maxDrawDown = performance.metrics.drawDowns[0].lossPercent
+      performance.MaxDrawDown = performance.DrawDowns[0].LossPercent
     } catch (e) {
-      performance.maxDrawDown = 0
+      performance.MaxDrawDown = 0
     }
-    performance.periodStart = new Date(performance.periodStart * 1000)
-    performance.periodEnd = new Date(performance.periodEnd * 1000)
-    performance.computedOn = new Date(performance.computedOn * 1000)
-    portfolio.performance = performance
 
-    dispatch('portfolio/fetchBenchmark', {
-      startDate: performance.periodStart,
-      endDate: performance.periodEnd,
-      symbol: benchmark
+    portfolio.performance = performance
+    portfolio.id = toHexString(performance.PortfolioID)
+    performance.PortfolioID = portfolio.id
+
+    dispatch('portfolio/fetchMeasurements', {
+      portfolioId: portfolio.id,
+      metric1: "strategy_growth_of_10k",
+      metric2: "benchmark_growth_of_10k"
     }, { root: true })
 
     // calculate metrics
     dispatch('portfolio/calculateMetrics', {
-      performance: performance,
+      performance: performance.PortfolioMetrics,
       key: 'portfolio'
     }, { root: true })
 
-    // remove marker transactions
-    performance.transactions = performance.transactions.filter(item => {
-      let dt = new Date(item.date)
-      let now = new Date()
-      if (item.kind !== "MARKER" && dt <= now) {
-        return item
-      }
-    })
-
-    // cleanup measurements
-    performance.measurements = performance.measurements.map((item, idx, arr) => {
-      let next = arr[idx+1]
-      if (next !== undefined) {
-        item.valueAdjusted = next.value
-        item.percentReturnAdjusted = next.percentReturn
-      } else {
-        item.valueAdjusted = undefined
-        item.percentReturnAdjusted = undefined
-      }
-      return item
-    })
+    dispatch('portfolio/calculateMetrics', {
+      performance: performance.BenchmarkMetrics,
+      key: 'benchmark'
+    }, { root: true })
 
     commit('portfolio/setCurrentPortfolio', portfolio, { root: true })
     commit('setSimulationExecuted', true)

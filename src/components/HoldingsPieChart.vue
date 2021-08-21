@@ -31,8 +31,6 @@ export default defineComponent({
     // reactive data
     const { holdings, width: chartWidth, height: chartHeight } = toRefs(props)
 
-    console.log(chartWidth.value)
-
     // methods
     async function getTickerData() {
       var counts = new Map()

@@ -2,7 +2,7 @@
   <q-page class="q-pa-xs">
     <div class="row q-col-gutter-md q-pl-sm">
       <div class="col-lg-6 col-sm-4">
-        <h4 class="q-mt-sm q-mb-sm">{{ portfolio.name }} <span style="font-size:1rem;">({{ format(portfolio.performance.periodStart, 'MMM') }} '{{ format(portfolio.performance.periodStart, 'yy') }} to {{ format(portfolio.performance.periodEnd, 'MMM') }} '{{ format(portfolio.performance.periodEnd, 'yy') }})</span></h4>
+        <h4 class="q-mt-sm q-mb-sm">{{ portfolio.name }} <span style="font-size:1rem;">({{ format(portfolio.performance.PeriodStart, 'MMM') }} '{{ format(portfolio.performance.PeriodStart, 'yy') }} to {{ format(portfolio.performance.PeriodEnd, 'MMM') }} '{{ format(portfolio.performance.PeriodEnd, 'yy') }})</span></h4>
       </div>
       <div class="col-lg-6 col-sm-8 gt-xs self-end">
         <q-tabs
@@ -78,7 +78,7 @@
       </q-tab-panel>
     </q-tab-panels>
 
-    <span class="text-center q-ml-md q-mb-sm text-grey-6">Computed on: {{ format(portfolio.performance.computedOn, 'eeee, MMM eo yyyy HH:mm:ss') }}</span>
+    <span class="text-center q-ml-md q-mb-sm text-grey-6">Computed on: {{ format(portfolio.performance.ComputedOn, 'eeee, MMM eo yyyy HH:mm:ss') }}</span>
 
   </q-page>
 </template>

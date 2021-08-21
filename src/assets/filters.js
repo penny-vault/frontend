@@ -1,4 +1,8 @@
 export function formatPercent (value) {
+  if (isNaN(value)) {
+    return "-"
+  }
+
   let percentFormatter = new Intl.NumberFormat('en-US', {
     style: 'percent',
     minimumFractionDigits: 1,
@@ -15,6 +19,9 @@ export function formatPercent (value) {
 }
 
 export function formatNumber (value) {
+  if (isNaN(value)) {
+    return "-"
+  }
   let numberFormatter = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2})
   if (typeof value === "number") {
     return numberFormatter.format(value)

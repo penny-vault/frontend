@@ -27,7 +27,6 @@
     "link": "/app/compare"
   },
   {
-    "disabled": true,
     "title": "API",
     "icon": "ion-barcode",
     "link": "/app/api"

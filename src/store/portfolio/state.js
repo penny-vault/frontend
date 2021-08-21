@@ -1,4 +1,4 @@
-import { emptyPortfolio, emptyPerformance, emptyMetrics } from './constants'
+import { emptyPortfolio, emptyPerformance, emptyMetrics, emptyMeasurements } from './constants'
 
 export default function () {
   return {
@@ -6,6 +6,7 @@ export default function () {
     portfolioDict: {},
     current: emptyPortfolio,
     benchmark: emptyPerformance,
+    measurements: emptyMeasurements,
     metrics: emptyMetrics
   }
 }

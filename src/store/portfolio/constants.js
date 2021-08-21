@@ -1,3 +1,5 @@
+import { colfer } from "../../assets/colfer.js"
+
 export const NoNotify = 0x00000001
 export const Daily    = 0x00000010
 export const Weekly   = 0x00000100
@@ -59,6 +61,8 @@ export const emptyPerformance = {
   },
   "maxDrawDown": 0
 }
+
+export const emptyMeasurements = colfer.PerformanceMeasurementItemList()
 
 export const emptyMetrics = {
   finalBalance: {

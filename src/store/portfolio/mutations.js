@@ -1,5 +1,9 @@
 import { emptyPortfolio, emptyPerformance } from './constants'
 
+export function setMeasurements (state, measurements) {
+  state.measurements = measurements
+}
+
 export function setPortfolios (state, portfolios) {
   portfolios.forEach((element) => {
     element.startDate = new Date(element.startDate * 1000)

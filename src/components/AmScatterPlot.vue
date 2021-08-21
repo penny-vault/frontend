@@ -102,7 +102,6 @@ export default defineComponent({
         symbol.strokeWidth = elem.strokeWidth || 0
 
         if (elem.color) {
-          console
           if (typeof elem.color === 'number') {
             symbol.fill = chart.colors.getIndex(elem.color)
           } else {

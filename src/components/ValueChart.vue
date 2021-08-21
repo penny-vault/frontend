@@ -6,7 +6,7 @@
 let eventBus = require('tiny-emitter/instance')
 
 import { defineComponent, watch, ref, onMounted, onUnmounted, toRefs } from 'vue'
-import { format, fromUnixTime, parse } from 'date-fns'
+import { format, fromUnixTime, parse, add } from 'date-fns'
 
 import * as am4core from '@amcharts/amcharts4/core'
 import * as am4charts from '@amcharts/amcharts4/charts'
@@ -24,8 +24,14 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
-    measurements: Array,
-    benchmark: Array,
+    measurements: {
+      type: Object,
+      default: () => {
+        {
+          Items: []
+        }
+      }
+    },
     drawDowns: Array
   },
   setup (props) {
@@ -40,7 +46,7 @@ export default defineComponent({
     var strategyData = new Map()
 
     // reactive data
-    const { logScale, showDrawDowns, measurements, benchmark, drawDowns } = toRefs(props)
+    const { logScale, showDrawDowns, measurements, drawDowns } = toRefs(props)
 
     let cursorPosition = {
       x: null,
@@ -70,21 +76,28 @@ export default defineComponent({
         am4charts.XYChart
       )
 
+      if (measurements.value !== undefined) {
+        chart.data = measurements.value.Items
+        fillStrategyData()
+      }
+
       chart.numberFormatter.numberFormat = "#,###.##a"
 
       // Create axes
       dateAxis = chart.xAxes.push(new am4charts.DateAxis())
+      dateAxis.groupData = true
+      dateAxis.groupCount = 500
+
       valueAxis = chart.yAxes.push(new am4charts.ValueAxis())
       valueAxis.logarithmic = logScale.value
       valueAxis.tooltip.disabled = true
-      valueAxis.title.text = "Value"
+      valueAxis.title.text = "Growth of 10k"
 
       // Add strategy value series
       strategyValueSeries = chart.series.push(new am4charts.LineSeries())
       strategyValueSeries.name = "Strategy"
-      strategyValueSeries.data = getStrategyValueData()
-      strategyValueSeries.dataFields.dateX = "date"
-      strategyValueSeries.dataFields.valueY = "value"
+      strategyValueSeries.dataFields.dateX = "Time"
+      strategyValueSeries.dataFields.valueY = "Value1"
       strategyValueSeries.dataItems.template.locations.dateX = 1
 
       strategyValueSeries.showPercentDiff = false
@@ -141,9 +154,8 @@ export default defineComponent({
       // Add strategy value series
       benchmarkValueSeries = chart.series.push(new am4charts.LineSeries())
       benchmarkValueSeries.name = "Benchmark"
-      benchmarkValueSeries.data = getBenchmarkValueData()
-      benchmarkValueSeries.dataFields.dateX = "date"
-      benchmarkValueSeries.dataFields.valueY = "value"
+      benchmarkValueSeries.dataFields.dateX = "Time"
+      benchmarkValueSeries.dataFields.valueY = "Value2"
       benchmarkValueSeries.stroke = chart.colors.getIndex(2)
       benchmarkValueSeries.strokeWidth = 1
 
@@ -159,7 +171,18 @@ export default defineComponent({
         let yAxis = ev.target.chart.yAxes.getIndex(0)
         cursorPosition.x = dateAxis.positionToDate(xAxis.toAxisPosition(ev.target.xPosition))
         cursorPosition.y = valueAxis.positionToValue(yAxis.toAxisPosition(ev.target.yPosition))
-        cursorPosition.seriesValue = strategyData.get(format(cursorPosition.x, 'yyyy-MM'))
+        let val = strategyData.get(format(cursorPosition.x, 'yyyy-MM-dd'))
+        // look at up to 31 more dates to try and find a value
+        if (val === undefined) {
+          for (let i = 0; i < 31; i++) {
+            cursorPosition.x = add(cursorPosition.x, { days: 1 })
+            val = strategyData.get(format(cursorPosition.x, 'yyyy-MM-dd'))
+            if (val !== undefined) {
+              break
+            }
+          }
+        }
+        cursorPosition.seriesValue = val
         strategyValueSeries.referencePercentDiff = ((cursorPosition.seriesValue / strategyValueSeries.referenceValue - 1) * 100).toFixed(2)
       })
 
@@ -168,29 +191,11 @@ export default defineComponent({
       chart.legend = new am4charts.Legend()
     }
 
-    function getBenchmarkValueData() {
-      var chartData = []
-      benchmark.value.forEach(elem => {
-        let dt = parse(format(fromUnixTime(elem.time), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
-        chartData.push({
-          date: dt,
-          value: elem.value
-        })
+    async function fillStrategyData() {
+      strategyData = new Map()
+      measurements.value.Items.forEach((elem, idx) => {
+        strategyData.set(format(elem.Time, 'yyyy-MM-dd'), elem.Value1)
       })
-      return chartData
-    }
-
-    function getStrategyValueData() {
-      var chartData = []
-      measurements.value.forEach(elem => {
-        let dt = parse(format(fromUnixTime(elem.time), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
-        strategyData.set(format(dt, 'yyyy-MM'), elem.value)
-        chartData.push({
-          date: dt,
-          value: elem.value
-        })
-      })
-      return chartData
     }
 
     async function updatePlotBands() {
@@ -242,15 +247,10 @@ export default defineComponent({
     })
 
     watch(measurements, async () => {
-      if (strategyValueSeries !== undefined) {
-        strategyValueSeries.data = getStrategyValueData()
+      if (chart !== undefined) {
+        chart.data = measurements.value.Items
+        fillStrategyData()
         updatePlotBands()
-      }
-    })
-
-    watch(benchmark, async () => {
-      if (benchmarkValueSeries !== undefined) {
-        benchmarkValueSeries.data = getBenchmarkValueData()
       }
     })
 

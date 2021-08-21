@@ -1,7 +1,8 @@
+import { colfer } from "../../assets/colfer.js"
 import { emptyPortfolio, emptyPerformance } from './constants'
+
 import { api } from 'boot/axios'
 import { authPlugin } from '../../auth'
-import hash from 'object-hash'
 
 import { Loading } from 'quasar'
 
@@ -120,6 +121,24 @@ export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, 
   })
 }
 
+export async function fetchMeasurements({ commit }, { portfolioId, metric1, metric2 } ) {
+  const accessToken = await authPlugin.getTokenSilently()
+  let options = {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    },
+    responseType: 'arraybuffer'
+  }
+
+  let endpoint = `portfolio/${portfolioId}/measurements?field1=${metric1}&field2=${metric2}`
+  api.get(endpoint, options).then(response => {
+    let measurements = new colfer.PerformanceMeasurementItemList({})
+    var uint8View = new Uint8Array(response.data)
+    measurements.unmarshal(uint8View)
+    commit('setMeasurements', measurements)
+  })
+}
+
 export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) {
   const accessToken = await authPlugin.getTokenSilently()
   let options = {
@@ -154,9 +173,6 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
     } catch (e) {
       performance.maxDrawDown = 0
     }
-    performance.periodStart = new Date(performance.periodStart * 1000)
-    performance.periodEnd = new Date(performance.periodEnd * 1000)
-    performance.computedOn = new Date(performance.computedOn * 1000)
     portfolio.performance = performance
 
     dispatch('fetchBenchmark', {
@@ -220,54 +236,60 @@ export async function calculateMetrics({ commit }, { performance, key }) {
     value: {}
   }
 
-  metric.value[`${key}Value`] = performance.measurements[performance.measurements.length-1].value
-  metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.measurements[performance.measurements.length-1].value)
+  metric.value[`${key}Value`] = performance.FinalBalance
+  metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.FinalBalance)
 
   commit('setMetric', metric)
 
   metric.key = key
   metric.name = 'totalDeposited'
-  metric.value[`${key}Value`] = performance.totalDeposited
-  metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.totalDeposited)
+  metric.value[`${key}Value`] = performance.TotalDeposited
+  if (isNaN(performance.TotalDeposited)) {
+    metric.value[`${key}FormattedValue`] = "-"
+  } else {
+    metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.TotalDeposited)
+  }
   commit('setMetric', metric)
 
   metric.key = key
   metric.name = 'totalWithdrawn'
-  metric.value[`${key}Value`] = performance.totalWithdrawn
-  metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.totalWithdrawn)
+  metric.value[`${key}Value`] = performance.TotalWithdrawn
+  if (isNaN(performance.TotalWithdrawn)) {
+    metric.value[`${key}FormattedValue`] = "-"
+  } else {
+    metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.TotalWithdrawn)
+  }
   commit('setMetric', metric)
 
   metric.key = key
   metric.name = 'stdDev'
-  metric.value[`${key}Value`] = performance.metrics.stdDev
-  metric.value[`${key}FormattedValue`] = percentFormatter.format(performance.metrics.stdDev)
+  metric.value[`${key}Value`] = performance.StdDev
+  metric.value[`${key}FormattedValue`] = percentFormatter.format(performance.StdDevSinceInception)
   commit('setMetric', metric)
 
   metric.key = key
   metric.name = 'sharpeRatio'
-  metric.value[`${key}Value`] = performance.metrics.sharpeRatio
-  metric.value[`${key}FormattedValue`] = performance.metrics.sharpeRatio.toFixed(2)
+  metric.value[`${key}Value`] = performance.SharpeRatioSinceInception
+  metric.value[`${key}FormattedValue`] = performance.SharpeRatioSinceInception.toFixed(2)
   commit('setMetric', metric)
 
   metric.key = key
   metric.name = 'sortinoRatio'
-  metric.value[`${key}Value`] = performance.metrics.sortinoRatio
-  metric.value[`${key}FormattedValue`] = performance.metrics.sortinoRatio.toFixed(2)
+  metric.value[`${key}Value`] = performance.SortinoRatioSinceInception
+  metric.value[`${key}FormattedValue`] = performance.SortinoRatioSinceInception.toFixed(2)
   commit('setMetric', metric)
 
-  let bestYear = BestYear(performance.measurements)
   metric.key = key
   metric.name = 'bestYear'
-  metric.value[`${key}Value`] = bestYear.value
-  metric.value[`${key}FormattedValue`] = percentFormatter.format(bestYear.value)
-  metric.value[`${key}Suffix`] = ` (${bestYear.year})`
+  metric.value[`${key}Value`] = performance.BestYear.Return
+  metric.value[`${key}FormattedValue`] = percentFormatter.format(performance.BestYear.Return)
+  metric.value[`${key}Suffix`] = ` (${performance.BestYear.Year})`
   commit('setMetric', metric)
 
-  let worstYear = WorstYear(performance.measurements)
   metric.key = key
   metric.name = 'worstYear'
-  metric.value[`${key}Value`] = worstYear.value
-  metric.value[`${key}FormattedValue`] = percentFormatter.format(worstYear.value)
-  metric.value[`${key}Suffix`] = ` (${worstYear.year})`
+  metric.value[`${key}Value`] = performance.WorstYear.Return
+  metric.value[`${key}FormattedValue`] = percentFormatter.format(performance.WorstYear.Return)
+  metric.value[`${key}Suffix`] = ` (${performance.WorstYear.Year})`
   commit('setMetric', metric)
 }

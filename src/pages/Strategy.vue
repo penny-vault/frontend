@@ -4,11 +4,11 @@
       <div class="col-lg-6 col-md-5 col-sm-4">
         <h4 class="q-mt-sm gt-md q-mb-sm">
           <!-- Strategy Name -->
-          {{ strategy.name }} <span style="font-size:1rem;" v-if="simulationRun">({{ format(portfolio.performance.periodStart, 'MMM') }} '{{ format(portfolio.performance.periodStart, 'yy') }} to {{ format(portfolio.performance.periodEnd, 'MMM') }} '{{ format(portfolio.performance.periodEnd, 'yy') }})</span>
+          {{ strategy.name }} <span style="font-size:1rem;" v-if="simulationRun">({{ format(portfolio.performance.PeriodStart, 'MMM') }} '{{ format(portfolio.performance.PeriodStart, 'yy') }} to {{ format(portfolio.performance.PeriodEnd, 'MMM') }} '{{ format(portfolio.performance.PeriodEnd, 'yy') }})</span>
         </h4>
         <div class="q-mt-sm lt-lg q-mb-md">
           <!-- Strategy Name -->
-          <span style="font-size: 1.25rem">{{ strategy.name }}</span> <span style="font-size:.75rem;" v-if="simulationRun">({{ format(portfolio.performance.periodStart, 'MMM') }} '{{ format(portfolio.performance.periodStart, 'yy') }} to {{ format(portfolio.performance.periodEnd, 'MMM') }} '{{ format(portfolio.performance.periodEnd, 'yy') }})</span>
+          <span style="font-size: 1.25rem">{{ strategy.name }}</span> <span style="font-size:.75rem;" v-if="simulationRun">({{ format(portfolio.performance.PeriodStart, 'MMM') }} '{{ format(portfolio.performance.PeriodStart, 'yy') }} to {{ format(portfolio.performance.PeriodEnd, 'MMM') }} '{{ format(portfolio.performance.PeriodEnd, 'yy') }})</span>
         </div>
       </div>
       <div class="col-lg-6 col-md-7 col-sm-8 gt-xs self-end">
@@ -107,7 +107,7 @@
     </div>
 
     <div class="q-mt-lg">
-    <span v-if="simulationRun" class="text-grey-6">Computed on: {{ format(portfolio.performance.computedOn, 'eeee, MMM do yyyy HH:mm:ss') }}</span>
+    <span v-if="simulationRun" class="text-grey-6">Computed on: {{ format(portfolio.performance.ComputedOn, 'eeee, MMM do yyyy HH:mm:ss') }}</span>
     </div>
   </q-page>
 </template>

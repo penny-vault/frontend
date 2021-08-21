@@ -1,4 +1,4 @@
-/*
-export function someMutation (state) {
+
+export function setApiKey (state, apiKey) {
+  state.apiKey = apiKey
 }
-*/

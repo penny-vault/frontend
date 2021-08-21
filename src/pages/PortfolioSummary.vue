@@ -1,16 +1,16 @@
 <template>
   <div class="row q-col-gutter-md justify-between items-center">
       <div class="col-xs-12 col-sm-6 col-lg-3">
-      <stat-card title="Current Asset" color="secondary" :value="portfolio.performance.currentAsset" />
+      <stat-card title="Current Asset" color="secondary" :value="currentAsset" />
       </div>
       <div class="col-xs-12 col-sm-6 col-lg-3">
-      <stat-card title="YTD Return" :direction-indicator="true" color="positive" :value="portfolio.performance.ytdReturn" percent />
+      <stat-card title="YTD Return" :direction-indicator="true" color="positive" :value="portfolio.performance.PortfolioReturns.MWRRYTD" percent />
       </div>
       <div class="col-xs-12 col-sm-6 col-lg-3">
-      <stat-card title="CAGR Since Inception" :direction-indicator="true" color="negative" :value="portfolio.performance.cagrSinceInception" percent />
+      <stat-card title="CAGR Since Inception" :direction-indicator="true" color="negative" :value="portfolio.performance.PortfolioReturns.MWRRSinceInception" percent />
       </div>
       <div class="col-xs-12 col-sm-6 col-lg-3">
-      <stat-card title="Max Draw Down" :direction-indicator="true" color="warning" :value="portfolio.performance.maxDrawDown" percent />
+      <stat-card title="Max Draw Down" :direction-indicator="true" color="warning" :value="portfolio.performance.MaxDrawDown" percent />
       </div>
   </div>
 
@@ -49,7 +49,7 @@
                 </q-list>
             </q-btn-dropdown>
           </template>
-          <value-chart :date-range="dateRange" :log-scale="logScale" :show-draw-downs="showDrawDowns" :measurements="portfolio.performance.measurements" :benchmark="benchmark.measurements" :draw-downs="portfolio.performance.metrics.drawDowns" />
+          <value-chart :date-range="dateRange" :log-scale="logScale" :show-draw-downs="showDrawDowns" :measurements="measurements" :draw-downs="portfolio.performance.DrawDowns" />
       </px-card>
       </div>
       <div class="col">
@@ -76,23 +76,14 @@
               </tr>
               </thead>
               <tbody>
-              <tr>
-                  <td>Portfolio</td>
-                  <td>{{formatPercent(portfolio.performance.ytdReturn)}}</td>
-                  <td>{{formatPercent(portfolio.performance.metrics.cagrs["1-yr"])}}</td>
-                  <td>{{formatPercent(portfolio.performance.metrics.cagrs["3-yr"])}}</td>
-                  <td>{{formatPercent(portfolio.performance.metrics.cagrs["5-yr"])}}</td>
-                  <td>{{formatPercent(portfolio.performance.metrics.cagrs["10-yr"])}}</td>
-                  <td>{{formatPercent(portfolio.performance.cagrSinceInception)}}</td>
-              </tr>
-              <tr>
-                  <td>Benchmark</td>
-                  <td>{{formatPercent(benchmark.ytdReturn)}}</td>
-                  <td>{{formatPercent(benchmark.metrics.cagrs["1-yr"])}}</td>
-                  <td>{{formatPercent(benchmark.metrics.cagrs["3-yr"])}}</td>
-                  <td>{{formatPercent(benchmark.metrics.cagrs["5-yr"])}}</td>
-                  <td>{{formatPercent(benchmark.metrics.cagrs["10-yr"])}}</td>
-                  <td>{{formatPercent(benchmark.cagrSinceInception)}}</td>
+                <tr v-for="ret in returns" :key="ret.title">
+                  <td>{{ ret.title }}</td>
+                  <td>{{formatPercent(ret.ytd)}}</td>
+                  <td>{{formatPercent(ret.oneYear)}}</td>
+                  <td>{{formatPercent(ret.threeYear)}}</td>
+                  <td>{{formatPercent(ret.fiveYear)}}</td>
+                  <td>{{formatPercent(ret.tenYear)}}</td>
+                  <td>{{formatPercent(ret.sinceInception)}}</td>
               </tr>
               </tbody>
           </q-markup-table>
@@ -136,18 +127,77 @@ export default defineComponent({
     })
 
     // Computed properties
-    const benchmark = computed(() => $store.state.portfolio.benchmark)
+    const currentAsset = computed(() => {
+        var res = new Array()
+        portfolio.value.performance.CurrentAssets.forEach((elem) => {
+            if (elem.Ticker !== "$CASH") {
+                res.push(elem.Ticker)
+            }
+        })
+        return res.join(" ")
+    })
+    const measurements = computed(() => $store.state.portfolio.measurements)
     const metrics = computed(() => $store.state.portfolio.metrics)
     const portfolio = computed(() => $store.state.portfolio.current)
+    const returns = computed(() => {
+        var result = []
+        result.push({
+            title: "Portfolio Time-Weighted Rate of Return",
+            ytd: portfolio.value.performance.PortfolioReturns.TWRRYTD,
+            oneYear: portfolio.value.performance.PortfolioReturns.TWRROneYear,
+            threeYear: portfolio.value.performance.PortfolioReturns.TWRRThreeYear,
+            fiveYear: portfolio.value.performance.PortfolioReturns.TWRRFiveYear,
+            tenYear: portfolio.value.performance.PortfolioReturns.TWRRTenYear,
+            sinceInception: portfolio.value.performance.PortfolioReturns.TWRRSinceInception,
+        })
+        result.push({
+            title: "Benchmark Time-Weighted Rate of Return",
+            ytd: portfolio.value.performance.BenchmarkReturns.TWRRYTD,
+            oneYear: portfolio.value.performance.BenchmarkReturns.TWRROneYear,
+            threeYear: portfolio.value.performance.BenchmarkReturns.TWRRThreeYear,
+            fiveYear: portfolio.value.performance.BenchmarkReturns.TWRRFiveYear,
+            tenYear: portfolio.value.performance.BenchmarkReturns.TWRRTenYear,
+            sinceInception: portfolio.value.performance.BenchmarkReturns.TWRRSinceInception,
+        })
+
+        if (((portfolio.value.performance.PortfolioReturns.MWRRYTD).toFixed(5) != (portfolio.value.performance.PortfolioReturns.TWRRYTD).toFixed(5)) &&
+            ((portfolio.value.performance.PortfolioReturns.MWRROneYear).toFixed(5) != (portfolio.value.performance.PortfolioReturns.TWRROneYear).toFixed(5)) &&
+            ((portfolio.value.performance.PortfolioReturns.MWRRThreeYear).toFixed(5) != (portfolio.value.performance.PortfolioReturns.TWRRThreeYear).toFixed(5)) &&
+            ((portfolio.value.performance.PortfolioReturns.MWRRFiveYear).toFixed(5) != (portfolio.value.performance.PortfolioReturns.TWRRFiveYear).toFixed(5)) &&
+            ((portfolio.value.performance.PortfolioReturns.MWRRTenYear).toFixed(5) != (portfolio.value.performance.PortfolioReturns.TWRRTenYear).toFixed(5)) &&
+            ((portfolio.value.performance.PortfolioReturns.MWRRSinceInception).toFixed(5) != (portfolio.value.performance.PortfolioReturns.TWRRSinceInception).toFixed(5))) {
+            result.push({
+                title: "Portfolio Money-Weighted Rate of Return",
+                ytd: portfolio.value.performance.PortfolioReturns.MWRRYTD,
+                oneYear: portfolio.value.performance.PortfolioReturns.MWRROneYear,
+                threeYear: portfolio.value.performance.PortfolioReturns.MWRRThreeYear,
+                fiveYear: portfolio.value.performance.PortfolioReturns.MWRRFiveYear,
+                tenYear: portfolio.value.performance.PortfolioReturns.MWRRTenYear,
+                sinceInception: portfolio.value.performance.PortfolioReturns.MWRRSinceInception,
+            })
+            result.push({
+                title: "Benchmark Money-Weighted Rate of Return",
+                ytd: portfolio.value.performance.BenchmarkReturns.MWRRYTD,
+                oneYear: portfolio.value.performance.BenchmarkReturns.MWRROneYear,
+                threeYear: portfolio.value.performance.BenchmarkReturns.MWRRThreeYear,
+                fiveYear: portfolio.value.performance.BenchmarkReturns.MWRRFiveYear,
+                tenYear: portfolio.value.performance.BenchmarkReturns.MWRRTenYear,
+                sinceInception: portfolio.value.performance.BenchmarkReturns.MWRRSinceInception,
+            })
+        }
+        return result
+    })
 
     return {
-      benchmark,
+      currentAsset,
       formatPercent,
       metrics,
+      measurements,
       portfolio,
       tabModel,
       dateRange,
       logScale,
+      returns,
       showDrawDowns,
       eventBus
     }
