@@ -91,11 +91,11 @@
           </q-tab-panel>
 
           <q-tab-panel class="q-pt-none q-pl-sm q-pr-none" name="holdings">
-            <portfolio-holdings />
+            <portfolio-holdings :portfolio-id="portfolio.id" />
           </q-tab-panel>
 
           <q-tab-panel class="q-pt-none q-px-none" name="transactions">
-            <portfolio-transactions />
+            <portfolio-transactions :portfolio-id="portfolio.id" />
           </q-tab-panel>
 
           <q-tab-panel class="q-pt-none q-px-none" name="returns">

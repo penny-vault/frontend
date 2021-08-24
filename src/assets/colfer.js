@@ -2782,8 +2782,6 @@ var colfer = new function() {
 		this.TotalDeposited = 0;
 
 		this.TotalWithdrawn = 0;
-
-		this.Justification = [];
 		// Time-weighted rate of return
 		this.TWRROneDay = 0;
 
@@ -2866,7 +2864,6 @@ var colfer = new function() {
 
 	// Serializes the object into an Uint8Array.
 	// All null entries in property Holdings will be replaced with a new colfer.ReportableHolding.
-	// All null entries in property Justification will be replaced with a new colfer.Justification.
 	this.PerformanceMeasurement.prototype.marshal = function(buf) {
 		if (! buf || !buf.length) buf = new Uint8Array(colferSizeMax);
 		var i = 0;
@@ -3003,438 +3000,421 @@ var colfer = new function() {
 			i += 9;
 		}
 
-		if (this.Justification && this.Justification.length) {
-			var a = this.Justification;
-			if (a.length > colferListMax)
-				throw new Error('colfer: colfer.PerformanceMeasurement.Justification length exceeds colferListMax');
-			buf[i++] = 10;
-			i = encodeVarint(buf, i, a.length);
-			a.forEach(function(v, vi) {
-				if (v == null) {
-					v = new colfer.Justification();
-					a[vi] = v;
-				}
-				var b = v.marshal();
-				buf.set(b, i);
-				i += b.length;
-			});
-		}
-
 		if (this.TWRROneDay) {
 			if (this.TWRROneDay > 3.4028234663852886E38 || this.TWRROneDay < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneDay exceeds 32-bit range');
-			buf[i++] = 11;
+			buf[i++] = 10;
 			view.setFloat32(i, this.TWRROneDay);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneDay)) {
-			buf.set([11, 0x7f, 0xc0, 0, 0], i);
+			buf.set([10, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRROneWeek) {
 			if (this.TWRROneWeek > 3.4028234663852886E38 || this.TWRROneWeek < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneWeek exceeds 32-bit range');
-			buf[i++] = 12;
+			buf[i++] = 11;
 			view.setFloat32(i, this.TWRROneWeek);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneWeek)) {
-			buf.set([12, 0x7f, 0xc0, 0, 0], i);
+			buf.set([11, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRROneMonth) {
 			if (this.TWRROneMonth > 3.4028234663852886E38 || this.TWRROneMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneMonth exceeds 32-bit range');
-			buf[i++] = 13;
+			buf[i++] = 12;
 			view.setFloat32(i, this.TWRROneMonth);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneMonth)) {
-			buf.set([13, 0x7f, 0xc0, 0, 0], i);
+			buf.set([12, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRThreeMonth) {
 			if (this.TWRRThreeMonth > 3.4028234663852886E38 || this.TWRRThreeMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRThreeMonth exceeds 32-bit range');
-			buf[i++] = 14;
+			buf[i++] = 13;
 			view.setFloat32(i, this.TWRRThreeMonth);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRThreeMonth)) {
-			buf.set([14, 0x7f, 0xc0, 0, 0], i);
+			buf.set([13, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRROneYear) {
 			if (this.TWRROneYear > 3.4028234663852886E38 || this.TWRROneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneYear exceeds 32-bit range');
-			buf[i++] = 15;
+			buf[i++] = 14;
 			view.setFloat32(i, this.TWRROneYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneYear)) {
-			buf.set([15, 0x7f, 0xc0, 0, 0], i);
+			buf.set([14, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRThreeYear) {
 			if (this.TWRRThreeYear > 3.4028234663852886E38 || this.TWRRThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRThreeYear exceeds 32-bit range');
-			buf[i++] = 16;
+			buf[i++] = 15;
 			view.setFloat32(i, this.TWRRThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRThreeYear)) {
-			buf.set([16, 0x7f, 0xc0, 0, 0], i);
+			buf.set([15, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRFiveYear) {
 			if (this.TWRRFiveYear > 3.4028234663852886E38 || this.TWRRFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRFiveYear exceeds 32-bit range');
-			buf[i++] = 17;
+			buf[i++] = 16;
 			view.setFloat32(i, this.TWRRFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRFiveYear)) {
-			buf.set([17, 0x7f, 0xc0, 0, 0], i);
+			buf.set([16, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRTenYear) {
 			if (this.TWRRTenYear > 3.4028234663852886E38 || this.TWRRTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRTenYear exceeds 32-bit range');
-			buf[i++] = 18;
+			buf[i++] = 17;
 			view.setFloat32(i, this.TWRRTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRTenYear)) {
-			buf.set([18, 0x7f, 0xc0, 0, 0], i);
+			buf.set([17, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneDay) {
 			if (this.MWRROneDay > 3.4028234663852886E38 || this.MWRROneDay < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneDay exceeds 32-bit range');
-			buf[i++] = 19;
+			buf[i++] = 18;
 			view.setFloat32(i, this.MWRROneDay);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneDay)) {
-			buf.set([19, 0x7f, 0xc0, 0, 0], i);
+			buf.set([18, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneWeek) {
 			if (this.MWRROneWeek > 3.4028234663852886E38 || this.MWRROneWeek < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneWeek exceeds 32-bit range');
-			buf[i++] = 20;
+			buf[i++] = 19;
 			view.setFloat32(i, this.MWRROneWeek);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneWeek)) {
-			buf.set([20, 0x7f, 0xc0, 0, 0], i);
+			buf.set([19, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneMonth) {
 			if (this.MWRROneMonth > 3.4028234663852886E38 || this.MWRROneMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneMonth exceeds 32-bit range');
-			buf[i++] = 21;
+			buf[i++] = 20;
 			view.setFloat32(i, this.MWRROneMonth);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneMonth)) {
-			buf.set([21, 0x7f, 0xc0, 0, 0], i);
+			buf.set([20, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRThreeMonth) {
 			if (this.MWRRThreeMonth > 3.4028234663852886E38 || this.MWRRThreeMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRThreeMonth exceeds 32-bit range');
-			buf[i++] = 22;
+			buf[i++] = 21;
 			view.setFloat32(i, this.MWRRThreeMonth);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRThreeMonth)) {
-			buf.set([22, 0x7f, 0xc0, 0, 0], i);
+			buf.set([21, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneYear) {
 			if (this.MWRROneYear > 3.4028234663852886E38 || this.MWRROneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneYear exceeds 32-bit range');
-			buf[i++] = 23;
+			buf[i++] = 22;
 			view.setFloat32(i, this.MWRROneYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneYear)) {
-			buf.set([23, 0x7f, 0xc0, 0, 0], i);
+			buf.set([22, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRThreeYear) {
 			if (this.MWRRThreeYear > 3.4028234663852886E38 || this.MWRRThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRThreeYear exceeds 32-bit range');
-			buf[i++] = 24;
+			buf[i++] = 23;
 			view.setFloat32(i, this.MWRRThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRThreeYear)) {
-			buf.set([24, 0x7f, 0xc0, 0, 0], i);
+			buf.set([23, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRFiveYear) {
 			if (this.MWRRFiveYear > 3.4028234663852886E38 || this.MWRRFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRFiveYear exceeds 32-bit range');
-			buf[i++] = 25;
+			buf[i++] = 24;
 			view.setFloat32(i, this.MWRRFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRFiveYear)) {
-			buf.set([25, 0x7f, 0xc0, 0, 0], i);
+			buf.set([24, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRTenYear) {
 			if (this.MWRRTenYear > 3.4028234663852886E38 || this.MWRRTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRTenYear exceeds 32-bit range');
-			buf[i++] = 26;
+			buf[i++] = 25;
 			view.setFloat32(i, this.MWRRTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRTenYear)) {
-			buf.set([26, 0x7f, 0xc0, 0, 0], i);
+			buf.set([25, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnOneYear) {
 			if (this.ActiveReturnOneYear > 3.4028234663852886E38 || this.ActiveReturnOneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnOneYear exceeds 32-bit range');
-			buf[i++] = 27;
+			buf[i++] = 26;
 			view.setFloat32(i, this.ActiveReturnOneYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnOneYear)) {
-			buf.set([27, 0x7f, 0xc0, 0, 0], i);
+			buf.set([26, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnThreeYear) {
 			if (this.ActiveReturnThreeYear > 3.4028234663852886E38 || this.ActiveReturnThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnThreeYear exceeds 32-bit range');
-			buf[i++] = 28;
+			buf[i++] = 27;
 			view.setFloat32(i, this.ActiveReturnThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnThreeYear)) {
-			buf.set([28, 0x7f, 0xc0, 0, 0], i);
+			buf.set([27, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnFiveYear) {
 			if (this.ActiveReturnFiveYear > 3.4028234663852886E38 || this.ActiveReturnFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnFiveYear exceeds 32-bit range');
-			buf[i++] = 29;
+			buf[i++] = 28;
 			view.setFloat32(i, this.ActiveReturnFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnFiveYear)) {
-			buf.set([29, 0x7f, 0xc0, 0, 0], i);
+			buf.set([28, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnTenYear) {
 			if (this.ActiveReturnTenYear > 3.4028234663852886E38 || this.ActiveReturnTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnTenYear exceeds 32-bit range');
-			buf[i++] = 30;
+			buf[i++] = 29;
 			view.setFloat32(i, this.ActiveReturnTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnTenYear)) {
-			buf.set([30, 0x7f, 0xc0, 0, 0], i);
+			buf.set([29, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaOneYear) {
 			if (this.AlphaOneYear > 3.4028234663852886E38 || this.AlphaOneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaOneYear exceeds 32-bit range');
-			buf[i++] = 31;
+			buf[i++] = 30;
 			view.setFloat32(i, this.AlphaOneYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaOneYear)) {
-			buf.set([31, 0x7f, 0xc0, 0, 0], i);
+			buf.set([30, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaThreeYear) {
 			if (this.AlphaThreeYear > 3.4028234663852886E38 || this.AlphaThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaThreeYear exceeds 32-bit range');
-			buf[i++] = 32;
+			buf[i++] = 31;
 			view.setFloat32(i, this.AlphaThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaThreeYear)) {
-			buf.set([32, 0x7f, 0xc0, 0, 0], i);
+			buf.set([31, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaFiveYear) {
 			if (this.AlphaFiveYear > 3.4028234663852886E38 || this.AlphaFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaFiveYear exceeds 32-bit range');
-			buf[i++] = 33;
+			buf[i++] = 32;
 			view.setFloat32(i, this.AlphaFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaFiveYear)) {
-			buf.set([33, 0x7f, 0xc0, 0, 0], i);
+			buf.set([32, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaTenYear) {
 			if (this.AlphaTenYear > 3.4028234663852886E38 || this.AlphaTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaTenYear exceeds 32-bit range');
-			buf[i++] = 34;
+			buf[i++] = 33;
 			view.setFloat32(i, this.AlphaTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaTenYear)) {
-			buf.set([34, 0x7f, 0xc0, 0, 0], i);
+			buf.set([33, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaOneYear) {
 			if (this.BetaOneYear > 3.4028234663852886E38 || this.BetaOneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaOneYear exceeds 32-bit range');
-			buf[i++] = 35;
+			buf[i++] = 34;
 			view.setFloat32(i, this.BetaOneYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaOneYear)) {
-			buf.set([35, 0x7f, 0xc0, 0, 0], i);
+			buf.set([34, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaThreeYear) {
 			if (this.BetaThreeYear > 3.4028234663852886E38 || this.BetaThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaThreeYear exceeds 32-bit range');
-			buf[i++] = 36;
+			buf[i++] = 35;
 			view.setFloat32(i, this.BetaThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaThreeYear)) {
-			buf.set([36, 0x7f, 0xc0, 0, 0], i);
+			buf.set([35, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaFiveYear) {
 			if (this.BetaFiveYear > 3.4028234663852886E38 || this.BetaFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaFiveYear exceeds 32-bit range');
-			buf[i++] = 37;
+			buf[i++] = 36;
 			view.setFloat32(i, this.BetaFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaFiveYear)) {
-			buf.set([37, 0x7f, 0xc0, 0, 0], i);
+			buf.set([36, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaTenYear) {
 			if (this.BetaTenYear > 3.4028234663852886E38 || this.BetaTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaTenYear exceeds 32-bit range');
-			buf[i++] = 38;
+			buf[i++] = 37;
 			view.setFloat32(i, this.BetaTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaTenYear)) {
-			buf.set([38, 0x7f, 0xc0, 0, 0], i);
+			buf.set([37, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.CalmarRatio) {
 			if (this.CalmarRatio > 3.4028234663852886E38 || this.CalmarRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field CalmarRatio exceeds 32-bit range');
-			buf[i++] = 39;
+			buf[i++] = 38;
 			view.setFloat32(i, this.CalmarRatio);
 			i += 4;
 		} else if (Number.isNaN(this.CalmarRatio)) {
-			buf.set([39, 0x7f, 0xc0, 0, 0], i);
+			buf.set([38, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.DownsideDeviation) {
 			if (this.DownsideDeviation > 3.4028234663852886E38 || this.DownsideDeviation < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field DownsideDeviation exceeds 32-bit range');
-			buf[i++] = 40;
+			buf[i++] = 39;
 			view.setFloat32(i, this.DownsideDeviation);
 			i += 4;
 		} else if (Number.isNaN(this.DownsideDeviation)) {
-			buf.set([40, 0x7f, 0xc0, 0, 0], i);
+			buf.set([39, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.InformationRatio) {
 			if (this.InformationRatio > 3.4028234663852886E38 || this.InformationRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field InformationRatio exceeds 32-bit range');
-			buf[i++] = 41;
+			buf[i++] = 40;
 			view.setFloat32(i, this.InformationRatio);
 			i += 4;
 		} else if (Number.isNaN(this.InformationRatio)) {
-			buf.set([41, 0x7f, 0xc0, 0, 0], i);
+			buf.set([40, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.KRatio) {
 			if (this.KRatio > 3.4028234663852886E38 || this.KRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field KRatio exceeds 32-bit range');
-			buf[i++] = 42;
+			buf[i++] = 41;
 			view.setFloat32(i, this.KRatio);
 			i += 4;
 		} else if (Number.isNaN(this.KRatio)) {
-			buf.set([42, 0x7f, 0xc0, 0, 0], i);
+			buf.set([41, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.KellerRatio) {
 			if (this.KellerRatio > 3.4028234663852886E38 || this.KellerRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field KellerRatio exceeds 32-bit range');
-			buf[i++] = 43;
+			buf[i++] = 42;
 			view.setFloat32(i, this.KellerRatio);
 			i += 4;
 		} else if (Number.isNaN(this.KellerRatio)) {
-			buf.set([43, 0x7f, 0xc0, 0, 0], i);
+			buf.set([42, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.SharpeRatio) {
 			if (this.SharpeRatio > 3.4028234663852886E38 || this.SharpeRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field SharpeRatio exceeds 32-bit range');
-			buf[i++] = 44;
+			buf[i++] = 43;
 			view.setFloat32(i, this.SharpeRatio);
 			i += 4;
 		} else if (Number.isNaN(this.SharpeRatio)) {
-			buf.set([44, 0x7f, 0xc0, 0, 0], i);
+			buf.set([43, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.SortinoRatio) {
 			if (this.SortinoRatio > 3.4028234663852886E38 || this.SortinoRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field SortinoRatio exceeds 32-bit range');
-			buf[i++] = 45;
+			buf[i++] = 44;
 			view.setFloat32(i, this.SortinoRatio);
 			i += 4;
 		} else if (Number.isNaN(this.SortinoRatio)) {
-			buf.set([45, 0x7f, 0xc0, 0, 0], i);
+			buf.set([44, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.StdDev) {
 			if (this.StdDev > 3.4028234663852886E38 || this.StdDev < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field StdDev exceeds 32-bit range');
-			buf[i++] = 46;
+			buf[i++] = 45;
 			view.setFloat32(i, this.StdDev);
 			i += 4;
 		} else if (Number.isNaN(this.StdDev)) {
-			buf.set([46, 0x7f, 0xc0, 0, 0], i);
+			buf.set([45, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TreynorRatio) {
 			if (this.TreynorRatio > 3.4028234663852886E38 || this.TreynorRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TreynorRatio exceeds 32-bit range');
-			buf[i++] = 47;
+			buf[i++] = 46;
 			view.setFloat32(i, this.TreynorRatio);
 			i += 4;
 		} else if (Number.isNaN(this.TreynorRatio)) {
-			buf.set([47, 0x7f, 0xc0, 0, 0], i);
+			buf.set([46, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.UlcerIndex) {
 			if (this.UlcerIndex > 3.4028234663852886E38 || this.UlcerIndex < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field UlcerIndex exceeds 32-bit range');
-			buf[i++] = 48;
+			buf[i++] = 47;
 			view.setFloat32(i, this.UlcerIndex);
 			i += 4;
 		} else if (Number.isNaN(this.UlcerIndex)) {
-			buf.set([48, 0x7f, 0xc0, 0, 0], i);
+			buf.set([47, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
@@ -3570,279 +3550,265 @@ var colfer = new function() {
 		}
 
 		if (header == 10) {
-			var l = readVarint();
-			if (l < 0) throw new Error('colfer: colfer.PerformanceMeasurement.Justification length exceeds Number.MAX_SAFE_INTEGER');
-			if (l > colferListMax)
-				throw new Error('colfer: colfer.PerformanceMeasurement.Justification length ' + l + ' exceeds ' + colferListMax + ' elements');
-
-			for (var n = 0; n < l; ++n) {
-				var o = new colfer.Justification();
-				i += o.unmarshal(data.subarray(i));
-				this.Justification[n] = o;
-			}
-			readHeader();
-		}
-
-		if (header == 11) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRROneDay = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 12) {
+		if (header == 11) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRROneWeek = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 13) {
+		if (header == 12) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRROneMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 14) {
+		if (header == 13) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRThreeMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 15) {
+		if (header == 14) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRROneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 16) {
+		if (header == 15) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 17) {
+		if (header == 16) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 18) {
+		if (header == 17) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 19) {
+		if (header == 18) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRROneDay = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 20) {
+		if (header == 19) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRROneWeek = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 21) {
+		if (header == 20) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRROneMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 22) {
+		if (header == 21) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRThreeMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 23) {
+		if (header == 22) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRROneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 24) {
+		if (header == 23) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 25) {
+		if (header == 24) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 26) {
+		if (header == 25) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 27) {
+		if (header == 26) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.ActiveReturnOneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 28) {
+		if (header == 27) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.ActiveReturnThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 29) {
+		if (header == 28) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.ActiveReturnFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 30) {
+		if (header == 29) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.ActiveReturnTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 31) {
+		if (header == 30) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.AlphaOneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 32) {
+		if (header == 31) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.AlphaThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 33) {
+		if (header == 32) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.AlphaFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 34) {
+		if (header == 33) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.AlphaTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 35) {
+		if (header == 34) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.BetaOneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 36) {
+		if (header == 35) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.BetaThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 37) {
+		if (header == 36) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.BetaFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 38) {
+		if (header == 37) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.BetaTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 39) {
+		if (header == 38) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.CalmarRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 40) {
+		if (header == 39) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.DownsideDeviation = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 41) {
+		if (header == 40) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.InformationRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 42) {
+		if (header == 41) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.KRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 43) {
+		if (header == 42) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.KellerRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 44) {
+		if (header == 43) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.SharpeRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 45) {
+		if (header == 44) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.SortinoRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 46) {
+		if (header == 45) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.StdDev = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 47) {
+		if (header == 46) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TreynorRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 48) {
+		if (header == 47) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.UlcerIndex = view.getFloat32(i);
 			i += 4;
@@ -4260,6 +4226,382 @@ var colfer = new function() {
 		if (header != 127) throw new Error('colfer: unknown header at byte ' + (i - 1));
 		if (i > colferSizeMax)
 			throw new Error('colfer: colfer.Returns serial size ' + size + ' exceeds ' + colferSizeMax + ' bytes');
+		return i;
+	}
+
+	// Constructor.
+
+	// When init is provided all enumerable properties are merged into the new object a.k.a. shallow cloning.
+	this.PortfolioHoldingItem = function(init) {
+
+		this.Time = null;
+		this.Time_ns = 0;
+
+		this.Holdings = [];
+
+		this.PercentReturn = 0;
+
+		this.Value = 0;
+
+		for (var p in init) this[p] = init[p];
+	}
+
+	// Serializes the object into an Uint8Array.
+	// All null entries in property Holdings will be replaced with a new colfer.ReportableHolding.
+	this.PortfolioHoldingItem.prototype.marshal = function(buf) {
+		if (! buf || !buf.length) buf = new Uint8Array(colferSizeMax);
+		var i = 0;
+		var view = new DataView(buf.buffer);
+
+
+		if ((this.Time && this.Time.getTime()) || this.Time_ns) {
+			var ms = this.Time ? this.Time.getTime() : 0;
+			var s = ms / 1E3;
+
+			var ns = this.Time_ns || 0;
+			if (ns < 0 || ns >= 1E6)
+				throw new Error('colfer: colfer/PortfolioHoldingItem field Time_ns not in range (0, 1ms>');
+			var msf = ms % 1E3;
+			if (ms < 0 && msf) {
+				s--
+				msf = 1E3 + msf;
+			}
+			ns += msf * 1E6;
+
+			if (s > 0xffffffff || s < 0) {
+				buf[i++] = 0 | 128;
+				if (s > 0) {
+					view.setUint32(i, s / 0x100000000);
+					view.setUint32(i + 4, s);
+				} else {
+					s = -s;
+					view.setUint32(i, s / 0x100000000);
+					view.setUint32(i + 4, s);
+					var carry = 1;
+					for (var j = i + 7; j >= i; j--) {
+						var b = (buf[j] ^ 255) + carry;
+						buf[j] = b & 255;
+						carry = b >> 8;
+					}
+				}
+				view.setUint32(i + 8, ns);
+				i += 12;
+			} else {
+				buf[i++] = 0;
+				view.setUint32(i, s);
+				i += 4;
+				view.setUint32(i, ns);
+				i += 4;
+			}
+		}
+
+		if (this.Holdings && this.Holdings.length) {
+			var a = this.Holdings;
+			if (a.length > colferListMax)
+				throw new Error('colfer: colfer.PortfolioHoldingItem.Holdings length exceeds colferListMax');
+			buf[i++] = 1;
+			i = encodeVarint(buf, i, a.length);
+			a.forEach(function(v, vi) {
+				if (v == null) {
+					v = new colfer.ReportableHolding();
+					a[vi] = v;
+				}
+				var b = v.marshal();
+				buf.set(b, i);
+				i += b.length;
+			});
+		}
+
+		if (this.PercentReturn) {
+			buf[i++] = 2;
+			view.setFloat64(i, this.PercentReturn);
+			i += 8;
+		} else if (Number.isNaN(this.PercentReturn)) {
+			buf.set([2, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.Value) {
+			buf[i++] = 3;
+			view.setFloat64(i, this.Value);
+			i += 8;
+		} else if (Number.isNaN(this.Value)) {
+			buf.set([3, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+
+		buf[i++] = 127;
+		if (i >= colferSizeMax)
+			throw new Error('colfer: colfer.PortfolioHoldingItem serial size ' + i + ' exceeds ' + colferSizeMax + ' bytes');
+		return buf.subarray(0, i);
+	}
+
+	// Deserializes the object from an Uint8Array and returns the number of bytes read.
+	this.PortfolioHoldingItem.prototype.unmarshal = function(data) {
+		if (!data || ! data.length) throw new Error(EOF);
+		var header = data[0];
+		var i = 1;
+		var readHeader = function() {
+			if (i >= data.length) throw new Error(EOF);
+			header = data[i++];
+		}
+
+		var view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+
+		var readVarint = function() {
+			var pos = 0, result = 0;
+			while (pos != 8) {
+				var c = data[i+pos];
+				result += (c & 127) * Math.pow(128, pos);
+				++pos;
+				if (c < 128) {
+					i += pos;
+					if (result > Number.MAX_SAFE_INTEGER) break;
+					return result;
+				}
+				if (pos == data.length) throw new Error(EOF);
+			}
+			return -1;
+		}
+
+		if (header == 0) {
+			if (i + 8 > data.length) throw new Error(EOF);
+
+			var ms = view.getUint32(i) * 1E3;
+			var ns = view.getUint32(i + 4);
+			ms += Math.floor(ns / 1E6);
+			this.Time = new Date(ms);
+			this.Time_ns = ns % 1E6;
+
+			i += 8;
+			readHeader();
+		} else if (header == (0 | 128)) {
+			if (i + 12 > data.length) throw new Error(EOF);
+
+			var ms = decodeInt64(data, i) * 1E3;
+			var ns = view.getUint32(i + 8);
+			ms += Math.floor(ns / 1E6);
+			if (ms < -864E13 || ms > 864E13)
+				throw new Error('colfer: colfer/ field Time exceeds ECMA Date range');
+			this.Time = new Date(ms);
+			this.Time_ns = ns % 1E6;
+
+			i += 12;
+			readHeader();
+		}
+
+		if (header == 1) {
+			var l = readVarint();
+			if (l < 0) throw new Error('colfer: colfer.PortfolioHoldingItem.Holdings length exceeds Number.MAX_SAFE_INTEGER');
+			if (l > colferListMax)
+				throw new Error('colfer: colfer.PortfolioHoldingItem.Holdings length ' + l + ' exceeds ' + colferListMax + ' elements');
+
+			for (var n = 0; n < l; ++n) {
+				var o = new colfer.ReportableHolding();
+				i += o.unmarshal(data.subarray(i));
+				this.Holdings[n] = o;
+			}
+			readHeader();
+		}
+
+		if (header == 2) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.PercentReturn = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 3) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.Value = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header != 127) throw new Error('colfer: unknown header at byte ' + (i - 1));
+		if (i > colferSizeMax)
+			throw new Error('colfer: colfer.PortfolioHoldingItem serial size ' + size + ' exceeds ' + colferSizeMax + ' bytes');
+		return i;
+	}
+
+	// Constructor.
+
+	// When init is provided all enumerable properties are merged into the new object a.k.a. shallow cloning.
+	this.PortfolioHoldingItemList = function(init) {
+
+		this.Items = [];
+
+		for (var p in init) this[p] = init[p];
+	}
+
+	// Serializes the object into an Uint8Array.
+	// All null entries in property Items will be replaced with a new colfer.PortfolioHoldingItem.
+	this.PortfolioHoldingItemList.prototype.marshal = function(buf) {
+		if (! buf || !buf.length) buf = new Uint8Array(colferSizeMax);
+		var i = 0;
+		var view = new DataView(buf.buffer);
+
+
+		if (this.Items && this.Items.length) {
+			var a = this.Items;
+			if (a.length > colferListMax)
+				throw new Error('colfer: colfer.PortfolioHoldingItemList.Items length exceeds colferListMax');
+			buf[i++] = 0;
+			i = encodeVarint(buf, i, a.length);
+			a.forEach(function(v, vi) {
+				if (v == null) {
+					v = new colfer.PortfolioHoldingItem();
+					a[vi] = v;
+				}
+				var b = v.marshal();
+				buf.set(b, i);
+				i += b.length;
+			});
+		}
+
+
+		buf[i++] = 127;
+		if (i >= colferSizeMax)
+			throw new Error('colfer: colfer.PortfolioHoldingItemList serial size ' + i + ' exceeds ' + colferSizeMax + ' bytes');
+		return buf.subarray(0, i);
+	}
+
+	// Deserializes the object from an Uint8Array and returns the number of bytes read.
+	this.PortfolioHoldingItemList.prototype.unmarshal = function(data) {
+		if (!data || ! data.length) throw new Error(EOF);
+		var header = data[0];
+		var i = 1;
+		var readHeader = function() {
+			if (i >= data.length) throw new Error(EOF);
+			header = data[i++];
+		}
+
+		var view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+
+		var readVarint = function() {
+			var pos = 0, result = 0;
+			while (pos != 8) {
+				var c = data[i+pos];
+				result += (c & 127) * Math.pow(128, pos);
+				++pos;
+				if (c < 128) {
+					i += pos;
+					if (result > Number.MAX_SAFE_INTEGER) break;
+					return result;
+				}
+				if (pos == data.length) throw new Error(EOF);
+			}
+			return -1;
+		}
+
+		if (header == 0) {
+			var l = readVarint();
+			if (l < 0) throw new Error('colfer: colfer.PortfolioHoldingItemList.Items length exceeds Number.MAX_SAFE_INTEGER');
+			if (l > colferListMax)
+				throw new Error('colfer: colfer.PortfolioHoldingItemList.Items length ' + l + ' exceeds ' + colferListMax + ' elements');
+
+			for (var n = 0; n < l; ++n) {
+				var o = new colfer.PortfolioHoldingItem();
+				i += o.unmarshal(data.subarray(i));
+				this.Items[n] = o;
+			}
+			readHeader();
+		}
+
+		if (header != 127) throw new Error('colfer: unknown header at byte ' + (i - 1));
+		if (i > colferSizeMax)
+			throw new Error('colfer: colfer.PortfolioHoldingItemList serial size ' + size + ' exceeds ' + colferSizeMax + ' bytes');
+		return i;
+	}
+
+	// Constructor.
+
+	// When init is provided all enumerable properties are merged into the new object a.k.a. shallow cloning.
+	this.PortfolioTransactionList = function(init) {
+
+		this.Items = [];
+
+		for (var p in init) this[p] = init[p];
+	}
+
+	// Serializes the object into an Uint8Array.
+	// All null entries in property Items will be replaced with a new colfer.Transaction.
+	this.PortfolioTransactionList.prototype.marshal = function(buf) {
+		if (! buf || !buf.length) buf = new Uint8Array(colferSizeMax);
+		var i = 0;
+		var view = new DataView(buf.buffer);
+
+
+		if (this.Items && this.Items.length) {
+			var a = this.Items;
+			if (a.length > colferListMax)
+				throw new Error('colfer: colfer.PortfolioTransactionList.Items length exceeds colferListMax');
+			buf[i++] = 0;
+			i = encodeVarint(buf, i, a.length);
+			a.forEach(function(v, vi) {
+				if (v == null) {
+					v = new colfer.Transaction();
+					a[vi] = v;
+				}
+				var b = v.marshal();
+				buf.set(b, i);
+				i += b.length;
+			});
+		}
+
+
+		buf[i++] = 127;
+		if (i >= colferSizeMax)
+			throw new Error('colfer: colfer.PortfolioTransactionList serial size ' + i + ' exceeds ' + colferSizeMax + ' bytes');
+		return buf.subarray(0, i);
+	}
+
+	// Deserializes the object from an Uint8Array and returns the number of bytes read.
+	this.PortfolioTransactionList.prototype.unmarshal = function(data) {
+		if (!data || ! data.length) throw new Error(EOF);
+		var header = data[0];
+		var i = 1;
+		var readHeader = function() {
+			if (i >= data.length) throw new Error(EOF);
+			header = data[i++];
+		}
+
+		var view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+
+		var readVarint = function() {
+			var pos = 0, result = 0;
+			while (pos != 8) {
+				var c = data[i+pos];
+				result += (c & 127) * Math.pow(128, pos);
+				++pos;
+				if (c < 128) {
+					i += pos;
+					if (result > Number.MAX_SAFE_INTEGER) break;
+					return result;
+				}
+				if (pos == data.length) throw new Error(EOF);
+			}
+			return -1;
+		}
+
+		if (header == 0) {
+			var l = readVarint();
+			if (l < 0) throw new Error('colfer: colfer.PortfolioTransactionList.Items length exceeds Number.MAX_SAFE_INTEGER');
+			if (l > colferListMax)
+				throw new Error('colfer: colfer.PortfolioTransactionList.Items length ' + l + ' exceeds ' + colferListMax + ' elements');
+
+			for (var n = 0; n < l; ++n) {
+				var o = new colfer.Transaction();
+				i += o.unmarshal(data.subarray(i));
+				this.Items[n] = o;
+			}
+			readHeader();
+		}
+
+		if (header != 127) throw new Error('colfer: unknown header at byte ' + (i - 1));
+		if (i > colferSizeMax)
+			throw new Error('colfer: colfer.PortfolioTransactionList serial size ' + size + ' exceeds ' + colferSizeMax + ' bytes');
 		return i;
 	}
 

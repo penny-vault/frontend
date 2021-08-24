@@ -36,12 +36,12 @@ export default defineComponent({
       var counts = new Map()
       var total = 0
       holdings.value.forEach( elem => {
-        elem.holdings.forEach( item => {
-          let ticker = item.ticker
+        elem.Holdings.forEach( item => {
+          let ticker = item.Ticker
           var curr = counts.get(ticker)
           if (curr === undefined || isNaN(curr)) curr = 0
-          counts.set(ticker, curr+item.percentPortfolio)
-          total += item.percentPortfolio
+          counts.set(ticker, curr+item.PercentPortfolio)
+          total += item.PercentPortfolio
         })
       })
 
@@ -50,26 +50,12 @@ export default defineComponent({
       var data = []
       var other = 0
       counts.forEach( (v, k) => {
-        /*
-        if ((v / total) < .05) {
-          other += v
-        } else {
-          */
           data.push({
             name: k,
             y: v
           })
-//        }
       })
 
-/*
-      if (other > 0) {
-        data.push({
-          name: 'Other',
-          y: other
-        })
-      }
-*/
       return data
     }
 
@@ -109,13 +95,6 @@ export default defineComponent({
 
         pieSeries.labels.template.maxWidth = 75
         pieSeries.labels.template.wrap = true
-/*
-      pieSeries.alignLabels = false
-      pieSeries.labels.template.bent = true
-      pieSeries.labels.template.radius = 3
-      pieSeries.labels.template.padding(0,0,0,0)
-      pieSeries.ticks.template.disabled = true
-*/
 
       let grouper = pieSeries.plugins.push(new am4plugins_sliceGrouper.SliceGrouper())
       grouper.threshold = 5

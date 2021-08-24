@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref, onMounted, watch } from 'vue'
+import { defineComponent, computed, ref, toRefs, onMounted, watch } from 'vue'
 import { useStore } from 'vuex'
 
 import { formatPercent, formatNumber } from '../assets/filters'
@@ -68,7 +68,14 @@ export default defineComponent({
     HoldingsPieChart,
     PxCard
   },
-  setup () {
+  props: {
+    portfolioId: {
+      type: String,
+      required: true
+    }
+  },
+  setup (props) {
+    const { portfolioId } = toRefs(props)
     const $store = useStore()
 
     const fullscreenIcon = ref('fullscreen')
@@ -76,6 +83,7 @@ export default defineComponent({
 
     const columnDefs = ref([
       {
+        field: 'Time',
         headerName: 'Date',
         width: 100,
         cellClass: 'dateType',
@@ -86,16 +94,8 @@ export default defineComponent({
         sort: 'desc',
         resizable: true,
         editable: false,
-        valueGetter: (params) => {
-          var d = new Date(params.data.time * 1000)
-          return d
-        },
         valueFormatter: (params) => {
           var d = params.value
-          // add a few days to the date - data comes from pv-api as month-end
-          // but that's misleading in the portfolio table view which only
-          // shows month year
-          d = d.addDays(5)
           const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d)
           const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d)
           return `${mo} ${ye}`
@@ -108,11 +108,17 @@ export default defineComponent({
         resizable: true,
         editable: false,
         valueGetter: (params) => {
-          return params.data.holdings.map((item) => { return item.ticker }).sort().join(' ')
+          let res = new Array()
+          params.data.Holdings.forEach((item) => {
+            if (item.Ticker !== '$CASH') {
+              res.push(item.Ticker)
+            }
+          })
+          return res.sort().join(' ')
         }
       },
       {
-        field: 'percentReturnAdjusted',
+        field: 'PercentReturn',
         minWidth: 100,
         maxWidth: 150,
         headerName: 'Return',
@@ -136,7 +142,7 @@ export default defineComponent({
         }
       },
       {
-        field: 'valueAdjusted',
+        field: 'Value',
         width: 150,
         headerName: 'Value',
         cellClass: 'currencyType',
@@ -154,7 +160,7 @@ export default defineComponent({
     const dynamicColumns = new Map()
     const holdingsColumnDefs = ref([
       {
-        field: 'ticker',
+        field: 'Ticker',
         width: 95,
         pinned: 'left',
         sort: 'asc',
@@ -163,7 +169,7 @@ export default defineComponent({
         editable: false,
       },
       {
-        field: 'shares',
+        field: 'Shares',
         width: 100,
         sortable: true,
         resizable: true,
@@ -173,7 +179,7 @@ export default defineComponent({
         }
       },
       {
-        field: 'percentPortfolio',
+        field: 'PercentPortfolio',
         headerName: '%',
         width: 85,
         sortable: true,
@@ -187,7 +193,7 @@ export default defineComponent({
         }
       },
       {
-        field: 'value',
+        field: 'Value',
         width: 150,
         headerName: 'Value',
         sortable: true,
@@ -197,7 +203,7 @@ export default defineComponent({
           if (isNaN(params.value)) {
             return "-"
           }
-          return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.data.value)
+          return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
       }
     ])
@@ -250,21 +256,26 @@ export default defineComponent({
     let gridApi = {}
     let columnApi = {}
     const sideBar = ref(true)
-    const holdings = ref($store.state.portfolio.current.performance.currentAssets)
+    const holdings = ref([])
     const holdingsDate = ref(new Date())
 
     // Computed properties
-    const rowData = computed(() => $store.state.portfolio.current.performance.measurements)
+    const rowData = computed(() => $store.state.portfolio.holdings)
 
     // watch properties
-    watch(rowData, async () => {
-      getDynamicColumns()
+    watch(portfolioId, async (newValue) => {
+      $store.dispatch('portfolio/fetchHoldings', { portfolioId: newValue })
+    })
 
+    watch(rowData, async () => {
+      if (rowData.value.length > 0) {
+        let idx = rowData.value.length - 1
+        holdings.value = rowData.value[idx].Holdings
+      }
       var allColumnIds = []
       gridOptions.value.columnApi.getAllColumns().forEach(function (column) {
         allColumnIds.push(column.colId);
       })
-
       gridOptions.value.columnApi.autoSizeColumns(allColumnIds, true)
     })
 
@@ -272,16 +283,15 @@ export default defineComponent({
     onMounted(() => {
       gridApi = gridOptions.value.api
       columnApi = gridOptions.value.columnApi
-
-      getDynamicColumns()
+      $store.dispatch('portfolio/fetchHoldings', { portfolioId: portfolioId.value })
     })
 
     // methods
     function onSelectionChanged() {
       var selectedRows = gridApi.getSelectedRows()
       if (selectedRows.length === 1) {
-        holdings.value = selectedRows[0].holdings
-        holdingsDate.value = addDays(new Date(selectedRows[0].time * 1000), 5)
+        holdings.value = selectedRows[0].Holdings
+        holdingsDate.value = addDays(selectedRows[0].Time, 5)
       }
     }
 
@@ -302,35 +312,6 @@ export default defineComponent({
 
         columnApi.autoSizeColumns(allColumnIds, true)
       }, 500)
-    }
-
-    function getDynamicColumns() {
-      if (rowData.value.length > 0) {
-        let justificationTmpl = rowData.value[0].justification
-        if (justificationTmpl !== undefined) {
-          Object.keys(justificationTmpl).forEach((k) => {
-            if (!dynamicColumns.has(k)) {
-              dynamicColumns.set(k, 1)
-              columnDefs.value.push({
-                field: k,
-                valueGetter: (params) => {
-                  return params.data.justification[k]
-                },
-                valueFormatter: (params) => {
-                  if (typeof params.value === "number") {
-                    return params.value.toFixed(2)
-                  }
-                },
-                sortable: true,
-                resizable: true,
-                editable: false
-              })
-            }
-          })
-        }
-      }
-
-      gridApi.setColumnDefs(columnDefs.value)
     }
 
     function exportExcel(e) {

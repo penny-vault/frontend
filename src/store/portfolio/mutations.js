@@ -4,6 +4,15 @@ export function setMeasurements (state, measurements) {
   state.measurements = measurements
 }
 
+export function setHoldings (state, holdings) {
+  state.holdings = holdings.Items
+}
+
+export function setTransactions (state, transactions) {
+  console.log(transactions)
+  state.transactions = transactions.Items
+}
+
 export function setPortfolios (state, portfolios) {
   portfolios.forEach((element) => {
     element.startDate = new Date(element.startDate * 1000)

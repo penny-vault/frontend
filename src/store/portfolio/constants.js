@@ -6,6 +6,14 @@ export const Weekly   = 0x00000100
 export const Monthly  = 0x00001000
 export const Annually = 0x00010000
 
+export const emptyTransactions = {
+  "Items": []
+}
+
+export const emptyHoldings = {
+  "Items": []
+}
+
 export const emptyPerformance = {
   "periodStart": new Date(),
   "periodEnd": new Date(),

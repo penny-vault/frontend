@@ -121,6 +121,24 @@ export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, 
   })
 }
 
+export async function fetchHoldings({ commit }, { portfolioId } ) {
+  const accessToken = await authPlugin.getTokenSilently()
+  let options = {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    },
+    responseType: 'arraybuffer'
+  }
+
+  let endpoint = `portfolio/${portfolioId}/holdings`
+  api.get(endpoint, options).then(response => {
+    let holdings = new colfer.PortfolioHoldingItemList({})
+    var uint8View = new Uint8Array(response.data)
+    holdings.unmarshal(uint8View)
+    commit('setHoldings', holdings)
+  })
+}
+
 export async function fetchMeasurements({ commit }, { portfolioId, metric1, metric2 } ) {
   const accessToken = await authPlugin.getTokenSilently()
   let options = {
@@ -212,6 +230,24 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
     commit('setCurrentPortfolio', portfolio)
 
     Loading.hide()
+  })
+}
+
+export async function fetchTransactions({ commit }, { portfolioId } ) {
+  const accessToken = await authPlugin.getTokenSilently()
+  let options = {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    },
+    responseType: 'arraybuffer'
+  }
+
+  let endpoint = `portfolio/${portfolioId}/transactions`
+  api.get(endpoint, options).then(response => {
+    let trxs = new colfer.PortfolioTransactionList({})
+    var uint8View = new Uint8Array(response.data)
+    trxs.unmarshal(uint8View)
+    commit('setTransactions', trxs)
   })
 }
 

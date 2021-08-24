@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref, onMounted } from 'vue'
+import { defineComponent, computed, ref, toRefs, onMounted, watch } from 'vue'
 import { useStore } from 'vuex'
 
 import { AgGridVue } from 'ag-grid-vue3'
@@ -34,11 +34,18 @@ export default defineComponent({
     AgGridVue,
     PxCard
   },
-  setup () {
+  props: {
+    portfolioId: {
+      type: String,
+      required: true
+    }
+  },
+  setup (props) {
+    const { portfolioId } = toRefs(props)
     const $store = useStore()
 
     const columnDefs = ref([
-      { field: 'date',
+      { field: 'Date',
         minWidth: 110,
         maxWidth: 150,
         pinned: 'left',
@@ -47,9 +54,6 @@ export default defineComponent({
         sort: 'desc',
         resizable: true,
         editable: false,
-        valueGetter: (params) => {
-          return new Date(params.data.date)
-        },
         valueFormatter: (params) => {
           var d = params.value
           const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d)
@@ -58,23 +62,23 @@ export default defineComponent({
           return `${da} ${mo} ${ye}`
         }
       },
-      { field: 'kind', headerName: 'Type', width: 100, sortable: false, resizable: true, editable: false},
-      { field: 'ticker', width: 110, sortable: true, resizable: true, editable: false},
-      { field: 'shares', width: 150, sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
+      { field: 'Kind', headerName: 'Type', width: 100, sortable: false, resizable: true, editable: false},
+      { field: 'Ticker', width: 110, sortable: true, resizable: true, editable: false},
+      { field: 'Shares', width: 150, sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
           if (isNaN(params.value)) {
             return "-"
           }
           return new Intl.NumberFormat('en-US', {maximumFractionDigits: 5}).format(params.value)
         }
       },
-      { field: 'pricePerShare', width: 100, headerName: 'Price', sortable: false, resizable: true, editable: false, valueFormatter: (params) => {
+      { field: 'PricePerShare', width: 100, headerName: 'Price', sortable: false, resizable: true, editable: false, valueFormatter: (params) => {
           if (isNaN(params.value)) {
             return "-"
           }
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
       },
-      { field: 'totalValue', width: 200, headerName: 'Total', sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
+      { field: 'TotalValue', width: 200, headerName: 'Total', sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
           if (isNaN(params.value)) {
             return "-"
           }
@@ -99,12 +103,18 @@ export default defineComponent({
     const sideBar = ref(true)
 
     // Computed properties
-    const rowData = computed(() => $store.state.portfolio.current.performance.transactions)
+    const rowData = computed(() => $store.state.portfolio.transactions)
 
+    watch(portfolioId, async (newValue) => {
+      $store.dispatch('portfolio/fetchTransactions', { portfolioId: newValue })
+    })
     // creation events
     onMounted(() => {
-      gridApi = gridOptions.value.api;
-      columnApi = gridOptions.value.columnApi;
+      gridApi = gridOptions.value.api
+      columnApi = gridOptions.value.columnApi
+      if (portfolioId.value !== undefined) {
+        $store.dispatch('portfolio/fetchTransactions', { portfolioId: portfolioId.value })
+      }
     })
 
     // methods

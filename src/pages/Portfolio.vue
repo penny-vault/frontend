@@ -62,11 +62,11 @@
       </q-tab-panel>
 
       <q-tab-panel name="holdings">
-        <portfolio-holdings />
+        <portfolio-holdings :portfolio-id="portfolioId" />
       </q-tab-panel>
 
       <q-tab-panel name="transactions">
-        <portfolio-transactions />
+        <portfolio-transactions :portfolio-id="portfolioId" />
       </q-tab-panel>
 
       <q-tab-panel name="returns">
