@@ -99,7 +99,7 @@
           </q-tab-panel>
 
           <q-tab-panel class="q-pt-none q-px-none" name="returns">
-            <portfolio-returns />
+            <portfolio-returns :portfolio-id="portfolio.id" />
           </q-tab-panel>
 
         </q-tab-panels>

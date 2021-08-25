@@ -3,7 +3,7 @@
   <div class="row q-col-gutter-lg">
     <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12 col-xs-12">
       <px-card title="Returns by Year">
-        <annual-returns :portfolio="portfolio.measurements" :benchmark="benchmark.measurements" />
+        <annual-returns :measurements="measurements" />
       </px-card>
     </div>
     <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12 col-xs-12">
@@ -21,7 +21,7 @@
   <div class="row q-col-gutter-lg q-pt-md">
     <div class="col">
       <px-card title="Returns Heatmap">
-        <return-heatmap :measurements="portfolio.measurements" />
+        <return-heatmap :measurements="measurements" />
       </px-card>
     </div>
   </div>
@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref, onMounted } from 'vue'
+import { defineComponent, computed, ref, toRefs, onMounted } from 'vue'
 import { useStore } from 'vuex'
 
 import { formatPercent } from '../assets/filters'
@@ -48,12 +48,19 @@ export default defineComponent({
     ReturnHeatmap,
     PxCard
   },
-  setup () {
+  props: {
+    portfolioId: {
+      type: String,
+      required: true
+    }
+  },
+  setup (props) {
+    const { portfolioId } = toRefs(props)
     const $store = useStore()
 
     const drawDownsColumnDefs = ref([
       {
-        field: 'begin',
+        field: 'Begin',
         headerName: 'Period',
         width: 185,
         sortable: true,
@@ -61,15 +68,16 @@ export default defineComponent({
         editable: false,
         cellClass: 'multiline-cell',
         cellRenderer: (params) => {
-          let begin = new Date(params.data.begin * 1000)
-          let end = new Date(params.data.end * 1000)
+          let begin = params.data.Begin
+          let end = params.data.End
+          let recover = params.data.Recovery
           let rangeStr = `${format(begin, 'MMM yyyy')} to ${format(end, 'MMM yyyy')}`
-          let daysToRecover = `<br/><span class="cell-sub-text">${differenceInCalendarDays(end, begin)} days to recover</span>`
+          let daysToRecover = `<br/><span class="cell-sub-text">${differenceInCalendarDays(recover, begin)} days to recover</span>`
           return rangeStr + daysToRecover
         }
       },
       {
-        field: 'lossPercent',
+        field: 'LossPercent',
         width: 85,
         headerName: '%',
         sortable: true,
@@ -80,18 +88,18 @@ export default defineComponent({
         }
       },
       {
-        field: 'recovery',
+        field: 'Recovery',
         headerName: 'Recovered',
         width: 125,
         sortable: true,
         resizable: true,
         editable: false,
         valueFormatter: (params) => {
-          return format(new Date(params.value*1000), 'MMM yyyy')
+          return format(params.value, 'MMM yyyy')
         }
       },
       {
-        field: 'recovery',
+        field: 'Recovery',
         headerName: 'Days to Recover',
         width: 100,
         sortable: true,
@@ -99,7 +107,7 @@ export default defineComponent({
         editable: false,
         hide: true,
         valueGetter: (params) => {
-          return differenceInCalendarDays(new Date(params.data.end * 1000), new Date(params.data.begin * 1000))
+          return differenceInCalendarDays(params.data.End, params.data.Begin)
         }
       }
     ])
@@ -111,9 +119,8 @@ export default defineComponent({
     let columnApi = {}
 
     // Computed properties
-    const benchmark = computed(() => $store.state.portfolio.benchmark)
-    const portfolio = computed(() => $store.state.portfolio.current.performance )
-    const drawDowns = computed(() => $store.state.portfolio.current.performance.metrics.drawDowns )
+    const drawDowns = computed(() => $store.state.portfolio.current.performance.DrawDowns)
+    const measurements = computed(() => $store.state.portfolio.measurements)
 
     // creation events
     onMounted(() => {
@@ -136,8 +143,7 @@ export default defineComponent({
       drawDownsColumnDefs,
       gridOptions,
       onGridReady,
-      portfolio,
-      benchmark
+      measurements
     }
   }
 })

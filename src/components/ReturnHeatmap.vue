@@ -16,9 +16,11 @@ export default defineComponent({
   name: 'ReturnHeatmap',
   props: {
     measurements: {
-      type: Array,
+      type: Object,
       default: function () {
-        return []
+        return {
+          Items: [],
+        }
       }
     },
     width: {
@@ -124,13 +126,14 @@ export default defineComponent({
     async function buildData() {
       let data = new Array()
 
-      if (measurements.value.length == 0) {
+      if (measurements.value.Items.length == 0) {
         return
       }
 
       let started = false
-      measurements.value.forEach(elem => {
-        let dt = new Date(elem.time * 1000)
+      var monthlyReturn = 1.0
+      measurements.value.Items.forEach((elem, idx, arr) => {
+        let dt = elem.Time
         if (!started) {
           if (dt.getMonth() === 0) {
             started = true
@@ -139,11 +142,19 @@ export default defineComponent({
           }
         }
 
-        data.push({
-          year: `${dt.getFullYear()}`,
-          month: format(dt, "MMM"),
-          value: elem.percentReturn * 100
-        })
+        if (idx > 0) {
+          let last = arr[idx-1]
+          if (dt.getMonth() != last.Time.getMonth()) {
+            data.push({
+              year: `${dt.getFullYear()}`,
+              month: format(dt, "MMM"),
+              value: (monthlyReturn - 1.0) * 100
+            })
+            monthlyReturn = 1.0
+          } else {
+            monthlyReturn = monthlyReturn * (elem.Value1 / last.Value1)
+          }
+        }
       })
 
       return data

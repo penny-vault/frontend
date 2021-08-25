@@ -70,7 +70,7 @@
       </q-tab-panel>
 
       <q-tab-panel name="returns">
-        <portfolio-returns />
+        <portfolio-returns :portfolio-id="portfolioId" />
       </q-tab-panel>
 
       <q-tab-panel name="settings">

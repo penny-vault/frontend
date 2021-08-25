@@ -12,13 +12,26 @@ import animated from '@amcharts/amcharts4/themes/animated'
 
 let AnnualizeReturns = function (measurements) {
     let annualized = new Map()
-    measurements.forEach( elem => {
-        let dt = new Date(elem.time * 1000)
+    measurements.forEach( (elem, idx, arr) => {
+        let dt = elem.Time
         var curr = annualized.get(dt.getFullYear())
+        var stratPercent = 1.0
+        var benchPercent = 1.0
+        if (idx > 0) {
+          let last = arr[idx-1]
+          stratPercent = elem.Value1 / last.Value1
+          benchPercent = elem.Value2 / last.Value2
+        }
         if (curr === undefined) {
-            annualized.set(dt.getFullYear(), (1 + elem.percentReturn))
+            annualized.set(dt.getFullYear(), {
+              strategy: stratPercent,
+              benchmark: benchPercent
+            })
         } else {
-            annualized.set(dt.getFullYear(), curr * (1 + elem.percentReturn))
+            annualized.set(dt.getFullYear(), {
+              strategy: curr.strategy * stratPercent,
+              benchmark: curr.benchmark * benchPercent
+            })
         }
     })
     return annualized
@@ -27,17 +40,9 @@ let AnnualizeReturns = function (measurements) {
 export default defineComponent({
   name: 'AnnualReturns',
   props: {
-    portfolio: {
-      type: Array,
-      default: function () {
-        return []
-      }
-    },
-    benchmark: {
-      type: Array,
-      default: function () {
-        return []
-      }
+    measurements: {
+      type: Object,
+      required: true
     },
     width: {
       type: String,
@@ -58,14 +63,10 @@ export default defineComponent({
     var yAxis
 
     // reactive data
-    const { portfolio, benchmark, width: chartWidth, height: chartHeight } = toRefs(props)
+    const { measurements, width: chartWidth, height: chartHeight } = toRefs(props)
 
     // watch parameters
-    watch(portfolio, async () => {
-      chart.data = await buildData()
-    })
-
-    watch(benchmark, async () => {
+    watch(measurements, async () => {
       chart.data = await buildData()
     })
 
@@ -138,16 +139,15 @@ export default defineComponent({
     }
 
     async function buildData() {
-      let portfolioRets = AnnualizeReturns(portfolio.value)
-      let benchmarkRets = AnnualizeReturns(benchmark.value)
+      let rets = AnnualizeReturns(measurements.value.Items)
 
       let data = []
 
-      portfolioRets.forEach( (v, k) => {
+      rets.forEach( (v, k) => {
         data.push({
           year: `${k}`,
-          benchmark: (benchmarkRets.get(k) - 1) * 100,
-          strategy: (v - 1) * 100,
+          benchmark: (v.benchmark - 1) * 100,
+          strategy: (v.strategy - 1) * 100,
         })
       })
 

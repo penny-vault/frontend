@@ -85,7 +85,7 @@ export default defineComponent({
       {
         field: 'Time',
         headerName: 'Date',
-        width: 100,
+        width: 110,
         cellClass: 'dateType',
         pinned: 'left',
         filter: 'agDateColumnFilter',
@@ -120,6 +120,7 @@ export default defineComponent({
       {
         field: 'PercentReturn',
         minWidth: 100,
+        width: 110,
         maxWidth: 150,
         headerName: 'Return',
         sortable: true,
@@ -143,7 +144,7 @@ export default defineComponent({
       },
       {
         field: 'Value',
-        width: 150,
+        width: 200,
         headerName: 'Value',
         cellClass: 'currencyType',
         sortable: true,
@@ -157,7 +158,6 @@ export default defineComponent({
         }
       }
     ])
-    const dynamicColumns = new Map()
     const holdingsColumnDefs = ref([
       {
         field: 'Ticker',
@@ -272,11 +272,6 @@ export default defineComponent({
         let idx = rowData.value.length - 1
         holdings.value = rowData.value[idx].Holdings
       }
-      var allColumnIds = []
-      gridOptions.value.columnApi.getAllColumns().forEach(function (column) {
-        allColumnIds.push(column.colId);
-      })
-      gridOptions.value.columnApi.autoSizeColumns(allColumnIds, true)
     })
 
     // creation events
@@ -329,12 +324,6 @@ export default defineComponent({
 
     function onGridReady(params) {
       gridApi.closeToolPanel()
-      var allColumnIds = []
-      gridOptions.value.columnApi.getAllColumns().forEach(function (column) {
-        allColumnIds.push(column.colId);
-      })
-
-      gridOptions.value.columnApi.autoSizeColumns(allColumnIds, true)
     }
 
     return {

@@ -9,7 +9,6 @@ export function setHoldings (state, holdings) {
 }
 
 export function setTransactions (state, transactions) {
-  console.log(transactions)
   state.transactions = transactions.Items
 }
 
