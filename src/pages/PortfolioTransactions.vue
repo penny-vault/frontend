@@ -44,6 +44,13 @@ export default defineComponent({
     const { portfolioId } = toRefs(props)
     const $store = useStore()
 
+    const weightMap = new Map()
+    weightMap.set('DEPOSIT', 0)
+    weightMap.set('DIVIDEND', 1)
+    weightMap.set('SELL', 2)
+    weightMap.set('WITHDRAW', 3)
+    weightMap.set('BUY', 4)
+
     const columnDefs = ref([
       { field: 'Date',
         minWidth: 110,
@@ -52,6 +59,7 @@ export default defineComponent({
         filter: 'agDateColumnFilter',
         sortable: true,
         sort: 'desc',
+        sortIndex: 1,
         resizable: true,
         editable: false,
         valueFormatter: (params) => {
@@ -62,11 +70,26 @@ export default defineComponent({
           return `${da} ${mo} ${ye}`
         }
       },
-      { field: 'Kind', headerName: 'Type', width: 100, sortable: false, resizable: true, editable: false},
+      {
+        headerName: 'Weight',
+        hide: true,
+        sortable: true,
+        sort: 'desc',
+        lockVisible: true,
+        sortIndex: 2,
+        valueGetter: (params) => {
+          var d = params.data.Kind
+          return weightMap.get(d)
+        }
+      },
+      { field: 'Kind', headerName: 'Kind', filter: 'agSetColumnFilter', width: 110, sortable: false, resizable: true, editable: false},
       { field: 'Ticker', width: 110, sortable: true, resizable: true, editable: false},
       { field: 'Shares', width: 150, sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
           if (isNaN(params.value)) {
             return "-"
+          }
+          if (params.data.Kind === 'DIVIDEND' || params.data.Kind === 'DEPOSIT' || params.data.Kind === 'Withdraw') {
+            return ""
           }
           return new Intl.NumberFormat('en-US', {maximumFractionDigits: 5}).format(params.value)
         }
@@ -74,6 +97,9 @@ export default defineComponent({
       { field: 'PricePerShare', width: 100, headerName: 'Price', sortable: false, resizable: true, editable: false, valueFormatter: (params) => {
           if (isNaN(params.value)) {
             return "-"
+          }
+          if (params.data.Kind === 'DIVIDEND' || params.data.Kind === 'DEPOSIT' || params.data.Kind === 'Withdraw') {
+            return ""
           }
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
