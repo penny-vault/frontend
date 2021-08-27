@@ -112,7 +112,7 @@ export default defineComponent({
         }
       }
     ])
-    const dynamicColumns = ref(new Map())
+    const dynamicColumns = new Map()
 
     const gridOptions = ref({
       rowClassRules: {
@@ -131,9 +131,15 @@ export default defineComponent({
     // Computed properties
     const rowData = computed(() => $store.state.portfolio.transactions)
 
+    // watch
     watch(portfolioId, async (newValue) => {
       $store.dispatch('portfolio/fetchTransactions', { portfolioId: newValue })
     })
+
+    watch(rowData, async () => {
+      getDynamicColumns()
+    })
+
     // creation events
     onMounted(() => {
       gridApi = gridOptions.value.api
@@ -141,9 +147,46 @@ export default defineComponent({
       if (portfolioId.value !== undefined) {
         $store.dispatch('portfolio/fetchTransactions', { portfolioId: portfolioId.value })
       }
+      getDynamicColumns()
     })
 
     // methods
+    function getDynamicColumns() {
+      if (rowData.value.length > 1) {
+        let justificationTmpl = rowData.value[1].Justification
+        if (justificationTmpl !== undefined) {
+          justificationTmpl.forEach((elem, idx)=> {
+            if (!dynamicColumns.has(elem.Key)) {
+              console.log(`add ${elem.Key}`)
+              dynamicColumns.set(elem.Key, 1)
+              columnDefs.value.push({
+                headerName: elem.Key,
+                valueGetter: (params) => {
+                  let v = params.data.Justification[idx]
+                  if (v !== undefined) {
+                    return v.Value
+                  }
+                  return ""
+                },
+                valueFormatter: (params) => {
+                  if (typeof params.value === "number") {
+                    return params.value.toFixed(2)
+                  }
+                  return params.value
+                },
+                sortable: true,
+                resizable: true,
+                editable: false
+              })
+            }
+          })
+          setTimeout(function() {
+            gridApi.setColumnDefs(columnDefs.value)
+          }, 0)
+        }
+      }
+    }
+
     function exportCSV(e) {
       e.preventDefault()
       gridApi.exportDataAsCsv({})
@@ -162,7 +205,6 @@ export default defineComponent({
     return {
       columnApi,
       columnDefs,
-      dynamicColumns,
       exportCSV,
       gridApi,
       gridOptions,
