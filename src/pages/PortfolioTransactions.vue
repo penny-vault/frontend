@@ -174,6 +174,7 @@ export default defineComponent({
                   }
                   return params.value
                 },
+                hide: true,
                 sortable: true,
                 resizable: true,
                 editable: false
