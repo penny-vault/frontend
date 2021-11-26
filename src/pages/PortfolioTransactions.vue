@@ -157,7 +157,6 @@ export default defineComponent({
         if (justificationTmpl !== undefined) {
           justificationTmpl.forEach((elem, idx)=> {
             if (!dynamicColumns.has(elem.Key)) {
-              console.log(`add ${elem.Key}`)
               dynamicColumns.set(elem.Key, 1)
               columnDefs.value.push({
                 headerName: elem.Key,

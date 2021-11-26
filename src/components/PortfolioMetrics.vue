@@ -35,7 +35,7 @@ export default {
   },
   data() {
     return {
-      metricNames: ["finalBalance", "totalDeposited", "totalWithdrawn", "stdDev", "bestYear", "worstYear", "sharpeRatio", "sortinoRatio"]
+      metricNames: ["finalBalance", "bestYear", "worstYear", "sharpeRatio", "sortinoRatio", "stdDev", "ulcerIndex"]
     }
   }
 }

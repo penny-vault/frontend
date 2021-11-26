@@ -108,6 +108,11 @@ export const emptyMetrics = {
     "name": "Sortino Ratio",
     "portfolioValue": 0,
     "benchmarkValue": 0
+  },
+  ulcerIndex: {
+    "name": "Ulcer Index",
+    "portfolioValue": 0,
+    "benchmarkValue": 0
   }
 }
 

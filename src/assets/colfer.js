@@ -2779,17 +2779,25 @@ var colfer = new function() {
 
 		this.Holdings = [];
 
+		this.Justification = [];
+
 		this.TotalDeposited = 0;
 
 		this.TotalWithdrawn = 0;
 		// Time-weighted rate of return
 		this.TWRROneDay = 0;
 
+		this.TWRRWeekToDate = 0;
+
 		this.TWRROneWeek = 0;
+
+		this.TWRRMonthToDate = 0;
 
 		this.TWRROneMonth = 0;
 
 		this.TWRRThreeMonth = 0;
+
+		this.TWRRYearToDate = 0;
 
 		this.TWRROneYear = 0;
 
@@ -2801,11 +2809,17 @@ var colfer = new function() {
 		// Money-weighted rate of return
 		this.MWRROneDay = 0;
 
+		this.MWRRWeekToDate = 0;
+
 		this.MWRROneWeek = 0;
+
+		this.MWRRMonthToDate = 0;
 
 		this.MWRROneMonth = 0;
 
 		this.MWRRThreeMonth = 0;
+
+		this.MWRRYearToDate = 0;
 
 		this.MWRROneYear = 0;
 
@@ -2864,6 +2878,7 @@ var colfer = new function() {
 
 	// Serializes the object into an Uint8Array.
 	// All null entries in property Holdings will be replaced with a new colfer.ReportableHolding.
+	// All null entries in property Justification will be replaced with a new colfer.Justification.
 	this.PerformanceMeasurement.prototype.marshal = function(buf) {
 		if (! buf || !buf.length) buf = new Uint8Array(colferSizeMax);
 		var i = 0;
@@ -2982,439 +2997,522 @@ var colfer = new function() {
 			});
 		}
 
-		if (this.TotalDeposited) {
+		if (this.Justification && this.Justification.length) {
+			var a = this.Justification;
+			if (a.length > colferListMax)
+				throw new Error('colfer: colfer.PerformanceMeasurement.Justification length exceeds colferListMax');
 			buf[i++] = 8;
+			i = encodeVarint(buf, i, a.length);
+			a.forEach(function(v, vi) {
+				if (v == null) {
+					v = new colfer.Justification();
+					a[vi] = v;
+				}
+				var b = v.marshal();
+				buf.set(b, i);
+				i += b.length;
+			});
+		}
+
+		if (this.TotalDeposited) {
+			buf[i++] = 9;
 			view.setFloat64(i, this.TotalDeposited);
 			i += 8;
 		} else if (Number.isNaN(this.TotalDeposited)) {
-			buf.set([8, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([9, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
 		if (this.TotalWithdrawn) {
-			buf[i++] = 9;
+			buf[i++] = 10;
 			view.setFloat64(i, this.TotalWithdrawn);
 			i += 8;
 		} else if (Number.isNaN(this.TotalWithdrawn)) {
-			buf.set([9, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([10, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
 		if (this.TWRROneDay) {
 			if (this.TWRROneDay > 3.4028234663852886E38 || this.TWRROneDay < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneDay exceeds 32-bit range');
-			buf[i++] = 10;
+			buf[i++] = 11;
 			view.setFloat32(i, this.TWRROneDay);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneDay)) {
-			buf.set([10, 0x7f, 0xc0, 0, 0], i);
+			buf.set([11, 0x7f, 0xc0, 0, 0], i);
+			i += 5;
+		}
+
+		if (this.TWRRWeekToDate) {
+			if (this.TWRRWeekToDate > 3.4028234663852886E38 || this.TWRRWeekToDate < -3.4028234663852886E38)
+				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRWeekToDate exceeds 32-bit range');
+			buf[i++] = 12;
+			view.setFloat32(i, this.TWRRWeekToDate);
+			i += 4;
+		} else if (Number.isNaN(this.TWRRWeekToDate)) {
+			buf.set([12, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRROneWeek) {
 			if (this.TWRROneWeek > 3.4028234663852886E38 || this.TWRROneWeek < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneWeek exceeds 32-bit range');
-			buf[i++] = 11;
+			buf[i++] = 13;
 			view.setFloat32(i, this.TWRROneWeek);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneWeek)) {
-			buf.set([11, 0x7f, 0xc0, 0, 0], i);
+			buf.set([13, 0x7f, 0xc0, 0, 0], i);
+			i += 5;
+		}
+
+		if (this.TWRRMonthToDate) {
+			if (this.TWRRMonthToDate > 3.4028234663852886E38 || this.TWRRMonthToDate < -3.4028234663852886E38)
+				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRMonthToDate exceeds 32-bit range');
+			buf[i++] = 14;
+			view.setFloat32(i, this.TWRRMonthToDate);
+			i += 4;
+		} else if (Number.isNaN(this.TWRRMonthToDate)) {
+			buf.set([14, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRROneMonth) {
 			if (this.TWRROneMonth > 3.4028234663852886E38 || this.TWRROneMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneMonth exceeds 32-bit range');
-			buf[i++] = 12;
+			buf[i++] = 15;
 			view.setFloat32(i, this.TWRROneMonth);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneMonth)) {
-			buf.set([12, 0x7f, 0xc0, 0, 0], i);
+			buf.set([15, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRThreeMonth) {
 			if (this.TWRRThreeMonth > 3.4028234663852886E38 || this.TWRRThreeMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRThreeMonth exceeds 32-bit range');
-			buf[i++] = 13;
+			buf[i++] = 16;
 			view.setFloat32(i, this.TWRRThreeMonth);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRThreeMonth)) {
-			buf.set([13, 0x7f, 0xc0, 0, 0], i);
+			buf.set([16, 0x7f, 0xc0, 0, 0], i);
+			i += 5;
+		}
+
+		if (this.TWRRYearToDate) {
+			if (this.TWRRYearToDate > 3.4028234663852886E38 || this.TWRRYearToDate < -3.4028234663852886E38)
+				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRYearToDate exceeds 32-bit range');
+			buf[i++] = 17;
+			view.setFloat32(i, this.TWRRYearToDate);
+			i += 4;
+		} else if (Number.isNaN(this.TWRRYearToDate)) {
+			buf.set([17, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRROneYear) {
 			if (this.TWRROneYear > 3.4028234663852886E38 || this.TWRROneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneYear exceeds 32-bit range');
-			buf[i++] = 14;
+			buf[i++] = 18;
 			view.setFloat32(i, this.TWRROneYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneYear)) {
-			buf.set([14, 0x7f, 0xc0, 0, 0], i);
+			buf.set([18, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRThreeYear) {
 			if (this.TWRRThreeYear > 3.4028234663852886E38 || this.TWRRThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRThreeYear exceeds 32-bit range');
-			buf[i++] = 15;
+			buf[i++] = 19;
 			view.setFloat32(i, this.TWRRThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRThreeYear)) {
-			buf.set([15, 0x7f, 0xc0, 0, 0], i);
+			buf.set([19, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRFiveYear) {
 			if (this.TWRRFiveYear > 3.4028234663852886E38 || this.TWRRFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRFiveYear exceeds 32-bit range');
-			buf[i++] = 16;
+			buf[i++] = 20;
 			view.setFloat32(i, this.TWRRFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRFiveYear)) {
-			buf.set([16, 0x7f, 0xc0, 0, 0], i);
+			buf.set([20, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRTenYear) {
 			if (this.TWRRTenYear > 3.4028234663852886E38 || this.TWRRTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRTenYear exceeds 32-bit range');
-			buf[i++] = 17;
+			buf[i++] = 21;
 			view.setFloat32(i, this.TWRRTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRTenYear)) {
-			buf.set([17, 0x7f, 0xc0, 0, 0], i);
+			buf.set([21, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneDay) {
 			if (this.MWRROneDay > 3.4028234663852886E38 || this.MWRROneDay < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneDay exceeds 32-bit range');
-			buf[i++] = 18;
+			buf[i++] = 22;
 			view.setFloat32(i, this.MWRROneDay);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneDay)) {
-			buf.set([18, 0x7f, 0xc0, 0, 0], i);
+			buf.set([22, 0x7f, 0xc0, 0, 0], i);
+			i += 5;
+		}
+
+		if (this.MWRRWeekToDate) {
+			if (this.MWRRWeekToDate > 3.4028234663852886E38 || this.MWRRWeekToDate < -3.4028234663852886E38)
+				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRWeekToDate exceeds 32-bit range');
+			buf[i++] = 23;
+			view.setFloat32(i, this.MWRRWeekToDate);
+			i += 4;
+		} else if (Number.isNaN(this.MWRRWeekToDate)) {
+			buf.set([23, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneWeek) {
 			if (this.MWRROneWeek > 3.4028234663852886E38 || this.MWRROneWeek < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneWeek exceeds 32-bit range');
-			buf[i++] = 19;
+			buf[i++] = 24;
 			view.setFloat32(i, this.MWRROneWeek);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneWeek)) {
-			buf.set([19, 0x7f, 0xc0, 0, 0], i);
+			buf.set([24, 0x7f, 0xc0, 0, 0], i);
+			i += 5;
+		}
+
+		if (this.MWRRMonthToDate) {
+			if (this.MWRRMonthToDate > 3.4028234663852886E38 || this.MWRRMonthToDate < -3.4028234663852886E38)
+				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRMonthToDate exceeds 32-bit range');
+			buf[i++] = 25;
+			view.setFloat32(i, this.MWRRMonthToDate);
+			i += 4;
+		} else if (Number.isNaN(this.MWRRMonthToDate)) {
+			buf.set([25, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneMonth) {
 			if (this.MWRROneMonth > 3.4028234663852886E38 || this.MWRROneMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneMonth exceeds 32-bit range');
-			buf[i++] = 20;
+			buf[i++] = 26;
 			view.setFloat32(i, this.MWRROneMonth);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneMonth)) {
-			buf.set([20, 0x7f, 0xc0, 0, 0], i);
+			buf.set([26, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRThreeMonth) {
 			if (this.MWRRThreeMonth > 3.4028234663852886E38 || this.MWRRThreeMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRThreeMonth exceeds 32-bit range');
-			buf[i++] = 21;
+			buf[i++] = 27;
 			view.setFloat32(i, this.MWRRThreeMonth);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRThreeMonth)) {
-			buf.set([21, 0x7f, 0xc0, 0, 0], i);
+			buf.set([27, 0x7f, 0xc0, 0, 0], i);
+			i += 5;
+		}
+
+		if (this.MWRRYearToDate) {
+			if (this.MWRRYearToDate > 3.4028234663852886E38 || this.MWRRYearToDate < -3.4028234663852886E38)
+				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRYearToDate exceeds 32-bit range');
+			buf[i++] = 28;
+			view.setFloat32(i, this.MWRRYearToDate);
+			i += 4;
+		} else if (Number.isNaN(this.MWRRYearToDate)) {
+			buf.set([28, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneYear) {
 			if (this.MWRROneYear > 3.4028234663852886E38 || this.MWRROneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneYear exceeds 32-bit range');
-			buf[i++] = 22;
+			buf[i++] = 29;
 			view.setFloat32(i, this.MWRROneYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneYear)) {
-			buf.set([22, 0x7f, 0xc0, 0, 0], i);
+			buf.set([29, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRThreeYear) {
 			if (this.MWRRThreeYear > 3.4028234663852886E38 || this.MWRRThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRThreeYear exceeds 32-bit range');
-			buf[i++] = 23;
+			buf[i++] = 30;
 			view.setFloat32(i, this.MWRRThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRThreeYear)) {
-			buf.set([23, 0x7f, 0xc0, 0, 0], i);
+			buf.set([30, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRFiveYear) {
 			if (this.MWRRFiveYear > 3.4028234663852886E38 || this.MWRRFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRFiveYear exceeds 32-bit range');
-			buf[i++] = 24;
+			buf[i++] = 31;
 			view.setFloat32(i, this.MWRRFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRFiveYear)) {
-			buf.set([24, 0x7f, 0xc0, 0, 0], i);
+			buf.set([31, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRTenYear) {
 			if (this.MWRRTenYear > 3.4028234663852886E38 || this.MWRRTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRTenYear exceeds 32-bit range');
-			buf[i++] = 25;
+			buf[i++] = 32;
 			view.setFloat32(i, this.MWRRTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRTenYear)) {
-			buf.set([25, 0x7f, 0xc0, 0, 0], i);
+			buf.set([32, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnOneYear) {
 			if (this.ActiveReturnOneYear > 3.4028234663852886E38 || this.ActiveReturnOneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnOneYear exceeds 32-bit range');
-			buf[i++] = 26;
+			buf[i++] = 33;
 			view.setFloat32(i, this.ActiveReturnOneYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnOneYear)) {
-			buf.set([26, 0x7f, 0xc0, 0, 0], i);
+			buf.set([33, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnThreeYear) {
 			if (this.ActiveReturnThreeYear > 3.4028234663852886E38 || this.ActiveReturnThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnThreeYear exceeds 32-bit range');
-			buf[i++] = 27;
+			buf[i++] = 34;
 			view.setFloat32(i, this.ActiveReturnThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnThreeYear)) {
-			buf.set([27, 0x7f, 0xc0, 0, 0], i);
+			buf.set([34, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnFiveYear) {
 			if (this.ActiveReturnFiveYear > 3.4028234663852886E38 || this.ActiveReturnFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnFiveYear exceeds 32-bit range');
-			buf[i++] = 28;
+			buf[i++] = 35;
 			view.setFloat32(i, this.ActiveReturnFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnFiveYear)) {
-			buf.set([28, 0x7f, 0xc0, 0, 0], i);
+			buf.set([35, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnTenYear) {
 			if (this.ActiveReturnTenYear > 3.4028234663852886E38 || this.ActiveReturnTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnTenYear exceeds 32-bit range');
-			buf[i++] = 29;
+			buf[i++] = 36;
 			view.setFloat32(i, this.ActiveReturnTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnTenYear)) {
-			buf.set([29, 0x7f, 0xc0, 0, 0], i);
+			buf.set([36, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaOneYear) {
 			if (this.AlphaOneYear > 3.4028234663852886E38 || this.AlphaOneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaOneYear exceeds 32-bit range');
-			buf[i++] = 30;
+			buf[i++] = 37;
 			view.setFloat32(i, this.AlphaOneYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaOneYear)) {
-			buf.set([30, 0x7f, 0xc0, 0, 0], i);
+			buf.set([37, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaThreeYear) {
 			if (this.AlphaThreeYear > 3.4028234663852886E38 || this.AlphaThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaThreeYear exceeds 32-bit range');
-			buf[i++] = 31;
+			buf[i++] = 38;
 			view.setFloat32(i, this.AlphaThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaThreeYear)) {
-			buf.set([31, 0x7f, 0xc0, 0, 0], i);
+			buf.set([38, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaFiveYear) {
 			if (this.AlphaFiveYear > 3.4028234663852886E38 || this.AlphaFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaFiveYear exceeds 32-bit range');
-			buf[i++] = 32;
+			buf[i++] = 39;
 			view.setFloat32(i, this.AlphaFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaFiveYear)) {
-			buf.set([32, 0x7f, 0xc0, 0, 0], i);
+			buf.set([39, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaTenYear) {
 			if (this.AlphaTenYear > 3.4028234663852886E38 || this.AlphaTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaTenYear exceeds 32-bit range');
-			buf[i++] = 33;
+			buf[i++] = 40;
 			view.setFloat32(i, this.AlphaTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaTenYear)) {
-			buf.set([33, 0x7f, 0xc0, 0, 0], i);
+			buf.set([40, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaOneYear) {
 			if (this.BetaOneYear > 3.4028234663852886E38 || this.BetaOneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaOneYear exceeds 32-bit range');
-			buf[i++] = 34;
+			buf[i++] = 41;
 			view.setFloat32(i, this.BetaOneYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaOneYear)) {
-			buf.set([34, 0x7f, 0xc0, 0, 0], i);
+			buf.set([41, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaThreeYear) {
 			if (this.BetaThreeYear > 3.4028234663852886E38 || this.BetaThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaThreeYear exceeds 32-bit range');
-			buf[i++] = 35;
+			buf[i++] = 42;
 			view.setFloat32(i, this.BetaThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaThreeYear)) {
-			buf.set([35, 0x7f, 0xc0, 0, 0], i);
+			buf.set([42, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaFiveYear) {
 			if (this.BetaFiveYear > 3.4028234663852886E38 || this.BetaFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaFiveYear exceeds 32-bit range');
-			buf[i++] = 36;
+			buf[i++] = 43;
 			view.setFloat32(i, this.BetaFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaFiveYear)) {
-			buf.set([36, 0x7f, 0xc0, 0, 0], i);
+			buf.set([43, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaTenYear) {
 			if (this.BetaTenYear > 3.4028234663852886E38 || this.BetaTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaTenYear exceeds 32-bit range');
-			buf[i++] = 37;
+			buf[i++] = 44;
 			view.setFloat32(i, this.BetaTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaTenYear)) {
-			buf.set([37, 0x7f, 0xc0, 0, 0], i);
+			buf.set([44, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.CalmarRatio) {
 			if (this.CalmarRatio > 3.4028234663852886E38 || this.CalmarRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field CalmarRatio exceeds 32-bit range');
-			buf[i++] = 38;
+			buf[i++] = 45;
 			view.setFloat32(i, this.CalmarRatio);
 			i += 4;
 		} else if (Number.isNaN(this.CalmarRatio)) {
-			buf.set([38, 0x7f, 0xc0, 0, 0], i);
+			buf.set([45, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.DownsideDeviation) {
 			if (this.DownsideDeviation > 3.4028234663852886E38 || this.DownsideDeviation < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field DownsideDeviation exceeds 32-bit range');
-			buf[i++] = 39;
+			buf[i++] = 46;
 			view.setFloat32(i, this.DownsideDeviation);
 			i += 4;
 		} else if (Number.isNaN(this.DownsideDeviation)) {
-			buf.set([39, 0x7f, 0xc0, 0, 0], i);
+			buf.set([46, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.InformationRatio) {
 			if (this.InformationRatio > 3.4028234663852886E38 || this.InformationRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field InformationRatio exceeds 32-bit range');
-			buf[i++] = 40;
+			buf[i++] = 47;
 			view.setFloat32(i, this.InformationRatio);
 			i += 4;
 		} else if (Number.isNaN(this.InformationRatio)) {
-			buf.set([40, 0x7f, 0xc0, 0, 0], i);
+			buf.set([47, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.KRatio) {
 			if (this.KRatio > 3.4028234663852886E38 || this.KRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field KRatio exceeds 32-bit range');
-			buf[i++] = 41;
+			buf[i++] = 48;
 			view.setFloat32(i, this.KRatio);
 			i += 4;
 		} else if (Number.isNaN(this.KRatio)) {
-			buf.set([41, 0x7f, 0xc0, 0, 0], i);
+			buf.set([48, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.KellerRatio) {
 			if (this.KellerRatio > 3.4028234663852886E38 || this.KellerRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field KellerRatio exceeds 32-bit range');
-			buf[i++] = 42;
+			buf[i++] = 49;
 			view.setFloat32(i, this.KellerRatio);
 			i += 4;
 		} else if (Number.isNaN(this.KellerRatio)) {
-			buf.set([42, 0x7f, 0xc0, 0, 0], i);
+			buf.set([49, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.SharpeRatio) {
 			if (this.SharpeRatio > 3.4028234663852886E38 || this.SharpeRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field SharpeRatio exceeds 32-bit range');
-			buf[i++] = 43;
+			buf[i++] = 50;
 			view.setFloat32(i, this.SharpeRatio);
 			i += 4;
 		} else if (Number.isNaN(this.SharpeRatio)) {
-			buf.set([43, 0x7f, 0xc0, 0, 0], i);
+			buf.set([50, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.SortinoRatio) {
 			if (this.SortinoRatio > 3.4028234663852886E38 || this.SortinoRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field SortinoRatio exceeds 32-bit range');
-			buf[i++] = 44;
+			buf[i++] = 51;
 			view.setFloat32(i, this.SortinoRatio);
 			i += 4;
 		} else if (Number.isNaN(this.SortinoRatio)) {
-			buf.set([44, 0x7f, 0xc0, 0, 0], i);
+			buf.set([51, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.StdDev) {
 			if (this.StdDev > 3.4028234663852886E38 || this.StdDev < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field StdDev exceeds 32-bit range');
-			buf[i++] = 45;
+			buf[i++] = 52;
 			view.setFloat32(i, this.StdDev);
 			i += 4;
 		} else if (Number.isNaN(this.StdDev)) {
-			buf.set([45, 0x7f, 0xc0, 0, 0], i);
+			buf.set([52, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TreynorRatio) {
 			if (this.TreynorRatio > 3.4028234663852886E38 || this.TreynorRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TreynorRatio exceeds 32-bit range');
-			buf[i++] = 46;
+			buf[i++] = 53;
 			view.setFloat32(i, this.TreynorRatio);
 			i += 4;
 		} else if (Number.isNaN(this.TreynorRatio)) {
-			buf.set([46, 0x7f, 0xc0, 0, 0], i);
+			buf.set([53, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.UlcerIndex) {
 			if (this.UlcerIndex > 3.4028234663852886E38 || this.UlcerIndex < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field UlcerIndex exceeds 32-bit range');
-			buf[i++] = 47;
+			buf[i++] = 54;
 			view.setFloat32(i, this.UlcerIndex);
 			i += 4;
 		} else if (Number.isNaN(this.UlcerIndex)) {
-			buf.set([47, 0x7f, 0xc0, 0, 0], i);
+			buf.set([54, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
@@ -3536,279 +3634,335 @@ var colfer = new function() {
 		}
 
 		if (header == 8) {
+			var l = readVarint();
+			if (l < 0) throw new Error('colfer: colfer.PerformanceMeasurement.Justification length exceeds Number.MAX_SAFE_INTEGER');
+			if (l > colferListMax)
+				throw new Error('colfer: colfer.PerformanceMeasurement.Justification length ' + l + ' exceeds ' + colferListMax + ' elements');
+
+			for (var n = 0; n < l; ++n) {
+				var o = new colfer.Justification();
+				i += o.unmarshal(data.subarray(i));
+				this.Justification[n] = o;
+			}
+			readHeader();
+		}
+
+		if (header == 9) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.TotalDeposited = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 9) {
+		if (header == 10) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.TotalWithdrawn = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 10) {
+		if (header == 11) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRROneDay = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 11) {
-			if (i + 4 > data.length) throw new Error(EOF);
-			this.TWRROneWeek = view.getFloat32(i);
-			i += 4;
-			readHeader();
-		}
-
 		if (header == 12) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.TWRROneMonth = view.getFloat32(i);
+			this.TWRRWeekToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 13) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.TWRRThreeMonth = view.getFloat32(i);
+			this.TWRROneWeek = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 14) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.TWRROneYear = view.getFloat32(i);
+			this.TWRRMonthToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 15) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.TWRRThreeYear = view.getFloat32(i);
+			this.TWRROneMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 16) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.TWRRFiveYear = view.getFloat32(i);
+			this.TWRRThreeMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 17) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.TWRRTenYear = view.getFloat32(i);
+			this.TWRRYearToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 18) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.MWRROneDay = view.getFloat32(i);
+			this.TWRROneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 19) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.MWRROneWeek = view.getFloat32(i);
+			this.TWRRThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 20) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.MWRROneMonth = view.getFloat32(i);
+			this.TWRRFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 21) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.MWRRThreeMonth = view.getFloat32(i);
+			this.TWRRTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 22) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.MWRROneYear = view.getFloat32(i);
+			this.MWRROneDay = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 23) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.MWRRThreeYear = view.getFloat32(i);
+			this.MWRRWeekToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 24) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.MWRRFiveYear = view.getFloat32(i);
+			this.MWRROneWeek = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 25) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.MWRRTenYear = view.getFloat32(i);
+			this.MWRRMonthToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 26) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.ActiveReturnOneYear = view.getFloat32(i);
+			this.MWRROneMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 27) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.ActiveReturnThreeYear = view.getFloat32(i);
+			this.MWRRThreeMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 28) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.ActiveReturnFiveYear = view.getFloat32(i);
+			this.MWRRYearToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 29) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.ActiveReturnTenYear = view.getFloat32(i);
+			this.MWRROneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 30) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.AlphaOneYear = view.getFloat32(i);
+			this.MWRRThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 31) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.AlphaThreeYear = view.getFloat32(i);
+			this.MWRRFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 32) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.AlphaFiveYear = view.getFloat32(i);
+			this.MWRRTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 33) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.AlphaTenYear = view.getFloat32(i);
+			this.ActiveReturnOneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 34) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.BetaOneYear = view.getFloat32(i);
+			this.ActiveReturnThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 35) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.BetaThreeYear = view.getFloat32(i);
+			this.ActiveReturnFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 36) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.BetaFiveYear = view.getFloat32(i);
+			this.ActiveReturnTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 37) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.BetaTenYear = view.getFloat32(i);
+			this.AlphaOneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 38) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.CalmarRatio = view.getFloat32(i);
+			this.AlphaThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 39) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.DownsideDeviation = view.getFloat32(i);
+			this.AlphaFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 40) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.InformationRatio = view.getFloat32(i);
+			this.AlphaTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 41) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.KRatio = view.getFloat32(i);
+			this.BetaOneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 42) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.KellerRatio = view.getFloat32(i);
+			this.BetaThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 43) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.SharpeRatio = view.getFloat32(i);
+			this.BetaFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 44) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.SortinoRatio = view.getFloat32(i);
+			this.BetaTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 45) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.StdDev = view.getFloat32(i);
+			this.CalmarRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 46) {
 			if (i + 4 > data.length) throw new Error(EOF);
-			this.TreynorRatio = view.getFloat32(i);
+			this.DownsideDeviation = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
 		if (header == 47) {
+			if (i + 4 > data.length) throw new Error(EOF);
+			this.InformationRatio = view.getFloat32(i);
+			i += 4;
+			readHeader();
+		}
+
+		if (header == 48) {
+			if (i + 4 > data.length) throw new Error(EOF);
+			this.KRatio = view.getFloat32(i);
+			i += 4;
+			readHeader();
+		}
+
+		if (header == 49) {
+			if (i + 4 > data.length) throw new Error(EOF);
+			this.KellerRatio = view.getFloat32(i);
+			i += 4;
+			readHeader();
+		}
+
+		if (header == 50) {
+			if (i + 4 > data.length) throw new Error(EOF);
+			this.SharpeRatio = view.getFloat32(i);
+			i += 4;
+			readHeader();
+		}
+
+		if (header == 51) {
+			if (i + 4 > data.length) throw new Error(EOF);
+			this.SortinoRatio = view.getFloat32(i);
+			i += 4;
+			readHeader();
+		}
+
+		if (header == 52) {
+			if (i + 4 > data.length) throw new Error(EOF);
+			this.StdDev = view.getFloat32(i);
+			i += 4;
+			readHeader();
+		}
+
+		if (header == 53) {
+			if (i + 4 > data.length) throw new Error(EOF);
+			this.TreynorRatio = view.getFloat32(i);
+			i += 4;
+			readHeader();
+		}
+
+		if (header == 54) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.UlcerIndex = view.getFloat32(i);
 			i += 4;
@@ -4239,6 +4393,8 @@ var colfer = new function() {
 
 		this.Holdings = [];
 
+		this.Justification = [];
+
 		this.PercentReturn = 0;
 
 		this.Value = 0;
@@ -4248,6 +4404,7 @@ var colfer = new function() {
 
 	// Serializes the object into an Uint8Array.
 	// All null entries in property Holdings will be replaced with a new colfer.ReportableHolding.
+	// All null entries in property Justification will be replaced with a new colfer.Justification.
 	this.PortfolioHoldingItem.prototype.marshal = function(buf) {
 		if (! buf || !buf.length) buf = new Uint8Array(colferSizeMax);
 		var i = 0;
@@ -4312,21 +4469,38 @@ var colfer = new function() {
 			});
 		}
 
-		if (this.PercentReturn) {
+		if (this.Justification && this.Justification.length) {
+			var a = this.Justification;
+			if (a.length > colferListMax)
+				throw new Error('colfer: colfer.PortfolioHoldingItem.Justification length exceeds colferListMax');
 			buf[i++] = 2;
+			i = encodeVarint(buf, i, a.length);
+			a.forEach(function(v, vi) {
+				if (v == null) {
+					v = new colfer.Justification();
+					a[vi] = v;
+				}
+				var b = v.marshal();
+				buf.set(b, i);
+				i += b.length;
+			});
+		}
+
+		if (this.PercentReturn) {
+			buf[i++] = 3;
 			view.setFloat64(i, this.PercentReturn);
 			i += 8;
 		} else if (Number.isNaN(this.PercentReturn)) {
-			buf.set([2, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([3, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
 		if (this.Value) {
-			buf[i++] = 3;
+			buf[i++] = 4;
 			view.setFloat64(i, this.Value);
 			i += 8;
 		} else if (Number.isNaN(this.Value)) {
-			buf.set([3, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([4, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
@@ -4406,13 +4580,27 @@ var colfer = new function() {
 		}
 
 		if (header == 2) {
+			var l = readVarint();
+			if (l < 0) throw new Error('colfer: colfer.PortfolioHoldingItem.Justification length exceeds Number.MAX_SAFE_INTEGER');
+			if (l > colferListMax)
+				throw new Error('colfer: colfer.PortfolioHoldingItem.Justification length ' + l + ' exceeds ' + colferListMax + ' elements');
+
+			for (var n = 0; n < l; ++n) {
+				var o = new colfer.Justification();
+				i += o.unmarshal(data.subarray(i));
+				this.Justification[n] = o;
+			}
+			readHeader();
+		}
+
+		if (header == 3) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.PercentReturn = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 3) {
+		if (header == 4) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.Value = view.getFloat64(i);
 			i += 8;

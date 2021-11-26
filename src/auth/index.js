@@ -1,6 +1,5 @@
 import createAuth0Client from '@auth0/auth0-spa-js'
 import console from 'console'
-import { window } from 'globalthis/implementation'
 import { computed, reactive, watchEffect } from 'vue'
 
 let client

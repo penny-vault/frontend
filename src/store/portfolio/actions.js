@@ -183,8 +183,8 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
   }
 
   // load strategy
-  let endpoint = `/strategy/${portfolio.strategy}/execute?startDate=${ymdString(portfolio.startDate)}&endDate=${ymdString(new Date())}&arguments=${JSON.stringify(portfolio.arguments)}`
-  api.get(endpoint, options).then(response => {
+  let endpoint = `/strategy/${portfolio.strategy}/execute?startDate=${ymdString(portfolio.startDate)}&endDate=${ymdString(new Date())}`
+  api.post(endpoint, portfolio.arguments, options).then(response => {
     let performance = response.data
     try {
       performance.maxDrawDown = performance.metrics.drawDowns[0].lossPercent
@@ -327,5 +327,16 @@ export async function calculateMetrics({ commit }, { performance, key }) {
   metric.value[`${key}Value`] = performance.WorstYear.Return
   metric.value[`${key}FormattedValue`] = percentFormatter.format(performance.WorstYear.Return)
   metric.value[`${key}Suffix`] = ` (${performance.WorstYear.Year})`
+  commit('setMetric', metric)
+
+  metric.key = key
+  metric.name = 'ulcerIndex'
+  metric.value[`${key}Value`] = performance.UlcerIndexP90
+  if (isNaN(performance.TotalWithdrawn)) {
+    metric.value[`${key}FormattedValue`] = "-"
+  } else {
+    metric.value[`${key}FormattedValue`] = performance.UlcerIndexAvg.toFixed(2)
+  }
+  metric.value[`${key}Suffix`] = ``
   commit('setMetric', metric)
 }
