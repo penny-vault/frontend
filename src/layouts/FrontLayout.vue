@@ -24,9 +24,9 @@
   </q-layout>
 </template>
 
-<script lang="ts">
+<script>
 
-import { defineComponent, computed, ref } from 'vue'
+import { defineComponent } from 'vue'
 
 import Copyright from 'components/Copyright.vue'
 
