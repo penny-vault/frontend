@@ -1,5 +1,5 @@
 <template>
-
+  <div>
   <q-dialog v-model="holdingsCalculator">
     <q-card style="width: 600px; max-width: 80vw;">
       <q-card-section class="row items-center q-pb-none">
@@ -70,7 +70,7 @@
       </div>
     </div>
   </div>
-
+  </div>
 </template>
 
 <script>
@@ -159,6 +159,15 @@ export default defineComponent({
           if (isNaN(params.value)) {
             return "-"
           }
+
+          // filter out predicted rows
+          var dt = new Date()
+          dt = new Date(dt.getFullYear(), dt.getMonth() + 1, 1)
+          var rowDt = params.data.Time
+          if ((rowDt.getFullYear() === dt.getFullYear()) && (rowDt.getMonth() === dt.getMonth())) {
+            return "-"
+          }
+
           return formatPercent(params.value)
         },
         cellStyle: params => {
@@ -183,6 +192,15 @@ export default defineComponent({
           if (isNaN(params.value)) {
             return "-"
           }
+
+          // filter out predicted rows
+          var dt = new Date()
+          dt = new Date(dt.getFullYear(), dt.getMonth() + 1, 1)
+          var rowDt = params.data.Time
+          if ((rowDt.getFullYear() === dt.getFullYear()) && (rowDt.getMonth() === dt.getMonth())) {
+            return "-"
+          }
+
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
       }
@@ -294,7 +312,8 @@ export default defineComponent({
       rowClassRules: {
         'predicted-asset': function(params) {
           var dt = new Date()
-          var rowDt = new Date(params.data.time * 1000)
+          dt = new Date(dt.getFullYear(), dt.getMonth() + 1, 1)
+          var rowDt = params.data.Time
           return (rowDt.getFullYear() === dt.getFullYear()) && (rowDt.getMonth() === dt.getMonth())
         },
       },
@@ -400,11 +419,11 @@ export default defineComponent({
               columnDefs.value.push({
                 headerName: elem.Key,
                 valueGetter: (params) => {
-                  let v = params.data.Justification[idx]
-                  if (v !== undefined) {
-                    return v.Value
-                  }
-                  return ""
+                  let justMap = new Map()
+                  params.data.Justification.forEach((e, i) => {
+                    justMap.set(e.Key, e.Value)
+                  })
+                  return justMap.get(elem.Key) || ""
                 },
                 valueFormatter: (params) => {
                   if (typeof params.value === "number") {

@@ -1,7 +1,10 @@
 <template>
   <px-card title="Transactions">
     <template v-slot:toolbar>
-      <q-btn @click="exportCSV" dense flat size="sm" icon="ion-cloud-download" label="Export CSV" />
+        <q-icon name="ion-cloud-download" />
+        Download:
+        <q-btn @click="exportCsv" dense flat size="sm" label="CSV" class="q-ml-sm" />
+        <q-btn @click="exportExcel" dense flat size="sm" label="Excel" />
     </template>
     <ag-grid-vue style="width: 100%; height: 500px;"
       class="ag-theme-alpine"
@@ -18,6 +21,8 @@
 <script>
 import { defineComponent, computed, ref, toRefs, onMounted, watch } from 'vue'
 import { useStore } from 'vuex'
+
+import { format } from 'date-fns'
 
 import { AgGridVue } from 'ag-grid-vue3'
 import PxCard from 'components/PxCard.vue'
@@ -53,6 +58,7 @@ export default defineComponent({
 
     const columnDefs = ref([
       { field: 'Date',
+        cellClass: 'dateType',
         minWidth: 110,
         maxWidth: 150,
         pinned: 'left',
@@ -82,9 +88,32 @@ export default defineComponent({
           return weightMap.get(d)
         }
       },
-      { field: 'Kind', headerName: 'Kind', filter: 'agSetColumnFilter', width: 110, sortable: false, resizable: true, editable: false},
-      { field: 'Ticker', width: 110, sortable: true, resizable: true, editable: false},
-      { field: 'Shares', width: 150, sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
+      {
+        field: 'Kind',
+        cellClass: 'stringType',
+        headerName: 'Kind',
+        filter: 'agSetColumnFilter',
+        width: 110,
+        sortable: false,
+        resizable: true,
+        editable: false
+      },
+      {
+        field: 'Ticker',
+        cellClass: 'stringType',
+        width: 110,
+        sortable: true,
+        resizable: true,
+        editable: false
+      },
+      {
+        field: 'Shares',
+        cellClass: 'numberType',
+        width: 150,
+        sortable: true,
+        resizable: true,
+        editable: false,
+        valueFormatter: (params) => {
           if (isNaN(params.value)) {
             return "-"
           }
@@ -94,7 +123,15 @@ export default defineComponent({
           return new Intl.NumberFormat('en-US', {maximumFractionDigits: 5}).format(params.value)
         }
       },
-      { field: 'PricePerShare', width: 100, headerName: 'Price', sortable: false, resizable: true, editable: false, valueFormatter: (params) => {
+      {
+        field: 'PricePerShare',
+        cellClass: 'currencyType',
+        width: 100,
+        headerName: 'Price',
+        sortable: false,
+        resizable: true,
+        editable: false,
+        valueFormatter: (params) => {
           if (isNaN(params.value)) {
             return "-"
           }
@@ -104,7 +141,15 @@ export default defineComponent({
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
       },
-      { field: 'TotalValue', width: 200, headerName: 'Total', sortable: true, resizable: true, editable: false, valueFormatter: (params) => {
+      {
+        field: 'TotalValue',
+        cellClass: 'currencyType',
+        width: 200,
+        headerName: 'Total',
+        sortable: true,
+        resizable: true,
+        editable: false,
+        valueFormatter: (params) => {
           if (isNaN(params.value)) {
             return "-"
           }
@@ -121,6 +166,42 @@ export default defineComponent({
           var rowDt = new Date(params.data.time * 1000)
           return (rowDt.getFullYear() === dt.getFullYear()) && (rowDt.getMonth() === dt.getMonth())
         },
+        excelStyles: [
+        {
+            id: 'numberType',
+            numberFormat: {
+                format: '0',
+            },
+        },
+        {
+          id: 'percentType',
+          numberFormat: {
+            format: '#,##0.00%'
+          }
+        },
+        {
+            id: 'currencyType',
+            numberFormat: {
+                format: '$#,##0.00',
+            },
+        },
+        {
+            id: 'booleanType',
+            dataType: 'boolean',
+        },
+        {
+            id: 'stringType',
+            dataType: 'String',
+        },
+        {
+            id: 'dateType',
+            dataType: 'DateTime',
+            numberFormat: {
+              format: 'mm/dd/yyy'
+            }
+        }
+      ]
+
       }
     })
 
@@ -155,17 +236,17 @@ export default defineComponent({
       if (rowData.value.length > 1) {
         let justificationTmpl = rowData.value[1].Justification
         if (justificationTmpl !== undefined) {
-          justificationTmpl.forEach((elem, idx)=> {
+          justificationTmpl.forEach((elem, idx) => {
             if (!dynamicColumns.has(elem.Key)) {
               dynamicColumns.set(elem.Key, 1)
               columnDefs.value.push({
                 headerName: elem.Key,
                 valueGetter: (params) => {
-                  let v = params.data.Justification[idx]
-                  if (v !== undefined) {
-                    return v.Value
-                  }
-                  return ""
+                  let justMap = new Map()
+                  params.data.Justification.forEach((e, i) => {
+                    justMap.set(e.Key, e.Value)
+                  })
+                  return justMap.get(elem.Key) || ""
                 },
                 valueFormatter: (params) => {
                   if (typeof params.value === "number") {
@@ -187,9 +268,34 @@ export default defineComponent({
       }
     }
 
-    function exportCSV(e) {
+    function exportCsv(e) {
       e.preventDefault()
-      gridApi.exportDataAsCsv({})
+      gridApi.exportDataAsCsv({
+        processCellCallback: ({column, value}) => {
+          switch (column.colDef.cellClass) {
+            case "dateType":
+              return format(value, "yyyy-MM-dd")
+            case "numberType":
+              return value.toFixed(5)
+            case "currencyType":
+              return value.toFixed(5)
+          }
+          return value
+        },
+      })
+    }
+
+    function exportExcel(e) {
+      e.preventDefault()
+      gridApi.exportDataAsExcel({
+        processCellCallback: ({column, value}) => {
+          switch (column.colDef.cellClass) {
+            case "dateType":
+              return format(value, "yyyy-MM-dd")
+          }
+          return value
+        },
+      })
     }
 
     function onGridReady(params) {
@@ -205,7 +311,8 @@ export default defineComponent({
     return {
       columnApi,
       columnDefs,
-      exportCSV,
+      exportCsv,
+      exportExcel,
       gridApi,
       gridOptions,
       onGridReady,
