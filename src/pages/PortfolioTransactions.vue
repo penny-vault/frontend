@@ -101,6 +101,7 @@ export default defineComponent({
       {
         field: 'Ticker',
         cellClass: 'stringType',
+        filter: 'agSetColumnFilter',
         width: 110,
         sortable: true,
         resizable: true,
