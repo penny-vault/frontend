@@ -8,7 +8,7 @@ var colfer = new function() {
 	// The upper limit for serial byte sizes.
 	var colferSizeMax = 16 * 1024 * 1024;
 	// The upper limit for the number of elements in a list.
-	var colferListMax = 64 * 1024;
+	var colferListMax = 4 * 1024 * 1024;
 
 	// Constructor.
 
