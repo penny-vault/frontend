@@ -162,7 +162,7 @@ export default defineComponent({
 
           // filter out predicted rows
           var dt = new Date()
-          dt = new Date(dt.getFullYear(), dt.getMonth() + 1, 1)
+          dt = new Date(dt.getFullYear(), dt.getMonth(), 1)
           var rowDt = params.data.Time
           if ((rowDt.getFullYear() === dt.getFullYear()) && (rowDt.getMonth() === dt.getMonth())) {
             return "-"
@@ -195,7 +195,7 @@ export default defineComponent({
 
           // filter out predicted rows
           var dt = new Date()
-          dt = new Date(dt.getFullYear(), dt.getMonth() + 1, 1)
+          dt = new Date(dt.getFullYear(), dt.getMonth(), 1)
           var rowDt = params.data.Time
           if ((rowDt.getFullYear() === dt.getFullYear()) && (rowDt.getMonth() === dt.getMonth())) {
             return "-"
@@ -312,7 +312,7 @@ export default defineComponent({
       rowClassRules: {
         'predicted-asset': function(params) {
           var dt = new Date()
-          dt = new Date(dt.getFullYear(), dt.getMonth() + 1, 1)
+          dt = new Date(dt.getFullYear(), dt.getMonth(), 1)
           var rowDt = params.data.Time
           return (rowDt.getFullYear() === dt.getFullYear()) && (rowDt.getMonth() === dt.getMonth())
         },
@@ -450,7 +450,7 @@ export default defineComponent({
       if (selectedRows.length === 1) {
         holdings.value = selectedRows[0].Holdings
         holdings2.value = selectedRows[0].Holdings
-        holdingsDate.value = addDays(selectedRows[0].Time, 5)
+        holdingsDate.value = selectedRows[0].Time
       }
     }
 
