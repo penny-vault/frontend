@@ -172,6 +172,7 @@ export default defineComponent({
         name: strategy.value.name,
         arguments: args,
         strategy: strategy.value.shortcode,
+        benchmarkTicker: strategy.value.benchmark,
         startDate: begin
       }
 
