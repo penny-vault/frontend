@@ -48,3 +48,7 @@ export function clearBenchmark (state) {
 export function setMetric (state, metric) {
   Object.assign(state.metrics[metric.name], metric.value)
 }
+
+export function setPortfolioLoaded (state, loaded) {
+  state.loaded = loaded
+}

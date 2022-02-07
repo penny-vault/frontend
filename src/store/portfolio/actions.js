@@ -4,6 +4,9 @@ import { emptyPortfolio, emptyPerformance } from './constants'
 import { api } from 'boot/axios'
 import { authPlugin } from '../../auth'
 
+import { toHexString } from "../../assets/util.js"
+
+import { Notify } from 'quasar'
 import { Loading } from 'quasar'
 
 // Helper functions
@@ -165,10 +168,10 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
     }
   }
 
+  commit('setPortfolioLoaded', false)
   Loading.show()
 
   let portfolio = await lookupPortfolio(api, options, state.portfolioDict, state.current, portfolioId)
-
   let now = new Date()
   if (portfolio.id != portfolioId ||
       portfolio.lastfetch === undefined ||
@@ -182,54 +185,59 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
     return
   }
 
-  // load strategy
-  let endpoint = `/strategy/${portfolio.strategy}/execute?startDate=${ymdString(portfolio.startDate)}&endDate=${ymdString(new Date())}`
-  api.post(endpoint, portfolio.arguments, options).then(response => {
-    let performance = response.data
-    try {
-      performance.maxDrawDown = performance.metrics.drawDowns[0].lossPercent
-    } catch (e) {
-      performance.maxDrawDown = 0
-    }
-    portfolio.performance = performance
+  let endpoint = `/portfolio/${portfolioId}/performance`
+  console.log("Load portfolio performance")
+  api.get(endpoint, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
+    },
+    responseType: 'arraybuffer'
+  }).then(response => {
+    let performance = new colfer.Performance({})
+    var uint8View = new Uint8Array(response.data)
+    performance.unmarshal(uint8View)
 
-    dispatch('fetchBenchmark', {
-      startDate: performance.periodStart,
-      endDate: performance.periodEnd
-    })
+    try {
+      performance.MaxDrawDown = performance.DrawDowns[0].LossPercent
+    } catch (e) {
+      performance.MaxDrawDown = 0
+    }
+
+    portfolio.performance = performance
+    portfolio.performance.measurements = []
+    portfolio.id = toHexString(performance.PortfolioID)
+    performance.PortfolioID = portfolio.id
+
+    console.log("calling fetch measurements")
+    dispatch('portfolio/fetchMeasurements', {
+      portfolioId: portfolio.id,
+      metric1: "strategy_growth_of_10k",
+      metric2: "benchmark_growth_of_10k"
+    }, { root: true })
 
     // calculate metrics
-    dispatch('calculateMetrics', {
-      performance: performance,
+    dispatch('portfolio/calculateMetrics', {
+      performance: performance.PortfolioMetrics,
       key: 'portfolio'
-    })
+    }, { root: true })
 
-    // remove marker transactions
-    performance.transactions = performance.transactions.filter(item => {
-      let dt = new Date(item.date)
-      let now = new Date()
-      if (item.kind !== "MARKER" && dt <= now) {
-        return item
-      }
-    })
+    dispatch('portfolio/calculateMetrics', {
+      performance: performance.BenchmarkMetrics,
+      key: 'benchmark'
+    }, { root: true })
 
-    // adjust measurements
-    performance.measurements = performance.measurements.map((item, idx, arr) => {
-      let next = arr[idx+1]
-      if (next !== undefined) {
-        item.valueAdjusted = next.value
-        item.percentReturnAdjusted = next.percentReturn
-      } else {
-        item.valueAdjusted = undefined
-        item.percentReturnAdjusted = undefined
-      }
-      return item
-    })
-
-    portfolio.lastfetch = new Date()
-    commit('setCurrentPortfolio', portfolio)
-
+    commit('portfolio/setCurrentPortfolio', portfolio, { root: true })
+    commit('setPortfolioLoaded', true)
     Loading.hide()
+  }).catch(err => {
+    Loading.hide()
+    Notify.create({
+      message: `Failed to fetch portfolio info: ${err}`,
+      progress: true,
+      color: 'negative',
+      icon: 'error',
+      position: 'top'
+    })
   })
 }
 

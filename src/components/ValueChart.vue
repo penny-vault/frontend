@@ -193,9 +193,11 @@ export default defineComponent({
 
     async function fillStrategyData() {
       strategyData = new Map()
-      measurements.value.Items.forEach((elem, idx) => {
-        strategyData.set(format(elem.Time, 'yyyy-MM-dd'), elem.Value1)
-      })
+      if (measurements.value.Items !== undefined && measurements.value.Items !== null) {
+        measurements.value.Items.forEach((elem, idx) => {
+          strategyData.set(format(elem.Time, 'yyyy-MM-dd'), elem.Value1)
+        })
+      }
     }
 
     async function updatePlotBands() {
