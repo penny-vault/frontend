@@ -130,6 +130,8 @@ var colfer = new function() {
 
 		this.Memo = '';
 
+		this.Predicted = false;
+
 		this.PricePerShare = 0;
 
 		this.Shares = 0;
@@ -260,26 +262,29 @@ var colfer = new function() {
 			i += utf8.length;
 		}
 
-		if (this.PricePerShare) {
+		if (this.Predicted)
 			buf[i++] = 8;
+
+		if (this.PricePerShare) {
+			buf[i++] = 9;
 			view.setFloat64(i, this.PricePerShare);
 			i += 8;
 		} else if (Number.isNaN(this.PricePerShare)) {
-			buf.set([8, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
-			i += 9;
-		}
-
-		if (this.Shares) {
-			buf[i++] = 9;
-			view.setFloat64(i, this.Shares);
-			i += 8;
-		} else if (Number.isNaN(this.Shares)) {
 			buf.set([9, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
-		if (this.Source) {
+		if (this.Shares) {
 			buf[i++] = 10;
+			view.setFloat64(i, this.Shares);
+			i += 8;
+		} else if (Number.isNaN(this.Shares)) {
+			buf.set([10, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.Source) {
+			buf[i++] = 11;
 			var utf8 = encodeUTF8(this.Source);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -287,7 +292,7 @@ var colfer = new function() {
 		}
 
 		if (this.SourceID && this.SourceID.length) {
-			buf[i++] = 11;
+			buf[i++] = 12;
 			var b = this.SourceID;
 			i = encodeVarint(buf, i, b.length);
 			buf.set(b, i);
@@ -298,7 +303,7 @@ var colfer = new function() {
 			var a = this.Tags;
 			if (a.length > colferListMax)
 				throw new Error('colfer: colfer.Transaction.Tags length exceeds colferListMax');
-			buf[i++] = 12;
+			buf[i++] = 13;
 			i = encodeVarint(buf, i, a.length);
 
 			a.forEach(function(s, si) {
@@ -314,7 +319,7 @@ var colfer = new function() {
 		}
 
 		if (this.TaxDisposition) {
-			buf[i++] = 13;
+			buf[i++] = 14;
 			var utf8 = encodeUTF8(this.TaxDisposition);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -322,7 +327,7 @@ var colfer = new function() {
 		}
 
 		if (this.Ticker) {
-			buf[i++] = 14;
+			buf[i++] = 15;
 			var utf8 = encodeUTF8(this.Ticker);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -330,11 +335,11 @@ var colfer = new function() {
 		}
 
 		if (this.TotalValue) {
-			buf[i++] = 15;
+			buf[i++] = 16;
 			view.setFloat64(i, this.TotalValue);
 			i += 8;
 		} else if (Number.isNaN(this.TotalValue)) {
-			buf.set([15, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([16, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
@@ -482,20 +487,25 @@ var colfer = new function() {
 		}
 
 		if (header == 8) {
+			this.Predicted = true;
+			readHeader();
+		}
+
+		if (header == 9) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.PricePerShare = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 9) {
+		if (header == 10) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.Shares = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 10) {
+		if (header == 11) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.Source size exceeds Number.MAX_SAFE_INTEGER');
@@ -509,7 +519,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 11) {
+		if (header == 12) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.SourceID size exceeds Number.MAX_SAFE_INTEGER');
@@ -523,7 +533,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 12) {
+		if (header == 13) {
 			var l = readVarint();
 			if (l < 0) throw new Error('colfer: colfer.Transaction.Tags length exceeds Number.MAX_SAFE_INTEGER');
 			if (l > colferListMax)
@@ -545,7 +555,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 13) {
+		if (header == 14) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.TaxDisposition size exceeds Number.MAX_SAFE_INTEGER');
@@ -559,7 +569,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 14) {
+		if (header == 15) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.Ticker size exceeds Number.MAX_SAFE_INTEGER');
@@ -573,7 +583,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 15) {
+		if (header == 16) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.TotalValue = view.getFloat64(i);
 			i += 8;
@@ -777,11 +787,15 @@ var colfer = new function() {
 
 		this.StrategyArguments = '';
 
+		this.Schedule = '';
+
 		this.Notifications = 0;
 
 		this.Transactions = [];
 
 		this.CurrentHoldings = [];
+
+		this.PredictedAssets = null;
 
 		for (var p in init) this[p] = init[p];
 	}
@@ -925,14 +939,22 @@ var colfer = new function() {
 			i += utf8.length;
 		}
 
+		if (this.Schedule) {
+			buf[i++] = 8;
+			var utf8 = encodeUTF8(this.Schedule);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
+		}
+
 		if (this.Notifications) {
 			if (this.Notifications < 0) {
-				buf[i++] = 8 | 128;
+				buf[i++] = 9 | 128;
 				if (this.Notifications < -2147483648)
 					throw new Error('colfer: colfer/Portfolio field Notifications exceeds 32-bit range');
 				i = encodeVarint(buf, i, -this.Notifications);
 			} else {
-				buf[i++] = 8; 
+				buf[i++] = 9; 
 				if (this.Notifications > 2147483647)
 					throw new Error('colfer: colfer/Portfolio field Notifications exceeds 32-bit range');
 				i = encodeVarint(buf, i, this.Notifications);
@@ -943,7 +965,7 @@ var colfer = new function() {
 			var a = this.Transactions;
 			if (a.length > colferListMax)
 				throw new Error('colfer: colfer.Portfolio.Transactions length exceeds colferListMax');
-			buf[i++] = 9;
+			buf[i++] = 10;
 			i = encodeVarint(buf, i, a.length);
 			a.forEach(function(v, vi) {
 				if (v == null) {
@@ -960,7 +982,7 @@ var colfer = new function() {
 			var a = this.CurrentHoldings;
 			if (a.length > colferListMax)
 				throw new Error('colfer: colfer.Portfolio.CurrentHoldings length exceeds colferListMax');
-			buf[i++] = 10;
+			buf[i++] = 11;
 			i = encodeVarint(buf, i, a.length);
 			a.forEach(function(v, vi) {
 				if (v == null) {
@@ -971,6 +993,13 @@ var colfer = new function() {
 				buf.set(b, i);
 				i += b.length;
 			});
+		}
+
+		if (this.PredictedAssets) {
+			buf[i++] = 12;
+			var b = this.PredictedAssets.marshal();
+			buf.set(b, i);
+			i += b.length;
 		}
 
 
@@ -1145,18 +1174,32 @@ var colfer = new function() {
 		}
 
 		if (header == 8) {
+			var size = readVarint();
+			if (size < 0)
+				throw new Error('colfer: colfer.Portfolio.Schedule size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.Portfolio.Schedule size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.Schedule = decodeUTF8(data.subarray(start, i));
+			readHeader();
+		}
+
+		if (header == 9) {
 			var x = readVarint();
 			if (x < 0) throw new Error('colfer: colfer/Portfolio field Notifications exceeds Number.MAX_SAFE_INTEGER');
 			this.Notifications = x;
 			readHeader();
-		} else if (header == (8 | 128)) {
+		} else if (header == (9 | 128)) {
 			var x = readVarint();
 			if (x < 0) throw new Error('colfer: colfer/Portfolio field Notifications exceeds Number.MAX_SAFE_INTEGER');
 			this.Notifications = -1 * x;
 			readHeader();
 		}
 
-		if (header == 9) {
+		if (header == 10) {
 			var l = readVarint();
 			if (l < 0) throw new Error('colfer: colfer.Portfolio.Transactions length exceeds Number.MAX_SAFE_INTEGER');
 			if (l > colferListMax)
@@ -1170,7 +1213,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 10) {
+		if (header == 11) {
 			var l = readVarint();
 			if (l < 0) throw new Error('colfer: colfer.Portfolio.CurrentHoldings length exceeds Number.MAX_SAFE_INTEGER');
 			if (l > colferListMax)
@@ -1181,6 +1224,13 @@ var colfer = new function() {
 				i += o.unmarshal(data.subarray(i));
 				this.CurrentHoldings[n] = o;
 			}
+			readHeader();
+		}
+
+		if (header == 12) {
+			var o = new colfer.PortfolioHoldingItem();
+			i += o.unmarshal(data.subarray(i));
+			this.PredictedAssets = o;
 			readHeader();
 		}
 
@@ -4399,6 +4449,8 @@ var colfer = new function() {
 
 		this.Value = 0;
 
+		this.Predicted = false;
+
 		for (var p in init) this[p] = init[p];
 	}
 
@@ -4504,6 +4556,9 @@ var colfer = new function() {
 			i += 9;
 		}
 
+		if (this.Predicted)
+			buf[i++] = 5;
+
 
 		buf[i++] = 127;
 		if (i >= colferSizeMax)
@@ -4604,6 +4659,11 @@ var colfer = new function() {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.Value = view.getFloat64(i);
 			i += 8;
+			readHeader();
+		}
+
+		if (header == 5) {
+			this.Predicted = true;
 			readHeader();
 		}
 
