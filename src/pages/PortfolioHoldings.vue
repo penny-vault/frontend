@@ -404,10 +404,13 @@ export default defineComponent({
       if (rowData.value.length > 1) {
         let justificationTmpl = rowData.value[1].Justification
         if (justificationTmpl !== undefined) {
-          justificationTmpl.forEach((elem, idx)=> {
+          var keep = new Map()
+          justificationTmpl.forEach((elem, idx) => {
+            keep.set(elem.Key, 1)
             if (!dynamicColumns.has(elem.Key)) {
               dynamicColumns.set(elem.Key, 1)
               columnDefs.value.push({
+                isDynamic: true,
                 headerName: elem.Key,
                 valueGetter: (params) => {
                   let justMap = new Map()
@@ -429,6 +432,14 @@ export default defineComponent({
               })
             }
           })
+
+          columnDefs.value = columnDefs.value.filter((elem, idx) => {
+            if (!elem.isDynamic || keep.has(elem.headerName)) {
+              return true
+            }
+            return false
+          })
+
           setTimeout(function() {
             gridApi.setColumnDefs(columnDefs.value)
           }, 0)
