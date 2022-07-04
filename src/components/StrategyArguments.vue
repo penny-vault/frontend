@@ -24,17 +24,31 @@
 
           <hr v-if="!disabled" class="q-mb-md q-mt-md" />
 
-          <q-input
-            outlined
-            v-for="item in standard"
-            :key="item.id"
-            :name="item.inpid"
-            :label="item.name"
-            v-model="form[item.arg]"
-            :type="item.inptype"
-            :disable="disabled"
-            :rules="[val => !!val || 'Field is required']"
-          />
+          <template v-for="item in standard">
+            <q-select
+              v-if="item.typecode === 'choice'"
+              outlined
+              v-model="form[item.arg]"
+              :key="item.id"
+              :name="item.inpid"
+              :label="item.name"
+              :options="item.options"
+              :disable="disabled"
+              :rules="[val => !!val ||'Field is required']"
+            />
+            <q-input
+              v-else
+              outlined
+              :key="item.id"
+              :name="item.inpid"
+              :label="item.name"
+              v-model="form[item.arg]"
+              :type="item.inptype"
+              :disable="disabled"
+              :rules="[val => !!val || 'Field is required']"
+            />
+
+          </template>
 
           <!-- start date of simulation -->
           <q-input class="q-my-none" filled v-model="startDate" mask="date" label="Start Date" :rules="['date', checkStartDate]">
@@ -191,6 +205,7 @@ export default defineComponent({
           inptype: "text",
           typecode: v.typecode,
           inpdefault: v.default,
+          options: v.options,
           required: true
         }
 
