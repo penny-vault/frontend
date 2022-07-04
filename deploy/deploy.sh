@@ -17,4 +17,22 @@ cat $root_dir/tmp.json | jq > $root_dir/package.json
 rm $root_dir/tmp.json
 
 # build package
+yarn install
 quasar build
+
+# commit to branch
+echo "What branch should be used (beta or prod)?"
+IFS= read -r branch
+git stash push
+git checkout $branch
+mv dist/spa /tmp/pv-frontend
+rm -rf *
+mv /tmp/pv-frontend/* .
+rmdir /tmp/pv-frontend
+git add .
+git commit -m "release v${version}"
+git push
+
+git checkout v1
+git stash pop
+yarn install
