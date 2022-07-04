@@ -21,7 +21,7 @@ fi
 
 # update package.json
 package=$(cat $root_dir/package.json | jq ".version |= \"${version}\"")
-package=$(echo $package | jq ".apiUrl |= \"${api_url}\")
+package=$(echo $package | jq ".apiUrl |= \"${api_url}\"")
 echo $package > $root_dir/tmp.json
 cat $root_dir/tmp.json | jq > $root_dir/package.json
 rm $root_dir/tmp.json
