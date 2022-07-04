@@ -2,13 +2,13 @@ domains:
 - domain: beta.pennyvault.com
   type: PRIMARY
 name: pv-frontend-beta
-region: nyc
+region: sfo
 static_sites:
 - environment_slug: html
   github:
     branch: beta
     deploy_on_push: true
-    repo: jdfergason/pv-frontend
+    repo: penny-vault/frontend
   name: pv-frontend-beta
   routes:
   - path: /
