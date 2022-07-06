@@ -1,0 +1,49 @@
+// app global css in SCSS form
+
+// fonts
+
+@font-face {
+    font-family: 'Sacramento';
+    src: url('../assets/Sacramento-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+// ag grid styles
+@import "../../node_modules/ag-grid-community/dist/styles/ag-grid.css";
+@import "../../node_modules/ag-grid-community/dist/styles/ag-theme-alpine.css";
+
+// Styles
+
+body {
+    background: url("../assets/bg-squares.svg") no-repeat 50% -11px!important;
+}
+
+.sidebar {
+    background: rgb(15, 15, 15);
+    background: linear-gradient(0deg, rgba(20,83,122,1) 0%, rgba(34,112,134,1) 100%);
+}
+
+.text-fancy {
+    font-family: 'Sacramento';
+}
+
+.gradient-primary {
+  background: linear-gradient(90deg,var($gradient-2),var($gradient-1))
+}
+
+.full-screen {
+  position: fixed;
+  top: 0;
+  z-index: 99999;
+  box-shadow: none;
+  right: 0;
+  margin: 5px;
+  width: calc(100vw - 12px);
+  height: calc(100vh);
+}
+
+.predicted-asset {
+  color: #aaa !important;
+  font-style: italic !important;
+}

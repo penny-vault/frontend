@@ -1,185 +1,264 @@
 <template>
-  <b-container class="pl-0 pr-0">
-    <b-row>
-      <b-col cols="3"></b-col>
-      <b-col cols="6" style="text-align: center">
-        <h5>Strategy performance over time</h5>
-        <h6>{{ subtitle }}</h6>
-      </b-col>
-      <b-col cols="3" style="text-align: right">
-        <b-dropdown size="lg" variant="link" toggle-class="text-decoration-none" no-caret>
-          <template #button-content>
-            &#x2630;<span class="sr-only">Graph options</span>
-          </template>
-          <b-dropdown-form>
-            <b-form-checkbox v-model="isLog" size="sm" switch>Log Scale</b-form-checkbox>
-            <b-form-checkbox v-model="showDrawDowns" size="sm" switch>Show draw downs</b-form-checkbox>
-          </b-dropdown-form>
-        </b-dropdown>
-      </b-col>
-    </b-row>
-    <b-row no-gutters>
-      <b-col cols="12">
-        <highcharts ref="valueChart" height="250" :options="chartOptions"></highcharts>
-      </b-col>
-    </b-row>
-  </b-container>
+  <div id="amcharts-value" class="amcharts-value" style="height: 425px"></div>
 </template>
 
 <script>
-export default {
+let eventBus = require('tiny-emitter/instance')
+
+import { defineComponent, watch, ref, onMounted, onUnmounted, toRefs } from 'vue'
+import { format, fromUnixTime, parse, add } from 'date-fns'
+
+import * as am4core from '@amcharts/amcharts4/core'
+import * as am4charts from '@amcharts/amcharts4/charts'
+import '@amcharts/amcharts4/charts'
+import animated from '@amcharts/amcharts4/themes/animated'
+
+export default defineComponent({
   name: 'ValueChart',
   props: {
-    measurements: Array,
-    benchmark: Array,
+    logScale: {
+      type: Boolean,
+      default: false
+    },
+    showDrawDowns: {
+      type: Boolean,
+      default: false
+    },
+    measurements: {
+      type: Object,
+      default: () => {
+        {
+          Items: []
+        }
+      }
+    },
     drawDowns: Array
   },
-  watch: {
-    isLog: function(n) {
-      if (n) {
-        this.chartOptions.yAxis.type = "logarithmic"
-      } else {
-        this.chartOptions.yAxis.type = "linear"
-      }
-    },
-    measurements: async function() {
-      this.updateSeries()
-    },
-    benchmark: async function() {
-      this.updateSeries()
-    },
-    showDrawDowns: async function () {
-      this.updatePlotBands(this.drawDowns)
-    },
-    drawDowns: async function(n) {
-      this.updatePlotBands(n)
+  setup (props) {
+    // amcharts setup
+    am4core.useTheme(animated)
+    var chart
+    var strategyValueSeries
+    var benchmarkValueSeries
+    var dateAxis
+    var valueAxis
+    var referenceMarker
+    var strategyData = new Map()
+
+    // reactive data
+    const { logScale, showDrawDowns, measurements, drawDowns } = toRefs(props)
+
+    let cursorPosition = {
+      x: null,
+      y: null,
+      seriesValue: null,
     }
-  },
-  computed: {
-    subtitle: function () {
-      return document.ontouchstart === undefined ?
-        'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
-    }
-  },
-  mounted: async function() {
-    this.updateSeries(this.measurements)
-    this.updatePlotBands(this.drawDowns)
-  },
-  methods: {
-    getBenchmarkSeries: function() {
-      var chartData = []
-      if (this.benchmark !== undefined) {
-        this.benchmark.forEach(elem => {
-          chartData.push([elem.time * 1000, elem.value])
-        })
+
+    // handle events
+
+    eventBus.on('valueChart:zoom', ({from, to}) => {
+      if (from === -1) {
+        from = dateAxis.min
       }
-      return {
-        type: "line",
-        name: "Benchmark",
-        dashStyle: "Solid",
-        marker: {
-          enabled: false
-        },
-        data: chartData
+      if (to === -1) {
+        to = dateAxis.max
       }
-    },
-    getStrategySeries: function() {
-      var chartData = []
-      this.measurements.forEach(elem => {
-        chartData.push([elem.time * 1000, elem.value])
+      dateAxis.zoomToDates(from, to)
+    })
+
+    // functions
+    async function renderChart() {
+      if (chart) {
+        chart.dispose()
+      }
+      chart = am4core.create(
+        'amcharts-value',
+        am4charts.XYChart
+      )
+
+      if (measurements.value !== undefined) {
+        chart.data = measurements.value.Items
+        fillStrategyData()
+      }
+
+      chart.numberFormatter.numberFormat = "#,###.##a"
+
+      // Create axes
+      dateAxis = chart.xAxes.push(new am4charts.DateAxis())
+      dateAxis.groupData = true
+      dateAxis.groupCount = 500
+
+      valueAxis = chart.yAxes.push(new am4charts.ValueAxis())
+      valueAxis.logarithmic = logScale.value
+      valueAxis.tooltip.disabled = true
+      valueAxis.title.text = "Growth of 10k"
+
+      // Add strategy value series
+      strategyValueSeries = chart.series.push(new am4charts.LineSeries())
+      strategyValueSeries.name = "Strategy"
+      strategyValueSeries.dataFields.dateX = "Time"
+      strategyValueSeries.dataFields.valueY = "Value1"
+      strategyValueSeries.dataItems.template.locations.dateX = 1
+
+      strategyValueSeries.showPercentDiff = false
+      strategyValueSeries.referencePercentDiff = NaN
+
+      chart.events.on("hit", function(ev) {
+        if (!strategyValueSeries.showPercentDiff) {
+          strategyValueSeries.showPercentDiff = true
+
+          // put a line at the reference point
+          referenceMarker = dateAxis.axisRanges.create()
+          referenceMarker.value = cursorPosition.x
+          referenceMarker.grid.above = true
+          referenceMarker.grid.stroke = am4core.color('black')
+          referenceMarker.grid.strokeDasharray = '3,3'
+          referenceMarker.grid.strokeWidth = 2
+          referenceMarker.grid.strokeOpacity = 1
+
+          strategyValueSeries.referenceValue = cursorPosition.seriesValue
+          strategyValueSeries.referenceDate = format(cursorPosition.x, 'MMM yyyy')
+          strategyValueSeries.tooltipText = `[bold]{dateX}[/]\n[${strategyValueSeries.stroke.hex}]●[/] ${strategyValueSeries.name}: \${${strategyValueSeries.dataFields.valueY}.formatNumber("#,###.00")}\n\n[bold]% chg since {referenceDate}[/]: {referencePercentDiff}%`
+        } else {
+          strategyValueSeries.showPercentDiff = false
+          dateAxis.axisRanges.removeValue(referenceMarker)
+          strategyValueSeries.referenceValue = NaN
+          strategyValueSeries.referencePercentDiff = NaN
+          strategyValueSeries.tooltipText = `[bold]{dateX}[/]\n[${strategyValueSeries.stroke.hex}]●[/] ${strategyValueSeries.name}: \${${strategyValueSeries.dataFields.valueY}.formatNumber("#,###.00")}\n`
+        }
+      }, this);
+
+      strategyValueSeries.tooltipText = `[bold]{dateX}[/]\n[${strategyValueSeries.stroke.hex}]●[/] ${strategyValueSeries.name}: \${${strategyValueSeries.dataFields.valueY}.formatNumber("#,###.00")}\n`
+
+      strategyValueSeries.tooltip.background.cornerRadius = 5
+      strategyValueSeries.tooltip.background.strokeOpacity = 0
+      strategyValueSeries.tooltip.pointerOrientation = "right"
+      strategyValueSeries.tooltip.label.minWidth = 40
+      strategyValueSeries.tooltip.label.minHeight = 40
+      strategyValueSeries.tooltip.label.textAlign = "left"
+      strategyValueSeries.tooltip.label.textValign = "middle"
+      strategyValueSeries.tooltip.getFillFromObject = false
+      strategyValueSeries.tooltip.label.fill = am4core.color("black")
+      strategyValueSeries.tooltip.background.fill = am4core.color("#FFFFFF")
+
+      strategyValueSeries.fillOpacity = 0.3
+      strategyValueSeries.fillOpacity = 1
+      let gradient = new am4core.LinearGradient()
+      gradient.rotation = 30
+      gradient.addColor(chart.colors.getIndex(0), 0.2)
+      gradient.addColor(chart.colors.getIndex(0), 0)
+      strategyValueSeries.fill = gradient
+
+      strategyValueSeries.strokeWidth = 2
+
+      // Add strategy value series
+      benchmarkValueSeries = chart.series.push(new am4charts.LineSeries())
+      benchmarkValueSeries.name = "Benchmark"
+      benchmarkValueSeries.dataFields.dateX = "Time"
+      benchmarkValueSeries.dataFields.valueY = "Value2"
+      benchmarkValueSeries.stroke = chart.colors.getIndex(2)
+      benchmarkValueSeries.strokeWidth = 1
+
+      // setup scrolling
+      chart.cursor = new am4charts.XYCursor()
+      chart.cursor.lineY.opacity = 0
+      chart.scrollbarX = new am4charts.XYChartScrollbar()
+      chart.scrollbarX.parent = chart.bottomAxesContainer
+      chart.scrollbarX.series.push(strategyValueSeries)
+
+      chart.cursor.events.on("cursorpositionchanged", function(ev) {
+        let xAxis = ev.target.chart.xAxes.getIndex(0)
+        let yAxis = ev.target.chart.yAxes.getIndex(0)
+        cursorPosition.x = dateAxis.positionToDate(xAxis.toAxisPosition(ev.target.xPosition))
+        cursorPosition.y = valueAxis.positionToValue(yAxis.toAxisPosition(ev.target.yPosition))
+        let val = strategyData.get(format(cursorPosition.x, 'yyyy-MM-dd'))
+        // look at up to 31 more dates to try and find a value
+        if (val === undefined) {
+          for (let i = 0; i < 31; i++) {
+            cursorPosition.x = add(cursorPosition.x, { days: 1 })
+            val = strategyData.get(format(cursorPosition.x, 'yyyy-MM-dd'))
+            if (val !== undefined) {
+              break
+            }
+          }
+        }
+        cursorPosition.seriesValue = val
+        strategyValueSeries.referencePercentDiff = ((cursorPosition.seriesValue / strategyValueSeries.referenceValue - 1) * 100).toFixed(2)
       })
-      return {
-        type: 'area',
-        name: 'Strategy',
-        data: chartData
-      }
-    },
-    updateSeries: async function() {
-      this.chartOptions.series = [this.getStrategySeries(), this.getBenchmarkSeries()]
-    },
-    updatePlotBands: async function(d) {
-      var plotBands = []
-      if (this.showDrawDowns) {
-        d.forEach(elem => {
-          plotBands.push({
-            color: '#d43d5144', // Color value
-            zIndex: 1,
-            from: new Date(elem.begin * 1000), // Start of the plot band
-            to: new Date(elem.end * 1000) // End of the plot band
-          })
+
+      dateAxis.keepSelection = true
+
+      chart.legend = new am4charts.Legend()
+    }
+
+    async function fillStrategyData() {
+      strategyData = new Map()
+      if (measurements.value.Items !== undefined && measurements.value.Items !== null) {
+        measurements.value.Items.forEach((elem, idx) => {
+          strategyData.set(format(elem.Time, 'yyyy-MM-dd'), elem.Value1)
         })
       }
-      this.chartOptions.xAxis.plotBands = plotBands
     }
-  },
-  data() {
-    return {
-      isLog: false,
-      showDrawDowns: false,
-      chartOptions: {
-        chart: {
-          zoomType: 'x'
-        },
-        title: {
-          text: undefined
-        },
-        xAxis: {
-            type: 'datetime',
-            plotBands: [],
-        },
-        yAxis: {
-          type: 'linear',
-          title: {
-            text: 'Value'
-          }
-        },
-        legend: {
-          enabled: true
-        },
-        credits: {
-          enabled: false
-        },
-        lang: {
-          thousandsSep: ','
-        },
-        tooltip: {
-          pointFormat: "{series.name}: <b>${point.y:,.2f}</b><br/>"
-        },
-        plotOptions: {
-          area: {
-            marker: {
-              radius: 2
-            },
-            lineWidth: 1,
-            states: {
-              hover: {
-                lineWidth: 1
-              }
-            },
-            threshold: null
-          }
-        },
-        series: [{type: 'area', name: 'strategy', data: []}],
+
+    async function updatePlotBands() {
+      if (dateAxis.axisRanges.length > 0) {
+        dateAxis.axisRanges.clear()
+        let tmp = strategyValueSeries.defaultState.transitionDuration
+        strategyValueSeries.defaultState.transitionDuration = 0
+        strategyValueSeries.appear()
+        strategyValueSeries.defaultState.transitionDuration = tmp
+      }
+      if (props.showDrawDowns) {
+        drawDowns.value.forEach(elem => {
+          // NOTE: Adding 2.5 days to make things line up. Note sure why this is necessary
+          let begin = parse(format(fromUnixTime(elem.begin + (86400*2.5)), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
+          let end = parse(format(fromUnixTime(elem.end + (86400*2.5)), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
+
+          let range = dateAxis.createSeriesRange(strategyValueSeries)
+
+          range.date = begin
+          range.endDate = end
+          range.contents.stroke = am4core.color("#A60017")
+          range.contents.fill = am4core.color("#D5001D")
+          range.contents.fillOpacity = 0.5
+        })
       }
     }
+
+    // creation hooks
+    onMounted(() => {
+      renderChart()
+      updatePlotBands()
+    })
+
+    onUnmounted(() => {
+      if (chart) {
+        chart.dispose()
+      }
+    })
+
+    // set watchers
+    watch(logScale, async (n) => {
+      if (valueAxis !== undefined) {
+        valueAxis.logarithmic = n
+      }
+    })
+
+    watch(showDrawDowns, async () => {
+      updatePlotBands()
+    })
+
+    watch(measurements, async () => {
+      if (chart !== undefined) {
+        chart.data = measurements.value.Items
+        fillStrategyData()
+        updatePlotBands()
+      }
+    })
+
+    watch(drawDowns, async () => {
+      updatePlotBands()
+    })
   }
-}
+})
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h5 {
-  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
-  font-size: 1.2rem;
-  font-weight: 400;
-  color: rgb(51, 51, 51);
-}
-
-h6 {
-  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
-  font-size: .8rem;
-  font-weight: 400;
-  color: rgb(102, 102, 102);
-}
-
-</style>

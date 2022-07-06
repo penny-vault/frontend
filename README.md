@@ -1,24 +1,37 @@
-# penny-vault
+# Penny Vault (penny-vault)
 
-## Project setup
-```
-npm install
-```
+Penny Vault is a portfolio visualization and investment strategy application.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## Design
 
-### Compiles and minifies for production
-```
-npm run build
-```
+ * [Quickbooks Design System][1]
+ * [Finastra Design System][2]
+ * [Penny Vault - Figma][3]
+ * [Penny Vault - Color Palette][4]
 
-### Lints and fixes files
-```
-npm run lint
+## Development
+
+### Install the dependencies
+```bash
+yarn
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### Start the app in development mode (hot-code reloading, error reporting, etc.)
+```bash
+quasar dev
+```
+
+### Lint the files
+```bash
+yarn run lint
+```
+
+### Build the app for production
+```bash
+quasar build
+```
+
+[1]: https://designsystem.quickbooks.com/
+[2]: https://design.fusionfabric.cloud
+[3]: https://www.figma.com/file/oKLlf4OiW3tjRs7siZCH0F/Penny-Vault?node-id=2%3A4
+[4]: https://coolors.co/414141-694ed6-c137a2-ffffff

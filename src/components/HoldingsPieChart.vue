@@ -1,28 +1,20 @@
 <template>
-  <highcharts class="pie" :options="chartOptions"></highcharts>
+  <div id="amcharts-pie" class="amcharts-pie" :style="{width: chartWidth, height: chartHeight}"></div>
 </template>
 
 <script>
+import { defineComponent, toRefs, watch, onMounted, onUnmounted } from 'vue'
 
-import Highcharts from "highcharts";
+import * as am4core from '@amcharts/amcharts4/core'
+import * as am4charts from '@amcharts/amcharts4/charts'
+import '@amcharts/amcharts4/charts'
+import animated from '@amcharts/amcharts4/themes/animated'
+import * as am4plugins_sliceGrouper from "@amcharts/amcharts4/plugins/sliceGrouper"
 
-var pieColors = (function () {
-  var colors = [],
-    base = Highcharts.getOptions().colors[0],
-    i;
-
-  for (i = 0; i < 10; i += 1) {
-    // Start out with a darkened base color (negative brighten), and end
-    // up with a much brighter color
-    colors.push(Highcharts.color(base).brighten((i - 3) / 7).get());
-  }
-  return colors;
-}());
-
-export default {
+export default defineComponent({
   name: "HoldingsPieChart",
   props: {
-    strategy: {
+    holdings: {
       type: Array,
       default: function () {
         return []
@@ -31,90 +23,119 @@ export default {
     width: String,
     height: String
   },
-  watch: {
-    strategy: async function () {
-      this.updateData()
+  setup(props) {
+    // amcharts setup
+    am4core.useTheme(animated)
+    var chart
+
+    // reactive data
+    const { holdings, width: chartWidth, height: chartHeight } = toRefs(props)
+
+    // methods
+    async function getTickerData() {
+      var counts = new Map()
+      var total = 0
+      holdings.value.forEach( elem => {
+        elem.Holdings.forEach( item => {
+          let ticker = item.Ticker
+          var curr = counts.get(ticker)
+          if (curr === undefined || isNaN(curr)) curr = 0
+          counts.set(ticker, curr+item.PercentPortfolio)
+          total += item.PercentPortfolio
+        })
+      })
+
+      // determine which ones have less than 5% of the pie
+      // these go into other
+      var data = []
+      var other = 0
+      counts.forEach( (v, k) => {
+          data.push({
+            name: k,
+            y: v
+          })
+      })
+
+      return data
     }
-  },
-  mounted: async function () {
-    this.updateData()
-  },
-  methods: {
-    updateData: async function () {
-        var counts = new Map()
-        this.strategy.forEach( elem => {
-          var h = elem.holdings.split(" ")
-          h.forEach( ticker => {
-            var curr = counts.get(ticker)
-            if (curr === undefined) curr = 0
-            counts.set(ticker, curr+1)
+
+    async function renderChart() {
+      chart = am4core.create("amcharts-pie", am4charts.PieChart)
+      chart.numberFormatter.numberFormat = "#."
+
+      // create the series
+      var pieSeries = chart.series.push(new am4charts.PieSeries())
+      pieSeries.dataFields.value = "y"
+      pieSeries.dataFields.category = "name"
+
+      // Let's cut a hole in our Pie chart the size of 40% the radius
+      chart.innerRadius = am4core.percent(40)
+
+      // Put a thick white border around each Slice
+      pieSeries.slices.template.stroke = am4core.color("#fff")
+      pieSeries.slices.template.strokeWidth = 2
+      pieSeries.slices.template.strokeOpacity = 1
+      pieSeries.slices.template
+        // change the cursor on hover to make it apparent the object can be interacted with
+        .cursorOverStyle = [
+          {
+            "property": "cursor",
+            "value": "pointer"
+          }
+        ]
+
+        pieSeries.slices.template.events.on("hit", function(ev) {
+          let series = ev.target.dataItem.component;
+          series.slices.each(function(item) {
+            if (item.isActive && item != ev.target) {
+              item.isActive = false;
+            }
           })
         })
-        var data = []
-        counts.forEach( (v, k) => {
-            data.push({
-                name: k,
-                y: v
-            })
-        })
 
-        this.chartOptions.series = [
-            {
-                name: "strategy",
-                data: data
-            }
-        ]
+        pieSeries.labels.template.maxWidth = 75
+        pieSeries.labels.template.wrap = true
+
+      let grouper = pieSeries.plugins.push(new am4plugins_sliceGrouper.SliceGrouper())
+      grouper.threshold = 5
+      grouper.groupName = "Other"
+      grouper.clickBehavior = "break"
+
+      // Create a base filter effect (as if it's not there) for the hover to return to
+      var shadow = pieSeries.slices.template.filters.push(new am4core.DropShadowFilter)
+      shadow.opacity = 0
+
+      // Create hover state
+      var hoverState = pieSeries.slices.template.states.getKey("hover") // normally we have to create the hover state, in this case it already exists
+
+      // Slightly shift the shadow and make it more prominent on hover
+      var hoverShadow = hoverState.filters.push(new am4core.DropShadowFilter)
+      hoverShadow.opacity = 0.7
+      hoverShadow.blur = 5
+
+      chart.data = await getTickerData()
     }
-  },
-  data() {
-    return {
-      chartOptions: {
-        chart: {
-            plotBackgroundColor: null,
-            plotBorderWidth: null,
-            plotShadow: false,
-            type: "pie"
-        },
-        title: {
-            text: "Frequency Holdings Held"
-        },
-        tooltip: {
-            pointFormat: "{series.name}: <b>{point.percentage:.1f}%</b>"
-        },
-        accessibility: {
-            point: {
-            valueSuffix: "%"
-            }
-        },
-        plotOptions: {
-            pie: {
-            allowPointSelect: true,
-            cursor: "pointer",
-            colors: pieColors,
-            dataLabels: {
-                enabled: true,
-                format: "<b>{point.name}</b><br>{point.percentage:.1f} %",
-                distance: -50,
-                filter: {
-                property: "percentage",
-                operator: ">",
-                value: 4
-                }
-            }
-            }
-        },
-        credits: {
-          enabled: false
-        },
-        series: [{
-            name: "Strategy",
-            data: []
-        }]
+
+    // creation events
+    onMounted(async () => {
+      renderChart()
+    })
+
+    onUnmounted(() => {
+      if (chart) {
+        chart.dispose()
       }
+    })
+
+    // watchers
+    watch(holdings, async () => {
+      chart.data = await getTickerData()
+    })
+
+    return {
+      chartWidth,
+      chartHeight
     }
   }
-}
+})
 </script>
-
-<style scoped>
-</style>
