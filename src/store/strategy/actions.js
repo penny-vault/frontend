@@ -62,7 +62,7 @@ export async function executeStrategy ({ commit, dispatch }, { shortCode, name, 
   const accessToken = await authPlugin.getTokenSilently()
   Loading.show()
 
-  const endpoint = `/strategy/${shortCode}/execute?startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}`
+  const endpoint = `/strategy/${shortCode}/execute?startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}&benchmark=${benchmark}`
   api.post(endpoint, stratParams, {
     headers: {
       Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
