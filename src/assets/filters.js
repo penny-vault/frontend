@@ -12,8 +12,8 @@ export function formatPercent (value) {
   if (typeof value === "number") {
     return percentFormatter.format(value)
   } else if (typeof value === "object") {
-    if (value["Valid"]) {
-      return percentFormatter.format(value["Float64"])
+    if (value["Status"] === 2) {
+      return percentFormatter.format(value["Float"])
     }
   }
 }
@@ -26,8 +26,8 @@ export function formatNumber (value) {
   if (typeof value === "number") {
     return numberFormatter.format(value)
   } else if (typeof value === "object") {
-    if (value["Valid"]) {
-      return numberFormatter.format(value["Float64"])
+    if (value["Status"] === 2) {
+      return numberFormatter.format(value["Float"])
     }
   }
 }

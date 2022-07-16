@@ -125,12 +125,12 @@ export const emptyPortfolio = {
   },
   "startDate": "1982-07-27T00:00:00.000Z",
   "ytdReturn": {
-    "Float64": 0.0,
-    "Valid": false
+    "Float": 0.0,
+    "Status": 0
   },
   "cagrSinceInception": {
-    "Float64": 0.0,
-    "Valid": false
+    "Float": 0.0,
+    "Status": 0
   },
   "notifications": 0,
   "created": 0,

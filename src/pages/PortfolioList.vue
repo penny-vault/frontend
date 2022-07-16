@@ -78,8 +78,8 @@ export default defineComponent({
           closeOnApply: true,
         },
         valueGetter: function (params) {
-          if (params.data.ytdReturn.Valid) {
-            return params.data.ytdReturn.Float64 * 100
+          if (params.data.ytdReturn.Status === 2) {
+            return params.data.ytdReturn.Float * 100
           } else {
             return NaN
           }
@@ -97,8 +97,8 @@ export default defineComponent({
           closeOnApply: true,
         },
         valueGetter: function (params) {
-          if (params.data.cagrSinceInception.Valid) {
-            return params.data.cagrSinceInception.Float64 * 100
+          if (params.data.cagrSinceInception.Status === 2) {
+            return params.data.cagrSinceInception.Float * 100
           } else {
             return NaN
           }

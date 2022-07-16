@@ -118,8 +118,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.ytdReturn.Valid) {
-            return params.data.metrics.ytdReturn.Float64
+          if (params.data.metrics.ytdReturn.Status === 2) {
+            return params.data.metrics.ytdReturn.Float
           }
           return NaN
         },
@@ -138,8 +138,8 @@ export default defineComponent({
         hide: true,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.cagrSinceInception.Valid) {
-            return params.data.metrics.cagrSinceInception.Float64
+          if (params.data.metrics.cagrSinceInception.Status === 2) {
+            return params.data.metrics.cagrSinceInception.Float
           }
           return NaN
         },
@@ -158,8 +158,8 @@ export default defineComponent({
         hide: true,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.cagr3yr.Valid) {
-            return params.data.metrics.cagr3yr.Float64
+          if (params.data.metrics.cagr3yr.Status === 2) {
+            return params.data.metrics.cagr3yr.Float
           }
           return NaN
         },
@@ -178,8 +178,8 @@ export default defineComponent({
         hide: true,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.cagr5yr.Valid) {
-            return params.data.metrics.cagr5yr.Float64
+          if (params.data.metrics.cagr5yr.Status === 2) {
+            return params.data.metrics.cagr5yr.Float
           }
           return NaN
         },
@@ -198,8 +198,8 @@ export default defineComponent({
         hide: false,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.cagr10yr.Valid) {
-            return params.data.metrics.cagr10yr.Float64
+          if (params.data.metrics.cagr10yr.Status === 2) {
+            return params.data.metrics.cagr10yr.Float
           }
           return NaN
         },
@@ -218,8 +218,8 @@ export default defineComponent({
         hide: true,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.std_dev.Valid) {
-            return params.data.metrics.stdDev.Float64
+          if (params.data.metrics.stdDev.Status === 2) {
+            return params.data.metrics.stdDev.Float
           }
           return NaN
         },
@@ -238,8 +238,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.downside_deviation.Valid) {
-            return params.data.metrics.downsideDeviation.Float64
+          if (params.data.metrics.downsideDeviation.Status === 2) {
+            return params.data.metrics.downsideDeviation.Float
           }
           return NaN
         },
@@ -257,8 +257,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.maxDrawDown.Valid) {
-            return params.data.metrics.maxDrawDown.Float64
+          if (params.data.metrics.maxDrawDown.Status === 2) {
+            return params.data.metrics.maxDrawDown.Float
           }
           return NaN
         },
@@ -277,8 +277,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.avgDrawDown.Valid) {
-            return params.data.metrics.avgDrawDown.Float64
+          if (params.data.metrics.avgDrawDown.Status === 2) {
+            return params.data.metrics.avgDrawDown.Float
           }
           return NaN
         },
@@ -297,8 +297,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.sharpeRatio.Valid) {
-            return params.data.metrics.sharpeRatio.Float64
+          if (params.data.metrics.sharpeRatio.Status === 2) {
+            return params.data.metrics.sharpeRatio.Float
           }
           return NaN
         },
@@ -316,8 +316,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.sortinoRatio.Valid) {
-            return params.data.metrics.sortinoRatio.Float64
+          if (params.data.metrics.sortinoRatio.Status === 2) {
+            return params.data.metrics.sortinoRatio.Float
           }
           return NaN
         },
@@ -335,8 +335,8 @@ export default defineComponent({
         width: 110,
         filter: 'agNumberColumnFilter',
         valueGetter: (params) => {
-          if (params.data.metrics.ulcerIndex.Valid) {
-            return params.data.metrics.ulcerIndex.Float64
+          if (params.data.metrics.ulcerIndex.Status === 2) {
+            return params.data.metrics.ulcerIndex.Float
           }
           return NaN
         },
@@ -361,10 +361,29 @@ export default defineComponent({
 
     async function updateChartData () {
       data.value = new Array()
+      console.log(rowData)
       rowData.value.forEach((elem) => {
+        var risk, ret;
+
+        if (elem.metrics.downsideDeviation.Status === 2) {
+          risk = (elem.metrics.downsideDeviation.Float).toFixed(2);
+        } else {
+          risk = 1;
+        }
+
+        if (elem.metrics.cagr10yr.Status === 2) {
+          ret = (elem.metrics.cagr10yr.Float * 100).toFixed(2)
+        } else if (elem.metrics.cagr5yr.Status === 2) {
+          ret = (elem.metrics.cagr5yr.Float * 100).toFixed(2)
+        } else if (elem.metrics.cagr3yr.Status === 2) {
+          ret = (elem.metrics.cagr3yr.Float * 100).toFixed(2)
+        } else if (elem.metrics.ytdReturn.Status === 2) {
+          ret = (elem.metrics.ytdReturn.Float * 100).toFixed(2)
+        }
+
         data.value.push({
-          x: (elem.metrics.ulcerIndex.Float64).toFixed(2),
-          y: (elem.metrics.cagr10yr.Float64 * 100).toFixed(2),
+          x: risk,
+          y: ret,
           strategy: elem.name,
           shortcode: elem.shortcode,
           description: wordWrap(elem.description, 30)

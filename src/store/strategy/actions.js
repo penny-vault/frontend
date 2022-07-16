@@ -80,12 +80,12 @@ export async function executeStrategy ({ commit, dispatch }, { shortCode, name, 
       "arguments": stratParams,
       "startDate": startDate,
       "ytdReturn": {
-        "Float64": 0.0,
-        "Valid": false
+        "Float": 0.0,
+        "Status": 0
       },
       "cagrSinceInception": {
-        "Float64": 0.0,
-        "Valid": false
+        "Float": 0.0,
+        "Status": 0
       },
       "notifications": 0,
       "created": 0,
