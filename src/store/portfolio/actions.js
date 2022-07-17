@@ -340,10 +340,10 @@ export async function calculateMetrics({ commit }, { performance, key }) {
   metric.key = key
   metric.name = 'ulcerIndex'
   metric.value[`${key}Value`] = performance.UlcerIndexP90
-  if (isNaN(performance.TotalWithdrawn)) {
+  if (isNaN(performance.UlcerIndexP90)) {
     metric.value[`${key}FormattedValue`] = "-"
   } else {
-    metric.value[`${key}FormattedValue`] = performance.UlcerIndexAvg.toFixed(2)
+    metric.value[`${key}FormattedValue`] = performance.UlcerIndexP90.toFixed(2)
   }
   metric.value[`${key}Suffix`] = ``
   commit('setMetric', metric)
