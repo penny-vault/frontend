@@ -365,8 +365,8 @@ export default defineComponent({
       rowData.value.forEach((elem) => {
         var risk, ret;
 
-        if (elem.metrics.downsideDeviation.Status === 2) {
-          risk = (elem.metrics.downsideDeviation.Float).toFixed(2);
+        if (elem.metrics.ulcerIndex.Status === 2) {
+          risk = (elem.metrics.ulcerIndex.Float).toFixed(2);
         } else {
           risk = 1;
         }
