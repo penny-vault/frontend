@@ -61,7 +61,7 @@ export default defineComponent({
 
       { field: 'name',
         sortable: true,
-        minWidth: 300,
+        minWidth: 275,
         filter: 'agTextColumnFilter',
         filterParams: {
           buttons: ['reset', 'apply'],
@@ -84,13 +84,70 @@ export default defineComponent({
             return NaN
           }
         },
-        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : ''
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
       },
-      { field: 'cagrSinceInception',
-        headerName: 'CAGR',
+      { field: 'cagr3Year',
+        headerName: '3-Yr',
         sortable: true,
         minWidth: 100,
         maxWidth: 100,
+        filter: 'agNumberColumnFilter',
+        filterParams: {
+          buttons: ['apply', 'reset'],
+          closeOnApply: true,
+        },
+        valueGetter: function (params) {
+          if (params.data.cagr3Year.Status === 2) {
+            return params.data.cagr3Year.Float * 100
+          } else {
+            return NaN
+          }
+        },
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
+      },
+      { field: 'cagr5Year',
+        headerName: '5-Yr',
+        sortable: true,
+        minWidth: 100,
+        maxWidth: 100,
+        filter: 'agNumberColumnFilter',
+        filterParams: {
+          buttons: ['apply', 'reset'],
+          closeOnApply: true,
+        },
+        valueGetter: function (params) {
+          if (params.data.cagr5Year.Status === 2) {
+            return params.data.cagr5Year.Float * 100
+          } else {
+            return NaN
+          }
+        },
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
+      },
+      { field: 'cagr10Year',
+        headerName: '10-Yr',
+        sortable: true,
+        minWidth: 100,
+        maxWidth: 100,
+        filter: 'agNumberColumnFilter',
+        filterParams: {
+          buttons: ['apply', 'reset'],
+          closeOnApply: true,
+        },
+        valueGetter: function (params) {
+          if (params.data.cagr10Year.Status === 2) {
+            return params.data.cagr10Year.Float * 100
+          } else {
+            return NaN
+          }
+        },
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
+      },
+      { field: 'cagrSinceInception',
+        headerName: 'Since Inception',
+        sortable: true,
+        minWidth: 160,
+        maxWidth: 160,
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
@@ -103,18 +160,164 @@ export default defineComponent({
             return NaN
           }
         },
-        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : ''
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
+      },
+      { field: 'stdDev',
+        headerName: 'Std Dev',
+        sortable: true,
+        hide: true,
+        minWidth: 105,
+        maxWidth: 105,
+        filter: 'agNumberColumnFilter',
+        filterParams: {
+          buttons: ['apply', 'reset'],
+          closeOnApply: true,
+        },
+        valueGetter: function (params) {
+          if (params.data.stdDev.Status === 2) {
+            return params.data.stdDev.Float
+          } else {
+            return NaN
+          }
+        },
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) : '-'
+      },
+      { field: 'downsideDeviation',
+        headerName: 'Downside Dev',
+        sortable: true,
+        hide: true,
+        minWidth: 150,
+        maxWidth: 150,
+        filter: 'agNumberColumnFilter',
+        filterParams: {
+          buttons: ['apply', 'reset'],
+          closeOnApply: true,
+        },
+        valueGetter: function (params) {
+          if (params.data.downsideDeviation.Status === 2) {
+            return params.data.downsideDeviation.Float * 100
+          } else {
+            return NaN
+          }
+        },
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
+      },
+      { field: 'maxDrawDown',
+        headerName: 'Max Draw Down',
+        sortable: true,
+        hide: true,
+        minWidth: 160,
+        maxWidth: 160,
+        filter: 'agNumberColumnFilter',
+        filterParams: {
+          buttons: ['apply', 'reset'],
+          closeOnApply: true,
+        },
+        valueGetter: function (params) {
+          if (params.data.maxDrawDown.Status === 2) {
+            return params.data.maxDrawDown.Float * 100
+          } else {
+            return NaN
+          }
+        },
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
+      },
+      { field: 'avgDrawDown',
+        headerName: 'Avg Draw Down',
+        sortable: true,
+        hide: true,
+        minWidth: 160,
+        maxWidth: 160,
+        filter: 'agNumberColumnFilter',
+        filterParams: {
+          buttons: ['apply', 'reset'],
+          closeOnApply: true,
+        },
+        valueGetter: function (params) {
+          if (params.data.avgDrawDown.Status === 2) {
+            return params.data.avgDrawDown.Float * 100
+          } else {
+            return NaN
+          }
+        },
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
+      },
+      { field: 'sharpeRatio',
+        headerName: 'Sharpe',
+        sortable: true,
+        hide: true,
+        minWidth: 100,
+        maxWidth: 100,
+        filter: 'agNumberColumnFilter',
+        filterParams: {
+          buttons: ['apply', 'reset'],
+          closeOnApply: true,
+        },
+        valueGetter: function (params) {
+          if (params.data.sharpeRatio.Status === 2) {
+            return params.data.sharpeRatio.Float
+          } else {
+            return NaN
+          }
+        },
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) : '-'
+      },
+      { field: 'sortinoRatio',
+        headerName: 'Sortino',
+        sortable: true,
+        minWidth: 100,
+        maxWidth: 100,
+        filter: 'agNumberColumnFilter',
+        filterParams: {
+          buttons: ['apply', 'reset'],
+          closeOnApply: true,
+        },
+        valueGetter: function (params) {
+          if (params.data.sortinoRatio.Status === 2) {
+            return params.data.sortinoRatio.Float
+          } else {
+            return NaN
+          }
+        },
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) : '-'
+      },
+      { field: 'ulcerIndex',
+        headerName: 'Ulcer Index',
+        sortable: true,
+        minWidth: 135,
+        maxWidth: 135,
+        filter: 'agNumberColumnFilter',
+        filterParams: {
+          buttons: ['apply', 'reset'],
+          closeOnApply: true,
+        },
+        valueGetter: function (params) {
+          if (params.data.ulcerIndex.Status === 2) {
+            return params.data.ulcerIndex.Float
+          } else {
+            return NaN
+          }
+        },
+        valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) : '-'
       },
       { field: 'strategy',
         sortable: true,
         filter: true,
-        minWidth: 50, maxWidth: 125,
+        minWidth: 30, maxWidth: 125,
+        enableRowGroup: true,
+        enablePivot: true
+      },
+      { field: 'status',
+        sortable: true,
+        filter: true,
+        minWidth: 40, maxWidth: 125,
         enableRowGroup: true,
         enablePivot: true
       },
       { field: 'startDate',
-        headerName: 'Beginning Date',
+        headerName: 'Start',
         sortable: true,
+        hide: true,
         filter: true,
         minWidth: 100,
         filter: 'agDateColumnFilter',

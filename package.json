@@ -1,7 +1,7 @@
 {
   "name": "penny-vault",
-  "version": "0.4.0-dev+6de3716",
-  "apiUrl": "http://localhost:3000/v1",
+  "version": "0.4.0-dev+1ad5d4d",
+  "apiUrl": "https://api-beta.pennyvault.com/v1",
   "description": "Penny Vault is a portfolio visualization and investment strategy application.",
   "productName": "Penny Vault",
   "author": "Jeremy Fergason <jeremy.fergason@corwynn.com>",
