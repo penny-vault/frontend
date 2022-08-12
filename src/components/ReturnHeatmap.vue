@@ -85,7 +85,7 @@ export default defineComponent({
       columnTemplate.strokeWidth = 1
       columnTemplate.strokeOpacity = 0.2
       columnTemplate.stroke = bgColor
-      columnTemplate.tooltipText = '[bold]{month} {year}:[/] {value.formatNumber("#,###.")}%'
+      columnTemplate.tooltipText = '[bold]{month} {year}:[/] {value.formatNumber("#,###.##")}%'
       columnTemplate.width = am4core.percent(100)
       columnTemplate.height = am4core.percent(100)
 
@@ -145,11 +145,12 @@ export default defineComponent({
         if (idx > 0) {
           let last = arr[idx-1]
           if (dt.getMonth() != last.Time.getMonth()) {
-            data.push({
-              year: `${dt.getFullYear()}`,
-              month: format(dt, "MMM"),
+            let item = {
+              year: `${last.Time.getFullYear()}`,
+              month: format(last.Time, "MMM"),
               value: (monthlyReturn - 1.0) * 100
-            })
+            }
+            data.push(item)
             monthlyReturn = 1.0
           } else {
             monthlyReturn = monthlyReturn * (elem.Value1 / last.Value1)
@@ -157,6 +158,21 @@ export default defineComponent({
         }
       })
 
+      // add month-to-date
+      let numMeasurements = measurements.value.Items.length
+      if (numMeasurements > 1) {
+        let n0 = measurements.value.Items[numMeasurements - 1]
+        let n1 = measurements.value.Items[numMeasurements - 2]
+        // check if the last date is a new month
+        if (n0.Time.getMonth() === n1.Time.getMonth()) {
+            let item = {
+              year: `${n0.Time.getFullYear()}`,
+              month: format(n0.Time, "MMM"),
+              value: (monthlyReturn - 1.0) * 100
+            }
+            data.push(item)
+        }
+      }
       return data
     }
 
