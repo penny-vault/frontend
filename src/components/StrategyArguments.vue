@@ -36,6 +36,19 @@
               :disable="disabled"
               :rules="[val => !!val ||'Field is required']"
             />
+            <security-picker
+              v-else-if="item.typecode === 'stock[]'"
+              multiple
+              :name="item.inpid"
+              :key="item.id"
+              :label="item.name"
+              v-model="form[item.arg]"></security-picker>
+            <security-picker
+              v-else-if="item.typecode === 'stock'"
+              :name="item.inpid"
+              :key="item.id"
+              :label="item.name"
+              v-model="form[item.arg]"></security-picker>
             <q-input
               v-else
               outlined
@@ -150,6 +163,7 @@ import { format, parse, subMonths, getUnixTime } from 'date-fns'
 import { clone } from 'lodash'
 import { defineComponent, ref, watch, toRefs, onMounted } from 'vue'
 import PxCard from 'components/PxCard.vue'
+import SecurityPicker from 'components/SecurityPicker.vue'
 
 export default defineComponent({
   name: 'StrategyArguments',
@@ -169,7 +183,8 @@ export default defineComponent({
     }
   },
   components: {
-    PxCard
+    PxCard,
+    SecurityPicker
   },
   emits: ['execute', 'save'],
   setup(props, { emit }) {
