@@ -1,51 +1,49 @@
 <template>
- <div class="q-pa-md">
-    <div class="q-gutter-md row items-start">
-      <q-select
-        filled
-        ref="picker"
-        v-model="model"
-        stack-label
-        use-input
-        input-debounce="0"
-        :label="label"
-        menu-anchor="bottom left"
-        virtual-scroll-slice-size="4"
-        :multiple="multiple"
-        :options="options"
-        @filter="filterFn"
-        @update:model-value="updateModelValue"
-      >
-        <template v-slot:option="scope">
-          <q-item v-bind="scope.itemProps">
-            <q-item-section>
-              <q-item-label>{{ scope.opt.ticker }}</q-item-label>
-              <q-item-label caption>{{ scope.opt.name }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </template>
-        <template v-slot:no-option>
-          <q-item>
-            <q-item-section class="text-grey">
-              No results
-            </q-item-section>
-          </q-item>
-        </template>
-        <template v-slot:selected-item="scope">
-          <q-chip
-            removable
-            dense
-            @remove="scope.removeAtIndex(scope.index)"
-            :tabindex="scope.tabindex"
-            color="white"
-            text-color="secondary"
-            class="q-ma-xs"
-          >
-            {{ scope.opt.ticker }}
-          </q-chip>
-        </template>
-      </q-select>
-    </div>
+  <div class="q-gutter-md row items-start">
+    <q-select
+      filled
+      ref="picker"
+      v-model="model"
+      stack-label
+      use-input
+      hide-dropdown-icon
+      input-debounce="0"
+      :label="label"
+      menu-anchor="bottom left"
+      virtual-scroll-slice-size="4"
+      :multiple="multiple"
+      :options="options"
+      @filter="filterFn"
+      @update:model-value="updateModelValue"
+    >
+      <template v-slot:option="scope">
+        <q-item v-bind="scope.itemProps">
+          <q-item-section>
+            <q-item-label>{{ scope.opt.ticker }}</q-item-label>
+            <q-item-label caption>{{ scope.opt.name }}</q-item-label>
+          </q-item-section>
+        </q-item>
+      </template>
+      <template v-slot:no-option>
+        <q-item>
+          <q-item-section class="text-grey">
+            No results
+          </q-item-section>
+        </q-item>
+      </template>
+      <template v-slot:selected-item="scope">
+        <q-chip
+          removable
+          dense
+          @remove="scope.removeAtIndex(scope.index)"
+          color="white"
+          text-color="secondary"
+          style="margin-left: 0px; margin-top: 2px; margin-bottom: 2px; margin-right: 2px;"
+        >
+          {{ scope.opt.ticker }}
+        </q-chip>
+      </template>
+    </q-select>
   </div>
 </template>
 
@@ -59,21 +57,24 @@ export default defineComponent({
   name: 'SecurityPicker',
   props: {
     modelValue: [Object, Array],
-    multiple: Boolean
+    multiple: Boolean,
+    label: {
+      type: String,
+      default(rawProps) {
+        if (rawProps.multiple === true) {
+          return "Select securities"
+        }
+        return "Select security"
+      }
+    }
   },
   setup (props, { emit }) {
-    const options = ref(null)
+    const options = ref([])
     const picker = ref(null)
-    const label = ref("Select security")
-
-    if (props.multiple === true) {
-      label.value = "Select securities"
-    }
 
     return {
       options,
       picker,
-      label,
       model: useModelWrapper(props, emit, 'modelValue'),
       filterFn (val, update, abort) {
         update(async () => {

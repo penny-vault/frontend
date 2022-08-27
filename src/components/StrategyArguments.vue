@@ -37,18 +37,20 @@
               :rules="[val => !!val ||'Field is required']"
             />
             <security-picker
-              v-else-if="item.typecode === 'stock[]'"
+              v-else-if="item.typecode === '[]stock'"
               multiple
               :name="item.inpid"
               :key="item.id"
               :label="item.name"
-              v-model="form[item.arg]"></security-picker>
+              v-model="form[item.arg]"
+              class="q-pb-md"></security-picker>
             <security-picker
               v-else-if="item.typecode === 'stock'"
               :name="item.inpid"
               :key="item.id"
               :label="item.name"
-              v-model="form[item.arg]"></security-picker>
+              v-model="form[item.arg]"
+              class="q-pb-md"></security-picker>
             <q-input
               v-else
               outlined
@@ -235,6 +237,14 @@ export default defineComponent({
             val = JSON.parse(val)
           }
           item.inpdefault = val.join(" ")
+        }
+
+        if (v.typecode == "stock" || v.typecode == "[]stock") {
+          var val = item.inpdefault
+          if (typeof item.inpdefault === "string") {
+            val = JSON.parse(val)
+          }
+          item.inpdefault = val
         }
 
         spec.value.push(item)

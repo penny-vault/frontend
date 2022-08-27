@@ -138,7 +138,7 @@ var colfer = new function() {
 
 		this.Source = '';
 
-		this.SourceID = new Uint8Array(0);
+		this.SourceID = '';
 
 		this.Tags = [];
 
@@ -291,12 +291,12 @@ var colfer = new function() {
 			i += utf8.length;
 		}
 
-		if (this.SourceID && this.SourceID.length) {
+		if (this.SourceID) {
 			buf[i++] = 12;
-			var b = this.SourceID;
-			i = encodeVarint(buf, i, b.length);
-			buf.set(b, i);
-			i += b.length;
+			var utf8 = encodeUTF8(this.SourceID);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
 		}
 
 		if (this.Tags && this.Tags.length) {
@@ -524,12 +524,12 @@ var colfer = new function() {
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.SourceID size exceeds Number.MAX_SAFE_INTEGER');
 			else if (size > colferSizeMax)
-				throw new Error('colfer: colfer.Transaction.SourceID size ' + size + ' exceeds ' + colferSizeMax + ' bytes');
+				throw new Error('colfer: colfer.Transaction.SourceID size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
 
 			var start = i;
 			i += size;
 			if (i > data.length) throw new Error(EOF);
-			this.SourceID = data.slice(start, i);
+			this.SourceID = decodeUTF8(data.subarray(start, i));
 			readHeader();
 		}
 
@@ -604,6 +604,8 @@ var colfer = new function() {
 		this.Date = null;
 		this.Date_ns = 0;
 
+		this.CompositeFIGI = '';
+
 		this.Ticker = '';
 
 		this.Shares = 0;
@@ -659,8 +661,16 @@ var colfer = new function() {
 			}
 		}
 
-		if (this.Ticker) {
+		if (this.CompositeFIGI) {
 			buf[i++] = 1;
+			var utf8 = encodeUTF8(this.CompositeFIGI);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
+		}
+
+		if (this.Ticker) {
+			buf[i++] = 2;
 			var utf8 = encodeUTF8(this.Ticker);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -668,11 +678,11 @@ var colfer = new function() {
 		}
 
 		if (this.Shares) {
-			buf[i++] = 2;
+			buf[i++] = 3;
 			view.setFloat64(i, this.Shares);
 			i += 8;
 		} else if (Number.isNaN(this.Shares)) {
-			buf.set([2, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([3, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
@@ -740,6 +750,20 @@ var colfer = new function() {
 		if (header == 1) {
 			var size = readVarint();
 			if (size < 0)
+				throw new Error('colfer: colfer.Holding.CompositeFIGI size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.Holding.CompositeFIGI size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.CompositeFIGI = decodeUTF8(data.subarray(start, i));
+			readHeader();
+		}
+
+		if (header == 2) {
+			var size = readVarint();
+			if (size < 0)
 				throw new Error('colfer: colfer.Holding.Ticker size exceeds Number.MAX_SAFE_INTEGER');
 			else if (size > colferSizeMax)
 				throw new Error('colfer: colfer.Holding.Ticker size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
@@ -751,7 +775,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 2) {
+		if (header == 3) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.Shares = view.getFloat64(i);
 			i += 8;
@@ -4030,6 +4054,8 @@ var colfer = new function() {
 	// When init is provided all enumerable properties are merged into the new object a.k.a. shallow cloning.
 	this.ReportableHolding = function(init) {
 
+		this.CompositeFIGI = '';
+
 		this.Ticker = '';
 
 		this.Shares = 0;
@@ -4048,8 +4074,16 @@ var colfer = new function() {
 		var view = new DataView(buf.buffer);
 
 
-		if (this.Ticker) {
+		if (this.CompositeFIGI) {
 			buf[i++] = 0;
+			var utf8 = encodeUTF8(this.CompositeFIGI);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
+		}
+
+		if (this.Ticker) {
+			buf[i++] = 1;
 			var utf8 = encodeUTF8(this.Ticker);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -4057,31 +4091,31 @@ var colfer = new function() {
 		}
 
 		if (this.Shares) {
-			buf[i++] = 1;
+			buf[i++] = 2;
 			view.setFloat64(i, this.Shares);
 			i += 8;
 		} else if (Number.isNaN(this.Shares)) {
-			buf.set([1, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([2, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
 		if (this.PercentPortfolio) {
 			if (this.PercentPortfolio > 3.4028234663852886E38 || this.PercentPortfolio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/ReportableHolding field PercentPortfolio exceeds 32-bit range');
-			buf[i++] = 2;
+			buf[i++] = 3;
 			view.setFloat32(i, this.PercentPortfolio);
 			i += 4;
 		} else if (Number.isNaN(this.PercentPortfolio)) {
-			buf.set([2, 0x7f, 0xc0, 0, 0], i);
+			buf.set([3, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.Value) {
-			buf[i++] = 3;
+			buf[i++] = 4;
 			view.setFloat64(i, this.Value);
 			i += 8;
 		} else if (Number.isNaN(this.Value)) {
-			buf.set([3, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([4, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
@@ -4123,6 +4157,20 @@ var colfer = new function() {
 		if (header == 0) {
 			var size = readVarint();
 			if (size < 0)
+				throw new Error('colfer: colfer.ReportableHolding.CompositeFIGI size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.ReportableHolding.CompositeFIGI size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.CompositeFIGI = decodeUTF8(data.subarray(start, i));
+			readHeader();
+		}
+
+		if (header == 1) {
+			var size = readVarint();
+			if (size < 0)
 				throw new Error('colfer: colfer.ReportableHolding.Ticker size exceeds Number.MAX_SAFE_INTEGER');
 			else if (size > colferSizeMax)
 				throw new Error('colfer: colfer.ReportableHolding.Ticker size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
@@ -4134,21 +4182,21 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 1) {
+		if (header == 2) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.Shares = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 2) {
+		if (header == 3) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.PercentPortfolio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 3) {
+		if (header == 4) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.Value = view.getFloat64(i);
 			i += 8;
