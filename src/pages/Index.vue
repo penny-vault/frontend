@@ -1,6 +1,5 @@
 <template>
   <q-page class="flex flex-center">
-    <security-picker multiple v-model="securities"></security-picker>
     <img
       alt="Quasar logo"
       src="~assets/quasar-logo-vertical.svg"
@@ -14,13 +13,8 @@ import { defineComponent, onMounted, ref } from 'vue';
 import { api } from '../boot/axios'
 import { useQuasar } from 'quasar'
 
-import SecurityPicker from 'components/SecurityPicker.vue'
-
 export default defineComponent({
   name: 'PageIndex',
-  components: {
-    SecurityPicker
-  },
   setup() {
     const $q = useQuasar()
     onMounted(async () => {
@@ -36,9 +30,7 @@ export default defineComponent({
       })
     })
 
-    return {
-      securities: ref([])
-    }
+    return {}
   }
 })
 </script>
