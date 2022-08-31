@@ -70,7 +70,7 @@
           label="Parameters"
           dense>
 
-          <strategy-arguments :strategy="strategy" :benchmark-ticker="strategy.benchmark" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" @save="onSave" />
+          <strategy-arguments :strategy="strategy" :begin="simulationStart" :end="simulationEnd" @execute="onSubmit" @save="onSave" />
 
         </q-expansion-item>
       </div>

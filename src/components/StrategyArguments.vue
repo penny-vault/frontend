@@ -130,13 +130,11 @@
           </q-input>
         </q-tab-panel>
         <q-tab-panel name="benchmark" class="q-pa-none">
-          <q-input
+          <security-picker
             outlined
             name="benchmarkTickerId"
             label="Benchmark"
             v-model="benchmarkTickerData"
-            type="text"
-            :disable="disabled"
           />
         </q-tab-panel>
         <q-tab-panel name="advanced" class="q-pa-none">
@@ -200,7 +198,7 @@ export default defineComponent({
     const panel = ref('standard')
     const frequentlyUsed = ref('')
     const frequentlyUsedOptions = ref([])
-    const benchmarkTickerData = ref(`${strategy.value.benchmark}`)
+    const benchmarkTickerData = ref(clone(benchmarkTicker))
     const startDate = ref(format(props.begin, dateFmt.value))
     const endDate = ref(format(props.end, dateFmt.value))
 
@@ -275,7 +273,7 @@ export default defineComponent({
       let options = {
         args: clone(form.value),
         begin: getUnixTime(parse(startDate.value, dateFmt.value, new Date())),
-        benchmarkTicker: clone(benchmarkTickerData.value)
+        benchmarkTicker: clone(benchmarkTickerData.value.compositeFigi)
       }
 
       Object.entries(strategy.value.arguments).forEach( elem => {
@@ -299,7 +297,7 @@ export default defineComponent({
         userArgs: clone(form.value),
         begin: parse(startDate.value, dateFmt.value, new Date()),
         end: parse(endDate.value, dateFmt.value, new Date()),
-        benchmarkTicker: clone(benchmarkTickerData.value)
+        benchmarkTicker: clone(benchmarkTickerData.value.compositeFigi)
       }
 
       Object.entries(strategy.value.arguments).forEach( elem => {
@@ -351,7 +349,7 @@ export default defineComponent({
     watch(strategy, (n) => {
       initializeArguments()
       initializeFrequentlyUsed()
-      benchmarkTickerData.value = `${strategy.value.benchmark}`
+      benchmarkTickerData.value = clone(strategy.value.benchmark)
     })
 
     watch(frequentlyUsed, (n) => {
