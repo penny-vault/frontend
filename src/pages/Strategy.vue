@@ -166,13 +166,13 @@ export default defineComponent({
 
     // methods
 
-    async function onSave({args, begin}) {
+    async function onSave({args, begin, benchmarkTicker}) {
       const accessToken = await authPlugin.getTokenSilently()
       var params = {
         name: strategy.value.name,
         arguments: args,
         strategy: strategy.value.shortcode,
-        benchmarkTicker: strategy.value.benchmark,
+        benchmarkTicker: benchmarkTicker,
         startDate: begin
       }
 
