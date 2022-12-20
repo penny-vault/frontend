@@ -72,7 +72,10 @@ export default defineComponent({
           let end = params.data.End
           let recover = params.data.Recovery
           let rangeStr = `${format(begin, 'MMM yyyy')} to ${format(end, 'MMM yyyy')}`
-          let daysToRecover = `<br/><span class="cell-sub-text">${differenceInCalendarDays(recover, begin)} days to recover</span>`
+          var daysToRecover = `<br/><span class="cell-sub-text">${differenceInCalendarDays(recover, begin)} days to recover</span>`
+          if (params.data.Active) {
+            daysToRecover = `<br/><span class="cell-sub-text">not yet recovered</span>`
+          }
           return rangeStr + daysToRecover
         }
       },
@@ -95,6 +98,9 @@ export default defineComponent({
         resizable: true,
         editable: false,
         valueFormatter: (params) => {
+          if (params.data.Active) {
+            return ''
+          }
           return format(params.value, 'MMM yyyy')
         }
       },
