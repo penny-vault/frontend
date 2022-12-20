@@ -7,18 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.0] - 2022-12-20
 ### Added
 - Stock selection component
-- Clearer display of draw downs when the current draw down is still going on
 
 ### Changed
-
-### Deprecated
-
-### Removed
+- Clearer display of draw downs when the current draw down is still going on
 
 ### Fixed
 - Top-10 draw downs rendering on performance chart
-
-### Security
 
 ## [0.4.0] - 2022-08-11
 ### Added
