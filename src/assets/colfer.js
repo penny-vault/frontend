@@ -1280,6 +1280,8 @@ var colfer = new function() {
 
 		this.LossPercent = 0;
 
+		this.Active = false;
+
 		for (var p in init) this[p] = init[p];
 	}
 
@@ -1422,6 +1424,9 @@ var colfer = new function() {
 			i += 9;
 		}
 
+		if (this.Active)
+			buf[i++] = 4;
+
 
 		buf[i++] = 127;
 		if (i >= colferSizeMax)
@@ -1539,6 +1544,11 @@ var colfer = new function() {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.LossPercent = view.getFloat64(i);
 			i += 8;
+			readHeader();
+		}
+
+		if (header == 4) {
+			this.Active = true;
 			readHeader();
 		}
 

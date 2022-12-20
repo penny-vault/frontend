@@ -211,13 +211,14 @@ export default defineComponent({
       if (props.showDrawDowns) {
         drawDowns.value.forEach(elem => {
           // NOTE: Adding 2.5 days to make things line up. Note sure why this is necessary
-          let begin = parse(format(fromUnixTime(elem.begin + (86400*2.5)), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
-          let end = parse(format(fromUnixTime(elem.end + (86400*2.5)), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
+          // let begin = parse(format(fromUnixTime(elem.Begin + (86400*2.5)), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
+          // let end = parse(format(fromUnixTime(elem.End + (86400*2.5)), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
 
+          // for the drawDown period (peak to trough)
           let range = dateAxis.createSeriesRange(strategyValueSeries)
 
-          range.date = begin
-          range.endDate = end
+          range.date = elem.Begin
+          range.endDate = elem.End
           range.contents.stroke = am4core.color("#A60017")
           range.contents.fill = am4core.color("#D5001D")
           range.contents.fillOpacity = 0.5
