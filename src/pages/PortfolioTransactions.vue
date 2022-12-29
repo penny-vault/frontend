@@ -136,7 +136,7 @@ export default defineComponent({
           if (isNaN(params.value)) {
             return "-"
           }
-          if (params.data.Kind === 'DIVIDEND' || params.data.Kind === 'DEPOSIT' || params.data.Kind === 'Withdraw') {
+          if (params.data.Kind === 'DIVIDEND' || params.data.Kind === 'DEPOSIT' || params.data.Kind === 'WITHDRAW' || params.data.Kind === 'INTEREST') {
             return ""
           }
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
@@ -156,6 +156,35 @@ export default defineComponent({
           }
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
+      },
+      {
+        field: 'GainLoss',
+        cellClass: 'currencyType',
+        width: 150,
+        headerName: 'Gain/Loss',
+        hide: true,
+        sortable: true,
+        resizable: true,
+        editable: false,
+        valueFormatter: (params) => {
+          if (isNaN(params.value)) {
+            return "-"
+          }
+          if (params.data.Kind !== 'SELL') {
+            return ""
+          }
+          return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
+        }
+      },
+      {
+        field: 'TaxDisposition',
+        cellClass: 'stringType',
+        filter: 'agSetColumnFilter',
+        width: 110,
+        hide: true,
+        sortable: true,
+        resizable: true,
+        editable: false
       }
     ])
     const dynamicColumns = new Map()

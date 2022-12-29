@@ -99,6 +99,11 @@ export const emptyMetrics = {
     "portfolioValue": 0,
     "benchmarkValue": 0
   },
+  taxCostRatio: {
+    "name": "Tax Cost",
+    "portfolioValue": 0,
+    "benchmarkValue": 0
+  },
   sharpeRatio: {
     "name": "Sharpe Ratio",
     "portfolioValue": 0,
