@@ -324,6 +324,16 @@ export async function calculateMetrics({ commit }, { performance, key }) {
   commit('setMetric', metric)
 
   metric.key = key
+  metric.name = 'taxCostRatio'
+  metric.value[`${key}Value`] = performance.TaxCostRatio
+  if (isNaN(performance.TaxCostRatio) || key === 'benchmark') {
+    metric.value[`${key}FormattedValue`] = "-"
+  } else {
+    metric.value[`${key}FormattedValue`] = percentFormatter.format(performance.TaxCostRatio)
+  }
+  commit('setMetric', metric)
+
+  metric.key = key
   metric.name = 'bestYear'
   metric.value[`${key}Value`] = performance.BestYear.Return
   metric.value[`${key}FormattedValue`] = percentFormatter.format(performance.BestYear.Return)

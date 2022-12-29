@@ -124,6 +124,8 @@ var colfer = new function() {
 		this.Date = null;
 		this.Date_ns = 0;
 
+		this.GainLoss = 0;
+
 		this.Justification = [];
 
 		this.Kind = '';
@@ -133,6 +135,8 @@ var colfer = new function() {
 		this.Predicted = false;
 
 		this.PricePerShare = 0;
+
+		this.Related = [];
 
 		this.Shares = 0;
 
@@ -153,6 +157,7 @@ var colfer = new function() {
 
 	// Serializes the object into an Uint8Array.
 	// All null entries in property Justification will be replaced with a new colfer.Justification.
+	// All null entries in property Related will be replaced with an empty Array.
 	// All null entries in property Tags will be replaced with an empty String.
 	this.Transaction.prototype.marshal = function(buf) {
 		if (! buf || !buf.length) buf = new Uint8Array(colferSizeMax);
@@ -229,11 +234,20 @@ var colfer = new function() {
 			}
 		}
 
+		if (this.GainLoss) {
+			buf[i++] = 5;
+			view.setFloat64(i, this.GainLoss);
+			i += 8;
+		} else if (Number.isNaN(this.GainLoss)) {
+			buf.set([5, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
 		if (this.Justification && this.Justification.length) {
 			var a = this.Justification;
 			if (a.length > colferListMax)
 				throw new Error('colfer: colfer.Transaction.Justification length exceeds colferListMax');
-			buf[i++] = 5;
+			buf[i++] = 6;
 			i = encodeVarint(buf, i, a.length);
 			a.forEach(function(v, vi) {
 				if (v == null) {
@@ -247,7 +261,7 @@ var colfer = new function() {
 		}
 
 		if (this.Kind) {
-			buf[i++] = 6;
+			buf[i++] = 7;
 			var utf8 = encodeUTF8(this.Kind);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -255,7 +269,7 @@ var colfer = new function() {
 		}
 
 		if (this.Memo) {
-			buf[i++] = 7;
+			buf[i++] = 8;
 			var utf8 = encodeUTF8(this.Memo);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -263,28 +277,45 @@ var colfer = new function() {
 		}
 
 		if (this.Predicted)
-			buf[i++] = 8;
+			buf[i++] = 9;
 
 		if (this.PricePerShare) {
-			buf[i++] = 9;
+			buf[i++] = 10;
 			view.setFloat64(i, this.PricePerShare);
 			i += 8;
 		} else if (Number.isNaN(this.PricePerShare)) {
-			buf.set([9, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
-			i += 9;
-		}
-
-		if (this.Shares) {
-			buf[i++] = 10;
-			view.setFloat64(i, this.Shares);
-			i += 8;
-		} else if (Number.isNaN(this.Shares)) {
 			buf.set([10, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
-		if (this.Source) {
+		if (this.Related && this.Related.length) {
+			var a = this.Related;
+			if (a.length > colferListMax)
+				throw new Error('colfer: colfer.Transaction.Related length exceeds colferListMax');
 			buf[i++] = 11;
+			i = encodeVarint(buf, i, a.length);
+			a.forEach(function(b, bi) {
+				if (b == null) {
+					b = "";
+					a[bi] = b;
+				}
+				i = encodeVarint(buf, i, b.length);
+				buf.set(b, i);
+				i += b.length;
+			});
+		}
+
+		if (this.Shares) {
+			buf[i++] = 12;
+			view.setFloat64(i, this.Shares);
+			i += 8;
+		} else if (Number.isNaN(this.Shares)) {
+			buf.set([12, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.Source) {
+			buf[i++] = 13;
 			var utf8 = encodeUTF8(this.Source);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -292,7 +323,7 @@ var colfer = new function() {
 		}
 
 		if (this.SourceID) {
-			buf[i++] = 12;
+			buf[i++] = 14;
 			var utf8 = encodeUTF8(this.SourceID);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -303,7 +334,7 @@ var colfer = new function() {
 			var a = this.Tags;
 			if (a.length > colferListMax)
 				throw new Error('colfer: colfer.Transaction.Tags length exceeds colferListMax');
-			buf[i++] = 13;
+			buf[i++] = 15;
 			i = encodeVarint(buf, i, a.length);
 
 			a.forEach(function(s, si) {
@@ -319,7 +350,7 @@ var colfer = new function() {
 		}
 
 		if (this.TaxDisposition) {
-			buf[i++] = 14;
+			buf[i++] = 16;
 			var utf8 = encodeUTF8(this.TaxDisposition);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -327,7 +358,7 @@ var colfer = new function() {
 		}
 
 		if (this.Ticker) {
-			buf[i++] = 15;
+			buf[i++] = 17;
 			var utf8 = encodeUTF8(this.Ticker);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -335,11 +366,11 @@ var colfer = new function() {
 		}
 
 		if (this.TotalValue) {
-			buf[i++] = 16;
+			buf[i++] = 18;
 			view.setFloat64(i, this.TotalValue);
 			i += 8;
 		} else if (Number.isNaN(this.TotalValue)) {
-			buf.set([16, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([18, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
@@ -445,6 +476,13 @@ var colfer = new function() {
 		}
 
 		if (header == 5) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.GainLoss = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 6) {
 			var l = readVarint();
 			if (l < 0) throw new Error('colfer: colfer.Transaction.Justification length exceeds Number.MAX_SAFE_INTEGER');
 			if (l > colferListMax)
@@ -458,7 +496,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 6) {
+		if (header == 7) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.Kind size exceeds Number.MAX_SAFE_INTEGER');
@@ -472,7 +510,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 7) {
+		if (header == 8) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.Memo size exceeds Number.MAX_SAFE_INTEGER');
@@ -486,26 +524,48 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 8) {
+		if (header == 9) {
 			this.Predicted = true;
 			readHeader();
 		}
 
-		if (header == 9) {
+		if (header == 10) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.PricePerShare = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 10) {
+		if (header == 11) {
+			var l = readVarint();
+			if (l < 0) throw new Error('colfer: colfer.Transaction.Related length exceeds Number.MAX_SAFE_INTEGER');
+			if (l > colferListMax)
+				throw new Error('colfer: colfer.Transaction.Related length ' + l + ' exceeds ' + colferListMax + ' elements');
+
+			this.Related = new Array(l);
+			for (var n = 0; n < l; ++n) {
+				var size = readVarint();
+				if (size < 0)
+					throw new Error('colfer: colfer.Transaction.Related element ' + this.Related.length + ' size exceeds Number.MAX_SAFE_INTEGER');
+				else if (size > colferSizeMax)
+					throw new Error('colfer: colfer.Transaction.Related element ' + this.Related.length + ' size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+				var start = i;
+				i += size;
+				if (i > data.length) throw new Error(EOF);
+				this.Related[n] = data.slice(start, i);
+			}
+			readHeader();
+		}
+
+		if (header == 12) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.Shares = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 11) {
+		if (header == 13) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.Source size exceeds Number.MAX_SAFE_INTEGER');
@@ -519,7 +579,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 12) {
+		if (header == 14) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.SourceID size exceeds Number.MAX_SAFE_INTEGER');
@@ -533,7 +593,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 13) {
+		if (header == 15) {
 			var l = readVarint();
 			if (l < 0) throw new Error('colfer: colfer.Transaction.Tags length exceeds Number.MAX_SAFE_INTEGER');
 			if (l > colferListMax)
@@ -555,7 +615,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 14) {
+		if (header == 16) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.TaxDisposition size exceeds Number.MAX_SAFE_INTEGER');
@@ -569,7 +629,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 15) {
+		if (header == 17) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Transaction.Ticker size exceeds Number.MAX_SAFE_INTEGER');
@@ -583,7 +643,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 16) {
+		if (header == 18) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.TotalValue = view.getFloat64(i);
 			i += 8;
@@ -791,13 +851,442 @@ var colfer = new function() {
 	// Constructor.
 
 	// When init is provided all enumerable properties are merged into the new object a.k.a. shallow cloning.
+	this.TaxLot = function(init) {
+
+		this.Date = null;
+		this.Date_ns = 0;
+
+		this.TransactionID = new Uint8Array(0);
+
+		this.CompositeFIGI = '';
+
+		this.Ticker = '';
+
+		this.Shares = 0;
+
+		this.PricePerShare = 0;
+
+		for (var p in init) this[p] = init[p];
+	}
+
+	// Serializes the object into an Uint8Array.
+	this.TaxLot.prototype.marshal = function(buf) {
+		if (! buf || !buf.length) buf = new Uint8Array(colferSizeMax);
+		var i = 0;
+		var view = new DataView(buf.buffer);
+
+
+		if ((this.Date && this.Date.getTime()) || this.Date_ns) {
+			var ms = this.Date ? this.Date.getTime() : 0;
+			var s = ms / 1E3;
+
+			var ns = this.Date_ns || 0;
+			if (ns < 0 || ns >= 1E6)
+				throw new Error('colfer: colfer/TaxLot field Date_ns not in range (0, 1ms>');
+			var msf = ms % 1E3;
+			if (ms < 0 && msf) {
+				s--
+				msf = 1E3 + msf;
+			}
+			ns += msf * 1E6;
+
+			if (s > 0xffffffff || s < 0) {
+				buf[i++] = 0 | 128;
+				if (s > 0) {
+					view.setUint32(i, s / 0x100000000);
+					view.setUint32(i + 4, s);
+				} else {
+					s = -s;
+					view.setUint32(i, s / 0x100000000);
+					view.setUint32(i + 4, s);
+					var carry = 1;
+					for (var j = i + 7; j >= i; j--) {
+						var b = (buf[j] ^ 255) + carry;
+						buf[j] = b & 255;
+						carry = b >> 8;
+					}
+				}
+				view.setUint32(i + 8, ns);
+				i += 12;
+			} else {
+				buf[i++] = 0;
+				view.setUint32(i, s);
+				i += 4;
+				view.setUint32(i, ns);
+				i += 4;
+			}
+		}
+
+		if (this.TransactionID && this.TransactionID.length) {
+			buf[i++] = 1;
+			var b = this.TransactionID;
+			i = encodeVarint(buf, i, b.length);
+			buf.set(b, i);
+			i += b.length;
+		}
+
+		if (this.CompositeFIGI) {
+			buf[i++] = 2;
+			var utf8 = encodeUTF8(this.CompositeFIGI);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
+		}
+
+		if (this.Ticker) {
+			buf[i++] = 3;
+			var utf8 = encodeUTF8(this.Ticker);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
+		}
+
+		if (this.Shares) {
+			buf[i++] = 4;
+			view.setFloat64(i, this.Shares);
+			i += 8;
+		} else if (Number.isNaN(this.Shares)) {
+			buf.set([4, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.PricePerShare) {
+			buf[i++] = 5;
+			view.setFloat64(i, this.PricePerShare);
+			i += 8;
+		} else if (Number.isNaN(this.PricePerShare)) {
+			buf.set([5, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+
+		buf[i++] = 127;
+		if (i >= colferSizeMax)
+			throw new Error('colfer: colfer.TaxLot serial size ' + i + ' exceeds ' + colferSizeMax + ' bytes');
+		return buf.subarray(0, i);
+	}
+
+	// Deserializes the object from an Uint8Array and returns the number of bytes read.
+	this.TaxLot.prototype.unmarshal = function(data) {
+		if (!data || ! data.length) throw new Error(EOF);
+		var header = data[0];
+		var i = 1;
+		var readHeader = function() {
+			if (i >= data.length) throw new Error(EOF);
+			header = data[i++];
+		}
+
+		var view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+
+		var readVarint = function() {
+			var pos = 0, result = 0;
+			while (pos != 8) {
+				var c = data[i+pos];
+				result += (c & 127) * Math.pow(128, pos);
+				++pos;
+				if (c < 128) {
+					i += pos;
+					if (result > Number.MAX_SAFE_INTEGER) break;
+					return result;
+				}
+				if (pos == data.length) throw new Error(EOF);
+			}
+			return -1;
+		}
+
+		if (header == 0) {
+			if (i + 8 > data.length) throw new Error(EOF);
+
+			var ms = view.getUint32(i) * 1E3;
+			var ns = view.getUint32(i + 4);
+			ms += Math.floor(ns / 1E6);
+			this.Date = new Date(ms);
+			this.Date_ns = ns % 1E6;
+
+			i += 8;
+			readHeader();
+		} else if (header == (0 | 128)) {
+			if (i + 12 > data.length) throw new Error(EOF);
+
+			var ms = decodeInt64(data, i) * 1E3;
+			var ns = view.getUint32(i + 8);
+			ms += Math.floor(ns / 1E6);
+			if (ms < -864E13 || ms > 864E13)
+				throw new Error('colfer: colfer/ field Date exceeds ECMA Date range');
+			this.Date = new Date(ms);
+			this.Date_ns = ns % 1E6;
+
+			i += 12;
+			readHeader();
+		}
+
+		if (header == 1) {
+			var size = readVarint();
+			if (size < 0)
+				throw new Error('colfer: colfer.TaxLot.TransactionID size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.TaxLot.TransactionID size ' + size + ' exceeds ' + colferSizeMax + ' bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.TransactionID = data.slice(start, i);
+			readHeader();
+		}
+
+		if (header == 2) {
+			var size = readVarint();
+			if (size < 0)
+				throw new Error('colfer: colfer.TaxLot.CompositeFIGI size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.TaxLot.CompositeFIGI size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.CompositeFIGI = decodeUTF8(data.subarray(start, i));
+			readHeader();
+		}
+
+		if (header == 3) {
+			var size = readVarint();
+			if (size < 0)
+				throw new Error('colfer: colfer.TaxLot.Ticker size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.TaxLot.Ticker size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.Ticker = decodeUTF8(data.subarray(start, i));
+			readHeader();
+		}
+
+		if (header == 4) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.Shares = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 5) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.PricePerShare = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header != 127) throw new Error('colfer: unknown header at byte ' + (i - 1));
+		if (i > colferSizeMax)
+			throw new Error('colfer: colfer.TaxLot serial size ' + size + ' exceeds ' + colferSizeMax + ' bytes');
+		return i;
+	}
+
+	// Constructor.
+
+	// When init is provided all enumerable properties are merged into the new object a.k.a. shallow cloning.
+	this.TaxLotInfo = function(init) {
+
+		this.AsOf = null;
+		this.AsOf_ns = 0;
+
+		this.Items = [];
+
+		this.Method = '';
+
+		for (var p in init) this[p] = init[p];
+	}
+
+	// Serializes the object into an Uint8Array.
+	// All null entries in property Items will be replaced with a new colfer.TaxLot.
+	this.TaxLotInfo.prototype.marshal = function(buf) {
+		if (! buf || !buf.length) buf = new Uint8Array(colferSizeMax);
+		var i = 0;
+		var view = new DataView(buf.buffer);
+
+
+		if ((this.AsOf && this.AsOf.getTime()) || this.AsOf_ns) {
+			var ms = this.AsOf ? this.AsOf.getTime() : 0;
+			var s = ms / 1E3;
+
+			var ns = this.AsOf_ns || 0;
+			if (ns < 0 || ns >= 1E6)
+				throw new Error('colfer: colfer/TaxLotInfo field AsOf_ns not in range (0, 1ms>');
+			var msf = ms % 1E3;
+			if (ms < 0 && msf) {
+				s--
+				msf = 1E3 + msf;
+			}
+			ns += msf * 1E6;
+
+			if (s > 0xffffffff || s < 0) {
+				buf[i++] = 0 | 128;
+				if (s > 0) {
+					view.setUint32(i, s / 0x100000000);
+					view.setUint32(i + 4, s);
+				} else {
+					s = -s;
+					view.setUint32(i, s / 0x100000000);
+					view.setUint32(i + 4, s);
+					var carry = 1;
+					for (var j = i + 7; j >= i; j--) {
+						var b = (buf[j] ^ 255) + carry;
+						buf[j] = b & 255;
+						carry = b >> 8;
+					}
+				}
+				view.setUint32(i + 8, ns);
+				i += 12;
+			} else {
+				buf[i++] = 0;
+				view.setUint32(i, s);
+				i += 4;
+				view.setUint32(i, ns);
+				i += 4;
+			}
+		}
+
+		if (this.Items && this.Items.length) {
+			var a = this.Items;
+			if (a.length > colferListMax)
+				throw new Error('colfer: colfer.TaxLotInfo.Items length exceeds colferListMax');
+			buf[i++] = 1;
+			i = encodeVarint(buf, i, a.length);
+			a.forEach(function(v, vi) {
+				if (v == null) {
+					v = new colfer.TaxLot();
+					a[vi] = v;
+				}
+				var b = v.marshal();
+				buf.set(b, i);
+				i += b.length;
+			});
+		}
+
+		if (this.Method) {
+			buf[i++] = 2;
+			var utf8 = encodeUTF8(this.Method);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
+		}
+
+
+		buf[i++] = 127;
+		if (i >= colferSizeMax)
+			throw new Error('colfer: colfer.TaxLotInfo serial size ' + i + ' exceeds ' + colferSizeMax + ' bytes');
+		return buf.subarray(0, i);
+	}
+
+	// Deserializes the object from an Uint8Array and returns the number of bytes read.
+	this.TaxLotInfo.prototype.unmarshal = function(data) {
+		if (!data || ! data.length) throw new Error(EOF);
+		var header = data[0];
+		var i = 1;
+		var readHeader = function() {
+			if (i >= data.length) throw new Error(EOF);
+			header = data[i++];
+		}
+
+		var view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+
+		var readVarint = function() {
+			var pos = 0, result = 0;
+			while (pos != 8) {
+				var c = data[i+pos];
+				result += (c & 127) * Math.pow(128, pos);
+				++pos;
+				if (c < 128) {
+					i += pos;
+					if (result > Number.MAX_SAFE_INTEGER) break;
+					return result;
+				}
+				if (pos == data.length) throw new Error(EOF);
+			}
+			return -1;
+		}
+
+		if (header == 0) {
+			if (i + 8 > data.length) throw new Error(EOF);
+
+			var ms = view.getUint32(i) * 1E3;
+			var ns = view.getUint32(i + 4);
+			ms += Math.floor(ns / 1E6);
+			this.AsOf = new Date(ms);
+			this.AsOf_ns = ns % 1E6;
+
+			i += 8;
+			readHeader();
+		} else if (header == (0 | 128)) {
+			if (i + 12 > data.length) throw new Error(EOF);
+
+			var ms = decodeInt64(data, i) * 1E3;
+			var ns = view.getUint32(i + 8);
+			ms += Math.floor(ns / 1E6);
+			if (ms < -864E13 || ms > 864E13)
+				throw new Error('colfer: colfer/ field AsOf exceeds ECMA Date range');
+			this.AsOf = new Date(ms);
+			this.AsOf_ns = ns % 1E6;
+
+			i += 12;
+			readHeader();
+		}
+
+		if (header == 1) {
+			var l = readVarint();
+			if (l < 0) throw new Error('colfer: colfer.TaxLotInfo.Items length exceeds Number.MAX_SAFE_INTEGER');
+			if (l > colferListMax)
+				throw new Error('colfer: colfer.TaxLotInfo.Items length ' + l + ' exceeds ' + colferListMax + ' elements');
+
+			for (var n = 0; n < l; ++n) {
+				var o = new colfer.TaxLot();
+				i += o.unmarshal(data.subarray(i));
+				this.Items[n] = o;
+			}
+			readHeader();
+		}
+
+		if (header == 2) {
+			var size = readVarint();
+			if (size < 0)
+				throw new Error('colfer: colfer.TaxLotInfo.Method size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.TaxLotInfo.Method size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.Method = decodeUTF8(data.subarray(start, i));
+			readHeader();
+		}
+
+		if (header != 127) throw new Error('colfer: unknown header at byte ' + (i - 1));
+		if (i > colferSizeMax)
+			throw new Error('colfer: colfer.TaxLotInfo serial size ' + size + ' exceeds ' + colferSizeMax + ' bytes');
+		return i;
+	}
+
+	// Constructor.
+
+	// When init is provided all enumerable properties are merged into the new object a.k.a. shallow cloning.
 	this.Portfolio = function(init) {
 
 		this.ID = new Uint8Array(0);
 
 		this.UserID = '';
 
+		this.AccountNumber = '';
+
+		this.Brokerage = '';
+
+		this.AccountType = '';
+
 		this.Name = '';
+
+		this.IsOpen = false;
+
+		this.LastViewed = null;
+		this.LastViewed_ns = 0;
 
 		this.StartDate = null;
 		this.StartDate_ns = 0;
@@ -819,6 +1308,12 @@ var colfer = new function() {
 
 		this.CurrentHoldings = [];
 
+		this.TaxLots = null;
+
+		this.PortfolioType = '';
+
+		this.LinkedPortfolios = [];
+
 		this.PredictedAssets = null;
 
 		for (var p in init) this[p] = init[p];
@@ -827,6 +1322,7 @@ var colfer = new function() {
 	// Serializes the object into an Uint8Array.
 	// All null entries in property Transactions will be replaced with a new colfer.Transaction.
 	// All null entries in property CurrentHoldings will be replaced with a new colfer.Holding.
+	// All null entries in property LinkedPortfolios will be replaced with an empty Array.
 	this.Portfolio.prototype.marshal = function(buf) {
 		if (! buf || !buf.length) buf = new Uint8Array(colferSizeMax);
 		var i = 0;
@@ -849,21 +1345,48 @@ var colfer = new function() {
 			i += utf8.length;
 		}
 
-		if (this.Name) {
+		if (this.AccountNumber) {
 			buf[i++] = 2;
+			var utf8 = encodeUTF8(this.AccountNumber);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
+		}
+
+		if (this.Brokerage) {
+			buf[i++] = 3;
+			var utf8 = encodeUTF8(this.Brokerage);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
+		}
+
+		if (this.AccountType) {
+			buf[i++] = 4;
+			var utf8 = encodeUTF8(this.AccountType);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
+		}
+
+		if (this.Name) {
+			buf[i++] = 5;
 			var utf8 = encodeUTF8(this.Name);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
 			i += utf8.length;
 		}
 
-		if ((this.StartDate && this.StartDate.getTime()) || this.StartDate_ns) {
-			var ms = this.StartDate ? this.StartDate.getTime() : 0;
+		if (this.IsOpen)
+			buf[i++] = 6;
+
+		if ((this.LastViewed && this.LastViewed.getTime()) || this.LastViewed_ns) {
+			var ms = this.LastViewed ? this.LastViewed.getTime() : 0;
 			var s = ms / 1E3;
 
-			var ns = this.StartDate_ns || 0;
+			var ns = this.LastViewed_ns || 0;
 			if (ns < 0 || ns >= 1E6)
-				throw new Error('colfer: colfer/Portfolio field StartDate_ns not in range (0, 1ms>');
+				throw new Error('colfer: colfer/Portfolio field LastViewed_ns not in range (0, 1ms>');
 			var msf = ms % 1E3;
 			if (ms < 0 && msf) {
 				s--
@@ -872,7 +1395,7 @@ var colfer = new function() {
 			ns += msf * 1E6;
 
 			if (s > 0xffffffff || s < 0) {
-				buf[i++] = 3 | 128;
+				buf[i++] = 7 | 128;
 				if (s > 0) {
 					view.setUint32(i, s / 0x100000000);
 					view.setUint32(i + 4, s);
@@ -890,7 +1413,48 @@ var colfer = new function() {
 				view.setUint32(i + 8, ns);
 				i += 12;
 			} else {
-				buf[i++] = 3;
+				buf[i++] = 7;
+				view.setUint32(i, s);
+				i += 4;
+				view.setUint32(i, ns);
+				i += 4;
+			}
+		}
+
+		if ((this.StartDate && this.StartDate.getTime()) || this.StartDate_ns) {
+			var ms = this.StartDate ? this.StartDate.getTime() : 0;
+			var s = ms / 1E3;
+
+			var ns = this.StartDate_ns || 0;
+			if (ns < 0 || ns >= 1E6)
+				throw new Error('colfer: colfer/Portfolio field StartDate_ns not in range (0, 1ms>');
+			var msf = ms % 1E3;
+			if (ms < 0 && msf) {
+				s--
+				msf = 1E3 + msf;
+			}
+			ns += msf * 1E6;
+
+			if (s > 0xffffffff || s < 0) {
+				buf[i++] = 8 | 128;
+				if (s > 0) {
+					view.setUint32(i, s / 0x100000000);
+					view.setUint32(i + 4, s);
+				} else {
+					s = -s;
+					view.setUint32(i, s / 0x100000000);
+					view.setUint32(i + 4, s);
+					var carry = 1;
+					for (var j = i + 7; j >= i; j--) {
+						var b = (buf[j] ^ 255) + carry;
+						buf[j] = b & 255;
+						carry = b >> 8;
+					}
+				}
+				view.setUint32(i + 8, ns);
+				i += 12;
+			} else {
+				buf[i++] = 8;
 				view.setUint32(i, s);
 				i += 4;
 				view.setUint32(i, ns);
@@ -913,7 +1477,7 @@ var colfer = new function() {
 			ns += msf * 1E6;
 
 			if (s > 0xffffffff || s < 0) {
-				buf[i++] = 4 | 128;
+				buf[i++] = 9 | 128;
 				if (s > 0) {
 					view.setUint32(i, s / 0x100000000);
 					view.setUint32(i + 4, s);
@@ -931,7 +1495,7 @@ var colfer = new function() {
 				view.setUint32(i + 8, ns);
 				i += 12;
 			} else {
-				buf[i++] = 4;
+				buf[i++] = 9;
 				view.setUint32(i, s);
 				i += 4;
 				view.setUint32(i, ns);
@@ -940,7 +1504,7 @@ var colfer = new function() {
 		}
 
 		if (this.Benchmark) {
-			buf[i++] = 5;
+			buf[i++] = 10;
 			var utf8 = encodeUTF8(this.Benchmark);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -948,7 +1512,7 @@ var colfer = new function() {
 		}
 
 		if (this.StrategyShortcode) {
-			buf[i++] = 6;
+			buf[i++] = 11;
 			var utf8 = encodeUTF8(this.StrategyShortcode);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -956,7 +1520,7 @@ var colfer = new function() {
 		}
 
 		if (this.StrategyArguments) {
-			buf[i++] = 7;
+			buf[i++] = 12;
 			var utf8 = encodeUTF8(this.StrategyArguments);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -964,7 +1528,7 @@ var colfer = new function() {
 		}
 
 		if (this.Schedule) {
-			buf[i++] = 8;
+			buf[i++] = 13;
 			var utf8 = encodeUTF8(this.Schedule);
 			i = encodeVarint(buf, i, utf8.length);
 			buf.set(utf8, i);
@@ -973,12 +1537,12 @@ var colfer = new function() {
 
 		if (this.Notifications) {
 			if (this.Notifications < 0) {
-				buf[i++] = 9 | 128;
+				buf[i++] = 14 | 128;
 				if (this.Notifications < -2147483648)
 					throw new Error('colfer: colfer/Portfolio field Notifications exceeds 32-bit range');
 				i = encodeVarint(buf, i, -this.Notifications);
 			} else {
-				buf[i++] = 9; 
+				buf[i++] = 14; 
 				if (this.Notifications > 2147483647)
 					throw new Error('colfer: colfer/Portfolio field Notifications exceeds 32-bit range');
 				i = encodeVarint(buf, i, this.Notifications);
@@ -989,7 +1553,7 @@ var colfer = new function() {
 			var a = this.Transactions;
 			if (a.length > colferListMax)
 				throw new Error('colfer: colfer.Portfolio.Transactions length exceeds colferListMax');
-			buf[i++] = 10;
+			buf[i++] = 15;
 			i = encodeVarint(buf, i, a.length);
 			a.forEach(function(v, vi) {
 				if (v == null) {
@@ -1006,7 +1570,7 @@ var colfer = new function() {
 			var a = this.CurrentHoldings;
 			if (a.length > colferListMax)
 				throw new Error('colfer: colfer.Portfolio.CurrentHoldings length exceeds colferListMax');
-			buf[i++] = 11;
+			buf[i++] = 16;
 			i = encodeVarint(buf, i, a.length);
 			a.forEach(function(v, vi) {
 				if (v == null) {
@@ -1019,8 +1583,40 @@ var colfer = new function() {
 			});
 		}
 
+		if (this.TaxLots) {
+			buf[i++] = 17;
+			var b = this.TaxLots.marshal();
+			buf.set(b, i);
+			i += b.length;
+		}
+
+		if (this.PortfolioType) {
+			buf[i++] = 18;
+			var utf8 = encodeUTF8(this.PortfolioType);
+			i = encodeVarint(buf, i, utf8.length);
+			buf.set(utf8, i);
+			i += utf8.length;
+		}
+
+		if (this.LinkedPortfolios && this.LinkedPortfolios.length) {
+			var a = this.LinkedPortfolios;
+			if (a.length > colferListMax)
+				throw new Error('colfer: colfer.Portfolio.LinkedPortfolios length exceeds colferListMax');
+			buf[i++] = 19;
+			i = encodeVarint(buf, i, a.length);
+			a.forEach(function(b, bi) {
+				if (b == null) {
+					b = "";
+					a[bi] = b;
+				}
+				i = encodeVarint(buf, i, b.length);
+				buf.set(b, i);
+				i += b.length;
+			});
+		}
+
 		if (this.PredictedAssets) {
-			buf[i++] = 12;
+			buf[i++] = 20;
 			var b = this.PredictedAssets.marshal();
 			buf.set(b, i);
 			i += b.length;
@@ -1092,6 +1688,48 @@ var colfer = new function() {
 		if (header == 2) {
 			var size = readVarint();
 			if (size < 0)
+				throw new Error('colfer: colfer.Portfolio.AccountNumber size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.Portfolio.AccountNumber size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.AccountNumber = decodeUTF8(data.subarray(start, i));
+			readHeader();
+		}
+
+		if (header == 3) {
+			var size = readVarint();
+			if (size < 0)
+				throw new Error('colfer: colfer.Portfolio.Brokerage size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.Portfolio.Brokerage size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.Brokerage = decodeUTF8(data.subarray(start, i));
+			readHeader();
+		}
+
+		if (header == 4) {
+			var size = readVarint();
+			if (size < 0)
+				throw new Error('colfer: colfer.Portfolio.AccountType size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.Portfolio.AccountType size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.AccountType = decodeUTF8(data.subarray(start, i));
+			readHeader();
+		}
+
+		if (header == 5) {
+			var size = readVarint();
+			if (size < 0)
 				throw new Error('colfer: colfer.Portfolio.Name size exceeds Number.MAX_SAFE_INTEGER');
 			else if (size > colferSizeMax)
 				throw new Error('colfer: colfer.Portfolio.Name size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
@@ -1103,7 +1741,38 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 3) {
+		if (header == 6) {
+			this.IsOpen = true;
+			readHeader();
+		}
+
+		if (header == 7) {
+			if (i + 8 > data.length) throw new Error(EOF);
+
+			var ms = view.getUint32(i) * 1E3;
+			var ns = view.getUint32(i + 4);
+			ms += Math.floor(ns / 1E6);
+			this.LastViewed = new Date(ms);
+			this.LastViewed_ns = ns % 1E6;
+
+			i += 8;
+			readHeader();
+		} else if (header == (7 | 128)) {
+			if (i + 12 > data.length) throw new Error(EOF);
+
+			var ms = decodeInt64(data, i) * 1E3;
+			var ns = view.getUint32(i + 8);
+			ms += Math.floor(ns / 1E6);
+			if (ms < -864E13 || ms > 864E13)
+				throw new Error('colfer: colfer/ field LastViewed exceeds ECMA Date range');
+			this.LastViewed = new Date(ms);
+			this.LastViewed_ns = ns % 1E6;
+
+			i += 12;
+			readHeader();
+		}
+
+		if (header == 8) {
 			if (i + 8 > data.length) throw new Error(EOF);
 
 			var ms = view.getUint32(i) * 1E3;
@@ -1114,7 +1783,7 @@ var colfer = new function() {
 
 			i += 8;
 			readHeader();
-		} else if (header == (3 | 128)) {
+		} else if (header == (8 | 128)) {
 			if (i + 12 > data.length) throw new Error(EOF);
 
 			var ms = decodeInt64(data, i) * 1E3;
@@ -1129,7 +1798,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 4) {
+		if (header == 9) {
 			if (i + 8 > data.length) throw new Error(EOF);
 
 			var ms = view.getUint32(i) * 1E3;
@@ -1140,7 +1809,7 @@ var colfer = new function() {
 
 			i += 8;
 			readHeader();
-		} else if (header == (4 | 128)) {
+		} else if (header == (9 | 128)) {
 			if (i + 12 > data.length) throw new Error(EOF);
 
 			var ms = decodeInt64(data, i) * 1E3;
@@ -1155,7 +1824,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 5) {
+		if (header == 10) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Portfolio.Benchmark size exceeds Number.MAX_SAFE_INTEGER');
@@ -1169,7 +1838,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 6) {
+		if (header == 11) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Portfolio.StrategyShortcode size exceeds Number.MAX_SAFE_INTEGER');
@@ -1183,7 +1852,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 7) {
+		if (header == 12) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Portfolio.StrategyArguments size exceeds Number.MAX_SAFE_INTEGER');
@@ -1197,7 +1866,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 8) {
+		if (header == 13) {
 			var size = readVarint();
 			if (size < 0)
 				throw new Error('colfer: colfer.Portfolio.Schedule size exceeds Number.MAX_SAFE_INTEGER');
@@ -1211,19 +1880,19 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 9) {
+		if (header == 14) {
 			var x = readVarint();
 			if (x < 0) throw new Error('colfer: colfer/Portfolio field Notifications exceeds Number.MAX_SAFE_INTEGER');
 			this.Notifications = x;
 			readHeader();
-		} else if (header == (9 | 128)) {
+		} else if (header == (14 | 128)) {
 			var x = readVarint();
 			if (x < 0) throw new Error('colfer: colfer/Portfolio field Notifications exceeds Number.MAX_SAFE_INTEGER');
 			this.Notifications = -1 * x;
 			readHeader();
 		}
 
-		if (header == 10) {
+		if (header == 15) {
 			var l = readVarint();
 			if (l < 0) throw new Error('colfer: colfer.Portfolio.Transactions length exceeds Number.MAX_SAFE_INTEGER');
 			if (l > colferListMax)
@@ -1237,7 +1906,7 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 11) {
+		if (header == 16) {
 			var l = readVarint();
 			if (l < 0) throw new Error('colfer: colfer.Portfolio.CurrentHoldings length exceeds Number.MAX_SAFE_INTEGER');
 			if (l > colferListMax)
@@ -1251,7 +1920,50 @@ var colfer = new function() {
 			readHeader();
 		}
 
-		if (header == 12) {
+		if (header == 17) {
+			var o = new colfer.TaxLotInfo();
+			i += o.unmarshal(data.subarray(i));
+			this.TaxLots = o;
+			readHeader();
+		}
+
+		if (header == 18) {
+			var size = readVarint();
+			if (size < 0)
+				throw new Error('colfer: colfer.Portfolio.PortfolioType size exceeds Number.MAX_SAFE_INTEGER');
+			else if (size > colferSizeMax)
+				throw new Error('colfer: colfer.Portfolio.PortfolioType size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+			var start = i;
+			i += size;
+			if (i > data.length) throw new Error(EOF);
+			this.PortfolioType = decodeUTF8(data.subarray(start, i));
+			readHeader();
+		}
+
+		if (header == 19) {
+			var l = readVarint();
+			if (l < 0) throw new Error('colfer: colfer.Portfolio.LinkedPortfolios length exceeds Number.MAX_SAFE_INTEGER');
+			if (l > colferListMax)
+				throw new Error('colfer: colfer.Portfolio.LinkedPortfolios length ' + l + ' exceeds ' + colferListMax + ' elements');
+
+			this.LinkedPortfolios = new Array(l);
+			for (var n = 0; n < l; ++n) {
+				var size = readVarint();
+				if (size < 0)
+					throw new Error('colfer: colfer.Portfolio.LinkedPortfolios element ' + this.LinkedPortfolios.length + ' size exceeds Number.MAX_SAFE_INTEGER');
+				else if (size > colferSizeMax)
+					throw new Error('colfer: colfer.Portfolio.LinkedPortfolios element ' + this.LinkedPortfolios.length + ' size ' + size + ' exceeds ' + colferSizeMax + ' UTF-8 bytes');
+
+				var start = i;
+				i += size;
+				if (i > data.length) throw new Error(EOF);
+				this.LinkedPortfolios[n] = data.slice(start, i);
+			}
+			readHeader();
+		}
+
+		if (header == 20) {
 			var o = new colfer.PortfolioHoldingItem();
 			i += o.unmarshal(data.subarray(i));
 			this.PredictedAssets = o;
@@ -1686,6 +2398,8 @@ var colfer = new function() {
 
 		this.StdDevSinceInception = 0;
 
+		this.TaxCostRatio = 0;
+
 		this.TotalDeposited = 0;
 
 		this.TotalWithdrawn = 0;
@@ -1813,91 +2527,100 @@ var colfer = new function() {
 			i += 9;
 		}
 
-		if (this.TotalDeposited) {
+		if (this.TaxCostRatio) {
 			buf[i++] = 11;
-			view.setFloat64(i, this.TotalDeposited);
+			view.setFloat64(i, this.TaxCostRatio);
 			i += 8;
-		} else if (Number.isNaN(this.TotalDeposited)) {
+		} else if (Number.isNaN(this.TaxCostRatio)) {
 			buf.set([11, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
-		if (this.TotalWithdrawn) {
+		if (this.TotalDeposited) {
 			buf[i++] = 12;
-			view.setFloat64(i, this.TotalWithdrawn);
+			view.setFloat64(i, this.TotalDeposited);
 			i += 8;
-		} else if (Number.isNaN(this.TotalWithdrawn)) {
+		} else if (Number.isNaN(this.TotalDeposited)) {
 			buf.set([12, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
-		if (this.UlcerIndexAvg) {
+		if (this.TotalWithdrawn) {
 			buf[i++] = 13;
-			view.setFloat64(i, this.UlcerIndexAvg);
+			view.setFloat64(i, this.TotalWithdrawn);
 			i += 8;
-		} else if (Number.isNaN(this.UlcerIndexAvg)) {
+		} else if (Number.isNaN(this.TotalWithdrawn)) {
 			buf.set([13, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
-		if (this.UlcerIndexP50) {
+		if (this.UlcerIndexAvg) {
 			buf[i++] = 14;
-			view.setFloat64(i, this.UlcerIndexP50);
+			view.setFloat64(i, this.UlcerIndexAvg);
 			i += 8;
-		} else if (Number.isNaN(this.UlcerIndexP50)) {
+		} else if (Number.isNaN(this.UlcerIndexAvg)) {
 			buf.set([14, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
-		if (this.UlcerIndexP90) {
+		if (this.UlcerIndexP50) {
 			buf[i++] = 15;
-			view.setFloat64(i, this.UlcerIndexP90);
+			view.setFloat64(i, this.UlcerIndexP50);
 			i += 8;
-		} else if (Number.isNaN(this.UlcerIndexP90)) {
+		} else if (Number.isNaN(this.UlcerIndexP50)) {
 			buf.set([15, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
-		if (this.UlcerIndexP99) {
+		if (this.UlcerIndexP90) {
 			buf[i++] = 16;
-			view.setFloat64(i, this.UlcerIndexP99);
+			view.setFloat64(i, this.UlcerIndexP90);
 			i += 8;
-		} else if (Number.isNaN(this.UlcerIndexP99)) {
+		} else if (Number.isNaN(this.UlcerIndexP90)) {
 			buf.set([16, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
-		if (this.WorstYear) {
+		if (this.UlcerIndexP99) {
 			buf[i++] = 17;
+			view.setFloat64(i, this.UlcerIndexP99);
+			i += 8;
+		} else if (Number.isNaN(this.UlcerIndexP99)) {
+			buf.set([17, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.WorstYear) {
+			buf[i++] = 18;
 			var b = this.WorstYear.marshal();
 			buf.set(b, i);
 			i += b.length;
 		}
 
 		if (this.DynamicWithdrawalRateSinceInception) {
-			buf[i++] = 18;
+			buf[i++] = 19;
 			view.setFloat64(i, this.DynamicWithdrawalRateSinceInception);
 			i += 8;
 		} else if (Number.isNaN(this.DynamicWithdrawalRateSinceInception)) {
-			buf.set([18, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
-			i += 9;
-		}
-
-		if (this.PerpetualWithdrawalRateSinceInception) {
-			buf[i++] = 19;
-			view.setFloat64(i, this.PerpetualWithdrawalRateSinceInception);
-			i += 8;
-		} else if (Number.isNaN(this.PerpetualWithdrawalRateSinceInception)) {
 			buf.set([19, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
-		if (this.SafeWithdrawalRateSinceInception) {
+		if (this.PerpetualWithdrawalRateSinceInception) {
 			buf[i++] = 20;
+			view.setFloat64(i, this.PerpetualWithdrawalRateSinceInception);
+			i += 8;
+		} else if (Number.isNaN(this.PerpetualWithdrawalRateSinceInception)) {
+			buf.set([20, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.SafeWithdrawalRateSinceInception) {
+			buf[i++] = 21;
 			view.setFloat64(i, this.SafeWithdrawalRateSinceInception);
 			i += 8;
 		} else if (Number.isNaN(this.SafeWithdrawalRateSinceInception)) {
-			buf.set([20, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([21, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
@@ -2015,68 +2738,75 @@ var colfer = new function() {
 
 		if (header == 11) {
 			if (i + 8 > data.length) throw new Error(EOF);
-			this.TotalDeposited = view.getFloat64(i);
+			this.TaxCostRatio = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
 		if (header == 12) {
 			if (i + 8 > data.length) throw new Error(EOF);
-			this.TotalWithdrawn = view.getFloat64(i);
+			this.TotalDeposited = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
 		if (header == 13) {
 			if (i + 8 > data.length) throw new Error(EOF);
-			this.UlcerIndexAvg = view.getFloat64(i);
+			this.TotalWithdrawn = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
 		if (header == 14) {
 			if (i + 8 > data.length) throw new Error(EOF);
-			this.UlcerIndexP50 = view.getFloat64(i);
+			this.UlcerIndexAvg = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
 		if (header == 15) {
 			if (i + 8 > data.length) throw new Error(EOF);
-			this.UlcerIndexP90 = view.getFloat64(i);
+			this.UlcerIndexP50 = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
 		if (header == 16) {
 			if (i + 8 > data.length) throw new Error(EOF);
-			this.UlcerIndexP99 = view.getFloat64(i);
+			this.UlcerIndexP90 = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
 		if (header == 17) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.UlcerIndexP99 = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 18) {
 			var o = new colfer.AnnualReturn();
 			i += o.unmarshal(data.subarray(i));
 			this.WorstYear = o;
 			readHeader();
 		}
 
-		if (header == 18) {
+		if (header == 19) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.DynamicWithdrawalRateSinceInception = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 19) {
+		if (header == 20) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.PerpetualWithdrawalRateSinceInception = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 20) {
+		if (header == 21) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.SafeWithdrawalRateSinceInception = view.getFloat64(i);
 			i += 8;
@@ -2865,6 +3595,8 @@ var colfer = new function() {
 
 		this.Justification = [];
 
+		this.TaxLots = null;
+
 		this.TotalDeposited = 0;
 
 		this.TotalWithdrawn = 0;
@@ -2912,6 +3644,24 @@ var colfer = new function() {
 		this.MWRRFiveYear = 0;
 
 		this.MWRRTenYear = 0;
+		// GainLoss bucketed by tax treatment
+		this.AfterTaxReturn = 0;
+
+		this.BeforeTaxReturn = 0;
+
+		this.TaxCostRatio = 0;
+
+		this.LongTermCapitalGain = 0;
+
+		this.ShortTermCapitalGain = 0;
+
+		this.UnrealizedLongTermCapitalGain = 0;
+
+		this.UnrealizedShortTermCapitalGain = 0;
+
+		this.QualifiedDividend = 0;
+
+		this.NonQualifiedDividendAndInterestIncome = 0;
 		// active return
 		this.ActiveReturnOneYear = 0;
 
@@ -3098,505 +3848,593 @@ var colfer = new function() {
 			});
 		}
 
-		if (this.TotalDeposited) {
+		if (this.TaxLots) {
 			buf[i++] = 9;
+			var b = this.TaxLots.marshal();
+			buf.set(b, i);
+			i += b.length;
+		}
+
+		if (this.TotalDeposited) {
+			buf[i++] = 10;
 			view.setFloat64(i, this.TotalDeposited);
 			i += 8;
 		} else if (Number.isNaN(this.TotalDeposited)) {
-			buf.set([9, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([10, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
 		if (this.TotalWithdrawn) {
-			buf[i++] = 10;
+			buf[i++] = 11;
 			view.setFloat64(i, this.TotalWithdrawn);
 			i += 8;
 		} else if (Number.isNaN(this.TotalWithdrawn)) {
-			buf.set([10, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			buf.set([11, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
 			i += 9;
 		}
 
 		if (this.TWRROneDay) {
 			if (this.TWRROneDay > 3.4028234663852886E38 || this.TWRROneDay < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneDay exceeds 32-bit range');
-			buf[i++] = 11;
+			buf[i++] = 12;
 			view.setFloat32(i, this.TWRROneDay);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneDay)) {
-			buf.set([11, 0x7f, 0xc0, 0, 0], i);
+			buf.set([12, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRWeekToDate) {
 			if (this.TWRRWeekToDate > 3.4028234663852886E38 || this.TWRRWeekToDate < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRWeekToDate exceeds 32-bit range');
-			buf[i++] = 12;
+			buf[i++] = 13;
 			view.setFloat32(i, this.TWRRWeekToDate);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRWeekToDate)) {
-			buf.set([12, 0x7f, 0xc0, 0, 0], i);
+			buf.set([13, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRROneWeek) {
 			if (this.TWRROneWeek > 3.4028234663852886E38 || this.TWRROneWeek < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneWeek exceeds 32-bit range');
-			buf[i++] = 13;
+			buf[i++] = 14;
 			view.setFloat32(i, this.TWRROneWeek);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneWeek)) {
-			buf.set([13, 0x7f, 0xc0, 0, 0], i);
+			buf.set([14, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRMonthToDate) {
 			if (this.TWRRMonthToDate > 3.4028234663852886E38 || this.TWRRMonthToDate < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRMonthToDate exceeds 32-bit range');
-			buf[i++] = 14;
+			buf[i++] = 15;
 			view.setFloat32(i, this.TWRRMonthToDate);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRMonthToDate)) {
-			buf.set([14, 0x7f, 0xc0, 0, 0], i);
+			buf.set([15, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRROneMonth) {
 			if (this.TWRROneMonth > 3.4028234663852886E38 || this.TWRROneMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneMonth exceeds 32-bit range');
-			buf[i++] = 15;
+			buf[i++] = 16;
 			view.setFloat32(i, this.TWRROneMonth);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneMonth)) {
-			buf.set([15, 0x7f, 0xc0, 0, 0], i);
+			buf.set([16, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRThreeMonth) {
 			if (this.TWRRThreeMonth > 3.4028234663852886E38 || this.TWRRThreeMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRThreeMonth exceeds 32-bit range');
-			buf[i++] = 16;
+			buf[i++] = 17;
 			view.setFloat32(i, this.TWRRThreeMonth);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRThreeMonth)) {
-			buf.set([16, 0x7f, 0xc0, 0, 0], i);
+			buf.set([17, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRYearToDate) {
 			if (this.TWRRYearToDate > 3.4028234663852886E38 || this.TWRRYearToDate < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRYearToDate exceeds 32-bit range');
-			buf[i++] = 17;
+			buf[i++] = 18;
 			view.setFloat32(i, this.TWRRYearToDate);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRYearToDate)) {
-			buf.set([17, 0x7f, 0xc0, 0, 0], i);
+			buf.set([18, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRROneYear) {
 			if (this.TWRROneYear > 3.4028234663852886E38 || this.TWRROneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRROneYear exceeds 32-bit range');
-			buf[i++] = 18;
+			buf[i++] = 19;
 			view.setFloat32(i, this.TWRROneYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRROneYear)) {
-			buf.set([18, 0x7f, 0xc0, 0, 0], i);
+			buf.set([19, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRThreeYear) {
 			if (this.TWRRThreeYear > 3.4028234663852886E38 || this.TWRRThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRThreeYear exceeds 32-bit range');
-			buf[i++] = 19;
+			buf[i++] = 20;
 			view.setFloat32(i, this.TWRRThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRThreeYear)) {
-			buf.set([19, 0x7f, 0xc0, 0, 0], i);
+			buf.set([20, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRFiveYear) {
 			if (this.TWRRFiveYear > 3.4028234663852886E38 || this.TWRRFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRFiveYear exceeds 32-bit range');
-			buf[i++] = 20;
+			buf[i++] = 21;
 			view.setFloat32(i, this.TWRRFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRFiveYear)) {
-			buf.set([20, 0x7f, 0xc0, 0, 0], i);
+			buf.set([21, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TWRRTenYear) {
 			if (this.TWRRTenYear > 3.4028234663852886E38 || this.TWRRTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TWRRTenYear exceeds 32-bit range');
-			buf[i++] = 21;
+			buf[i++] = 22;
 			view.setFloat32(i, this.TWRRTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.TWRRTenYear)) {
-			buf.set([21, 0x7f, 0xc0, 0, 0], i);
+			buf.set([22, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneDay) {
 			if (this.MWRROneDay > 3.4028234663852886E38 || this.MWRROneDay < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneDay exceeds 32-bit range');
-			buf[i++] = 22;
+			buf[i++] = 23;
 			view.setFloat32(i, this.MWRROneDay);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneDay)) {
-			buf.set([22, 0x7f, 0xc0, 0, 0], i);
+			buf.set([23, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRWeekToDate) {
 			if (this.MWRRWeekToDate > 3.4028234663852886E38 || this.MWRRWeekToDate < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRWeekToDate exceeds 32-bit range');
-			buf[i++] = 23;
+			buf[i++] = 24;
 			view.setFloat32(i, this.MWRRWeekToDate);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRWeekToDate)) {
-			buf.set([23, 0x7f, 0xc0, 0, 0], i);
+			buf.set([24, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneWeek) {
 			if (this.MWRROneWeek > 3.4028234663852886E38 || this.MWRROneWeek < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneWeek exceeds 32-bit range');
-			buf[i++] = 24;
+			buf[i++] = 25;
 			view.setFloat32(i, this.MWRROneWeek);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneWeek)) {
-			buf.set([24, 0x7f, 0xc0, 0, 0], i);
+			buf.set([25, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRMonthToDate) {
 			if (this.MWRRMonthToDate > 3.4028234663852886E38 || this.MWRRMonthToDate < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRMonthToDate exceeds 32-bit range');
-			buf[i++] = 25;
+			buf[i++] = 26;
 			view.setFloat32(i, this.MWRRMonthToDate);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRMonthToDate)) {
-			buf.set([25, 0x7f, 0xc0, 0, 0], i);
+			buf.set([26, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneMonth) {
 			if (this.MWRROneMonth > 3.4028234663852886E38 || this.MWRROneMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneMonth exceeds 32-bit range');
-			buf[i++] = 26;
+			buf[i++] = 27;
 			view.setFloat32(i, this.MWRROneMonth);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneMonth)) {
-			buf.set([26, 0x7f, 0xc0, 0, 0], i);
+			buf.set([27, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRThreeMonth) {
 			if (this.MWRRThreeMonth > 3.4028234663852886E38 || this.MWRRThreeMonth < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRThreeMonth exceeds 32-bit range');
-			buf[i++] = 27;
+			buf[i++] = 28;
 			view.setFloat32(i, this.MWRRThreeMonth);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRThreeMonth)) {
-			buf.set([27, 0x7f, 0xc0, 0, 0], i);
+			buf.set([28, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRYearToDate) {
 			if (this.MWRRYearToDate > 3.4028234663852886E38 || this.MWRRYearToDate < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRYearToDate exceeds 32-bit range');
-			buf[i++] = 28;
+			buf[i++] = 29;
 			view.setFloat32(i, this.MWRRYearToDate);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRYearToDate)) {
-			buf.set([28, 0x7f, 0xc0, 0, 0], i);
+			buf.set([29, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRROneYear) {
 			if (this.MWRROneYear > 3.4028234663852886E38 || this.MWRROneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRROneYear exceeds 32-bit range');
-			buf[i++] = 29;
+			buf[i++] = 30;
 			view.setFloat32(i, this.MWRROneYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRROneYear)) {
-			buf.set([29, 0x7f, 0xc0, 0, 0], i);
+			buf.set([30, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRThreeYear) {
 			if (this.MWRRThreeYear > 3.4028234663852886E38 || this.MWRRThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRThreeYear exceeds 32-bit range');
-			buf[i++] = 30;
+			buf[i++] = 31;
 			view.setFloat32(i, this.MWRRThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRThreeYear)) {
-			buf.set([30, 0x7f, 0xc0, 0, 0], i);
+			buf.set([31, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRFiveYear) {
 			if (this.MWRRFiveYear > 3.4028234663852886E38 || this.MWRRFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRFiveYear exceeds 32-bit range');
-			buf[i++] = 31;
+			buf[i++] = 32;
 			view.setFloat32(i, this.MWRRFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRFiveYear)) {
-			buf.set([31, 0x7f, 0xc0, 0, 0], i);
+			buf.set([32, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.MWRRTenYear) {
 			if (this.MWRRTenYear > 3.4028234663852886E38 || this.MWRRTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field MWRRTenYear exceeds 32-bit range');
-			buf[i++] = 32;
+			buf[i++] = 33;
 			view.setFloat32(i, this.MWRRTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.MWRRTenYear)) {
-			buf.set([32, 0x7f, 0xc0, 0, 0], i);
+			buf.set([33, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
+		}
+
+		if (this.AfterTaxReturn) {
+			buf[i++] = 34;
+			view.setFloat64(i, this.AfterTaxReturn);
+			i += 8;
+		} else if (Number.isNaN(this.AfterTaxReturn)) {
+			buf.set([34, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.BeforeTaxReturn) {
+			buf[i++] = 35;
+			view.setFloat64(i, this.BeforeTaxReturn);
+			i += 8;
+		} else if (Number.isNaN(this.BeforeTaxReturn)) {
+			buf.set([35, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.TaxCostRatio) {
+			buf[i++] = 36;
+			view.setFloat64(i, this.TaxCostRatio);
+			i += 8;
+		} else if (Number.isNaN(this.TaxCostRatio)) {
+			buf.set([36, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.LongTermCapitalGain) {
+			buf[i++] = 37;
+			view.setFloat64(i, this.LongTermCapitalGain);
+			i += 8;
+		} else if (Number.isNaN(this.LongTermCapitalGain)) {
+			buf.set([37, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.ShortTermCapitalGain) {
+			buf[i++] = 38;
+			view.setFloat64(i, this.ShortTermCapitalGain);
+			i += 8;
+		} else if (Number.isNaN(this.ShortTermCapitalGain)) {
+			buf.set([38, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.UnrealizedLongTermCapitalGain) {
+			buf[i++] = 39;
+			view.setFloat64(i, this.UnrealizedLongTermCapitalGain);
+			i += 8;
+		} else if (Number.isNaN(this.UnrealizedLongTermCapitalGain)) {
+			buf.set([39, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.UnrealizedShortTermCapitalGain) {
+			buf[i++] = 40;
+			view.setFloat64(i, this.UnrealizedShortTermCapitalGain);
+			i += 8;
+		} else if (Number.isNaN(this.UnrealizedShortTermCapitalGain)) {
+			buf.set([40, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.QualifiedDividend) {
+			buf[i++] = 41;
+			view.setFloat64(i, this.QualifiedDividend);
+			i += 8;
+		} else if (Number.isNaN(this.QualifiedDividend)) {
+			buf.set([41, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
+		}
+
+		if (this.NonQualifiedDividendAndInterestIncome) {
+			buf[i++] = 42;
+			view.setFloat64(i, this.NonQualifiedDividendAndInterestIncome);
+			i += 8;
+		} else if (Number.isNaN(this.NonQualifiedDividendAndInterestIncome)) {
+			buf.set([42, 0x7f, 0xf8, 0, 0, 0, 0, 0, 0], i);
+			i += 9;
 		}
 
 		if (this.ActiveReturnOneYear) {
 			if (this.ActiveReturnOneYear > 3.4028234663852886E38 || this.ActiveReturnOneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnOneYear exceeds 32-bit range');
-			buf[i++] = 33;
+			buf[i++] = 43;
 			view.setFloat32(i, this.ActiveReturnOneYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnOneYear)) {
-			buf.set([33, 0x7f, 0xc0, 0, 0], i);
+			buf.set([43, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnThreeYear) {
 			if (this.ActiveReturnThreeYear > 3.4028234663852886E38 || this.ActiveReturnThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnThreeYear exceeds 32-bit range');
-			buf[i++] = 34;
+			buf[i++] = 44;
 			view.setFloat32(i, this.ActiveReturnThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnThreeYear)) {
-			buf.set([34, 0x7f, 0xc0, 0, 0], i);
+			buf.set([44, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnFiveYear) {
 			if (this.ActiveReturnFiveYear > 3.4028234663852886E38 || this.ActiveReturnFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnFiveYear exceeds 32-bit range');
-			buf[i++] = 35;
+			buf[i++] = 45;
 			view.setFloat32(i, this.ActiveReturnFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnFiveYear)) {
-			buf.set([35, 0x7f, 0xc0, 0, 0], i);
+			buf.set([45, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.ActiveReturnTenYear) {
 			if (this.ActiveReturnTenYear > 3.4028234663852886E38 || this.ActiveReturnTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field ActiveReturnTenYear exceeds 32-bit range');
-			buf[i++] = 36;
+			buf[i++] = 46;
 			view.setFloat32(i, this.ActiveReturnTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.ActiveReturnTenYear)) {
-			buf.set([36, 0x7f, 0xc0, 0, 0], i);
+			buf.set([46, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaOneYear) {
 			if (this.AlphaOneYear > 3.4028234663852886E38 || this.AlphaOneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaOneYear exceeds 32-bit range');
-			buf[i++] = 37;
+			buf[i++] = 47;
 			view.setFloat32(i, this.AlphaOneYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaOneYear)) {
-			buf.set([37, 0x7f, 0xc0, 0, 0], i);
+			buf.set([47, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaThreeYear) {
 			if (this.AlphaThreeYear > 3.4028234663852886E38 || this.AlphaThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaThreeYear exceeds 32-bit range');
-			buf[i++] = 38;
+			buf[i++] = 48;
 			view.setFloat32(i, this.AlphaThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaThreeYear)) {
-			buf.set([38, 0x7f, 0xc0, 0, 0], i);
+			buf.set([48, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaFiveYear) {
 			if (this.AlphaFiveYear > 3.4028234663852886E38 || this.AlphaFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaFiveYear exceeds 32-bit range');
-			buf[i++] = 39;
+			buf[i++] = 49;
 			view.setFloat32(i, this.AlphaFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaFiveYear)) {
-			buf.set([39, 0x7f, 0xc0, 0, 0], i);
+			buf.set([49, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.AlphaTenYear) {
 			if (this.AlphaTenYear > 3.4028234663852886E38 || this.AlphaTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field AlphaTenYear exceeds 32-bit range');
-			buf[i++] = 40;
+			buf[i++] = 50;
 			view.setFloat32(i, this.AlphaTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.AlphaTenYear)) {
-			buf.set([40, 0x7f, 0xc0, 0, 0], i);
+			buf.set([50, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaOneYear) {
 			if (this.BetaOneYear > 3.4028234663852886E38 || this.BetaOneYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaOneYear exceeds 32-bit range');
-			buf[i++] = 41;
+			buf[i++] = 51;
 			view.setFloat32(i, this.BetaOneYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaOneYear)) {
-			buf.set([41, 0x7f, 0xc0, 0, 0], i);
+			buf.set([51, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaThreeYear) {
 			if (this.BetaThreeYear > 3.4028234663852886E38 || this.BetaThreeYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaThreeYear exceeds 32-bit range');
-			buf[i++] = 42;
+			buf[i++] = 52;
 			view.setFloat32(i, this.BetaThreeYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaThreeYear)) {
-			buf.set([42, 0x7f, 0xc0, 0, 0], i);
+			buf.set([52, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaFiveYear) {
 			if (this.BetaFiveYear > 3.4028234663852886E38 || this.BetaFiveYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaFiveYear exceeds 32-bit range');
-			buf[i++] = 43;
+			buf[i++] = 53;
 			view.setFloat32(i, this.BetaFiveYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaFiveYear)) {
-			buf.set([43, 0x7f, 0xc0, 0, 0], i);
+			buf.set([53, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.BetaTenYear) {
 			if (this.BetaTenYear > 3.4028234663852886E38 || this.BetaTenYear < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field BetaTenYear exceeds 32-bit range');
-			buf[i++] = 44;
+			buf[i++] = 54;
 			view.setFloat32(i, this.BetaTenYear);
 			i += 4;
 		} else if (Number.isNaN(this.BetaTenYear)) {
-			buf.set([44, 0x7f, 0xc0, 0, 0], i);
+			buf.set([54, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.CalmarRatio) {
 			if (this.CalmarRatio > 3.4028234663852886E38 || this.CalmarRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field CalmarRatio exceeds 32-bit range');
-			buf[i++] = 45;
+			buf[i++] = 55;
 			view.setFloat32(i, this.CalmarRatio);
 			i += 4;
 		} else if (Number.isNaN(this.CalmarRatio)) {
-			buf.set([45, 0x7f, 0xc0, 0, 0], i);
+			buf.set([55, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.DownsideDeviation) {
 			if (this.DownsideDeviation > 3.4028234663852886E38 || this.DownsideDeviation < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field DownsideDeviation exceeds 32-bit range');
-			buf[i++] = 46;
+			buf[i++] = 56;
 			view.setFloat32(i, this.DownsideDeviation);
 			i += 4;
 		} else if (Number.isNaN(this.DownsideDeviation)) {
-			buf.set([46, 0x7f, 0xc0, 0, 0], i);
+			buf.set([56, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.InformationRatio) {
 			if (this.InformationRatio > 3.4028234663852886E38 || this.InformationRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field InformationRatio exceeds 32-bit range');
-			buf[i++] = 47;
+			buf[i++] = 57;
 			view.setFloat32(i, this.InformationRatio);
 			i += 4;
 		} else if (Number.isNaN(this.InformationRatio)) {
-			buf.set([47, 0x7f, 0xc0, 0, 0], i);
+			buf.set([57, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.KRatio) {
 			if (this.KRatio > 3.4028234663852886E38 || this.KRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field KRatio exceeds 32-bit range');
-			buf[i++] = 48;
+			buf[i++] = 58;
 			view.setFloat32(i, this.KRatio);
 			i += 4;
 		} else if (Number.isNaN(this.KRatio)) {
-			buf.set([48, 0x7f, 0xc0, 0, 0], i);
+			buf.set([58, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.KellerRatio) {
 			if (this.KellerRatio > 3.4028234663852886E38 || this.KellerRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field KellerRatio exceeds 32-bit range');
-			buf[i++] = 49;
+			buf[i++] = 59;
 			view.setFloat32(i, this.KellerRatio);
 			i += 4;
 		} else if (Number.isNaN(this.KellerRatio)) {
-			buf.set([49, 0x7f, 0xc0, 0, 0], i);
+			buf.set([59, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.SharpeRatio) {
 			if (this.SharpeRatio > 3.4028234663852886E38 || this.SharpeRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field SharpeRatio exceeds 32-bit range');
-			buf[i++] = 50;
+			buf[i++] = 60;
 			view.setFloat32(i, this.SharpeRatio);
 			i += 4;
 		} else if (Number.isNaN(this.SharpeRatio)) {
-			buf.set([50, 0x7f, 0xc0, 0, 0], i);
+			buf.set([60, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.SortinoRatio) {
 			if (this.SortinoRatio > 3.4028234663852886E38 || this.SortinoRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field SortinoRatio exceeds 32-bit range');
-			buf[i++] = 51;
+			buf[i++] = 61;
 			view.setFloat32(i, this.SortinoRatio);
 			i += 4;
 		} else if (Number.isNaN(this.SortinoRatio)) {
-			buf.set([51, 0x7f, 0xc0, 0, 0], i);
+			buf.set([61, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.StdDev) {
 			if (this.StdDev > 3.4028234663852886E38 || this.StdDev < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field StdDev exceeds 32-bit range');
-			buf[i++] = 52;
+			buf[i++] = 62;
 			view.setFloat32(i, this.StdDev);
 			i += 4;
 		} else if (Number.isNaN(this.StdDev)) {
-			buf.set([52, 0x7f, 0xc0, 0, 0], i);
+			buf.set([62, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.TreynorRatio) {
 			if (this.TreynorRatio > 3.4028234663852886E38 || this.TreynorRatio < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field TreynorRatio exceeds 32-bit range');
-			buf[i++] = 53;
+			buf[i++] = 63;
 			view.setFloat32(i, this.TreynorRatio);
 			i += 4;
 		} else if (Number.isNaN(this.TreynorRatio)) {
-			buf.set([53, 0x7f, 0xc0, 0, 0], i);
+			buf.set([63, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
 		if (this.UlcerIndex) {
 			if (this.UlcerIndex > 3.4028234663852886E38 || this.UlcerIndex < -3.4028234663852886E38)
 				throw new Error('colfer: colfer/PerformanceMeasurement field UlcerIndex exceeds 32-bit range');
-			buf[i++] = 54;
+			buf[i++] = 64;
 			view.setFloat32(i, this.UlcerIndex);
 			i += 4;
 		} else if (Number.isNaN(this.UlcerIndex)) {
-			buf.set([54, 0x7f, 0xc0, 0, 0], i);
+			buf.set([64, 0x7f, 0xc0, 0, 0], i);
 			i += 5;
 		}
 
@@ -3732,321 +4570,391 @@ var colfer = new function() {
 		}
 
 		if (header == 9) {
+			var o = new colfer.TaxLotInfo();
+			i += o.unmarshal(data.subarray(i));
+			this.TaxLots = o;
+			readHeader();
+		}
+
+		if (header == 10) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.TotalDeposited = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 10) {
+		if (header == 11) {
 			if (i + 8 > data.length) throw new Error(EOF);
 			this.TotalWithdrawn = view.getFloat64(i);
 			i += 8;
 			readHeader();
 		}
 
-		if (header == 11) {
+		if (header == 12) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRROneDay = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 12) {
+		if (header == 13) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRWeekToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 13) {
+		if (header == 14) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRROneWeek = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 14) {
+		if (header == 15) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRMonthToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 15) {
+		if (header == 16) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRROneMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 16) {
+		if (header == 17) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRThreeMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 17) {
+		if (header == 18) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRYearToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 18) {
+		if (header == 19) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRROneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 19) {
+		if (header == 20) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 20) {
+		if (header == 21) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 21) {
+		if (header == 22) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TWRRTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 22) {
+		if (header == 23) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRROneDay = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 23) {
+		if (header == 24) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRWeekToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 24) {
+		if (header == 25) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRROneWeek = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 25) {
+		if (header == 26) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRMonthToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 26) {
+		if (header == 27) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRROneMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 27) {
+		if (header == 28) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRThreeMonth = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 28) {
+		if (header == 29) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRYearToDate = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 29) {
+		if (header == 30) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRROneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 30) {
+		if (header == 31) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 31) {
+		if (header == 32) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 32) {
+		if (header == 33) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.MWRRTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 33) {
+		if (header == 34) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.AfterTaxReturn = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 35) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.BeforeTaxReturn = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 36) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.TaxCostRatio = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 37) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.LongTermCapitalGain = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 38) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.ShortTermCapitalGain = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 39) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.UnrealizedLongTermCapitalGain = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 40) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.UnrealizedShortTermCapitalGain = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 41) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.QualifiedDividend = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 42) {
+			if (i + 8 > data.length) throw new Error(EOF);
+			this.NonQualifiedDividendAndInterestIncome = view.getFloat64(i);
+			i += 8;
+			readHeader();
+		}
+
+		if (header == 43) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.ActiveReturnOneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 34) {
+		if (header == 44) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.ActiveReturnThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 35) {
+		if (header == 45) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.ActiveReturnFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 36) {
+		if (header == 46) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.ActiveReturnTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 37) {
+		if (header == 47) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.AlphaOneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 38) {
+		if (header == 48) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.AlphaThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 39) {
+		if (header == 49) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.AlphaFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 40) {
+		if (header == 50) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.AlphaTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 41) {
+		if (header == 51) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.BetaOneYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 42) {
+		if (header == 52) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.BetaThreeYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 43) {
+		if (header == 53) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.BetaFiveYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 44) {
+		if (header == 54) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.BetaTenYear = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 45) {
+		if (header == 55) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.CalmarRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 46) {
+		if (header == 56) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.DownsideDeviation = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 47) {
+		if (header == 57) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.InformationRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 48) {
+		if (header == 58) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.KRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 49) {
+		if (header == 59) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.KellerRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 50) {
+		if (header == 60) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.SharpeRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 51) {
+		if (header == 61) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.SortinoRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 52) {
+		if (header == 62) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.StdDev = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 53) {
+		if (header == 63) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.TreynorRatio = view.getFloat32(i);
 			i += 4;
 			readHeader();
 		}
 
-		if (header == 54) {
+		if (header == 64) {
 			if (i + 4 > data.length) throw new Error(EOF);
 			this.UlcerIndex = view.getFloat32(i);
 			i += 4;
