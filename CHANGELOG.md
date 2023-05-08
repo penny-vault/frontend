@@ -4,8 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2023-05-07
+### Fixed
+- Frequently used parameters now works with the new stock type field
+- Predicted holdings adds 5 days so the appropriate month is displayed
+
 ## [0.6.0] - 2023-02-12
-### Added 
+### Added
 - Additional metrics that show tax-adjusted performance
 
 ## [0.5.0] - 2022-12-20
@@ -81,6 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Terms of Service
 - Privacy Policy
 
+[0.6.1]: https://github.com/penny-vault/frontend/releases/tag/v0.6.0
 [0.6.0]: https://github.com/penny-vault/frontend/releases/tag/v0.6.0
 [0.5.0]: https://github.com/penny-vault/frontend/releases/tag/v0.5.0
 [0.4.0]: https://github.com/penny-vault/frontend/releases/tag/v0.4.0
