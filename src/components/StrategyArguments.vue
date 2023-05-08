@@ -363,6 +363,15 @@ export default defineComponent({
           case "number":
             form.value[elem.arg] = Number(val)
             break
+          case "stock":
+          case "[]stock":
+            try {
+            val = JSON.parse(val)
+            } catch (e) {
+              console.error(e)
+            }
+            form.value[elem.arg] = val
+            break
           default:
             form.value[elem.arg] = val
         }
