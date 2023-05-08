@@ -125,6 +125,9 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           var d = params.value
+          if (params.data.Predicted) {
+            d = addDays(d, 5)
+          }
           const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d)
           const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d)
           return `${mo} ${ye}`
