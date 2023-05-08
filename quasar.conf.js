@@ -25,6 +25,7 @@ module.exports = configure(function (ctx) {
       'aggrid',
       'auth0',
       'axios',
+      'markdown',
       'woopra',
     ],
 

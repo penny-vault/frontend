@@ -82,7 +82,7 @@
         >
           <q-tab-panel class="q-pt-none" name="description">
             <px-card title="Description">
-              <q-markdown :src="strategy.longDescription" />
+              <q-markdown :src="strategy.longDescription" :plugins="plugins" />
             </px-card>
           </q-tab-panel>
 
@@ -120,6 +120,8 @@ import { useQuasar } from 'quasar'
 import { authPlugin } from '../auth'
 import { api } from '../boot/axios'
 
+import katex from '@iktakahiro/markdown-it-katex'
+
 import PortfolioHoldings from './PortfolioHoldings.vue'
 import PortfolioReturns from './PortfolioReturns.vue'
 import PortfolioSummary from './PortfolioSummary.vue'
@@ -150,6 +152,8 @@ export default defineComponent({
     const simulationEnd = ref(new Date())
 
     const tabModel = ref('description')
+
+    const plugins = [katex]
 
     // clear existing state
     $store.commit('strategy/setSimulationExecuted', false)
@@ -221,6 +225,7 @@ export default defineComponent({
       strategy,
       tabModel,
       onSave,
+      plugins,
       onSubmit
     }
   }
