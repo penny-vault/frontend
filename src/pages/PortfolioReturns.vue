@@ -29,16 +29,16 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref, toRefs, onMounted } from 'vue'
+import { defineComponent, computed, ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 
 import { formatPercent } from '../assets/filters'
 import { format, differenceInCalendarDays } from 'date-fns'
 
 import { AgGridVue } from 'ag-grid-vue3'
-import AnnualReturns from "components/AnnualReturns.vue"
-import ReturnHeatmap from "components/ReturnHeatmap.vue"
-import PxCard from "components/PxCard.vue"
+import AnnualReturns from 'components/AnnualReturns.vue'
+import ReturnHeatmap from 'components/ReturnHeatmap.vue'
+import PxCard from 'components/PxCard.vue'
 
 export default defineComponent({
   name: 'PortfolioReturns',
@@ -55,7 +55,6 @@ export default defineComponent({
     }
   },
   setup (props) {
-    const { portfolioId } = toRefs(props)
     const $store = useStore()
 
     const drawDownsColumnDefs = ref([
@@ -68,13 +67,13 @@ export default defineComponent({
         editable: false,
         cellClass: 'multiline-cell',
         cellRenderer: (params) => {
-          let begin = params.data.Begin
-          let end = params.data.End
-          let recover = params.data.Recovery
-          let rangeStr = `${format(begin, 'MMM yyyy')} to ${format(end, 'MMM yyyy')}`
-          var daysToRecover = `<br/><span class="cell-sub-text">${differenceInCalendarDays(recover, begin)} days to recover</span>`
+          const begin = params.data.Begin
+          const end = params.data.End
+          const recover = params.data.Recovery
+          const rangeStr = `${format(begin, 'MMM yyyy')} to ${format(end, 'MMM yyyy')}`
+          let daysToRecover = `<br/><span class="cell-sub-text">${differenceInCalendarDays(recover, begin)} days to recover</span>`
           if (params.data.Active) {
-            daysToRecover = `<br/><span class="cell-sub-text">not yet recovered</span>`
+            daysToRecover = '<br/><span class="cell-sub-text">not yet recovered</span>'
           }
           return rangeStr + daysToRecover
         }
@@ -118,10 +117,11 @@ export default defineComponent({
       }
     ])
     const gridOptions = ref({
-      rowHeight: 60,
+      rowHeight: 60
     })
 
     let gridApi = {}
+    // eslint-disable-next-line no-unused-vars
     let columnApi = {}
 
     // Computed properties
@@ -134,11 +134,11 @@ export default defineComponent({
       columnApi = gridOptions.value.columnApi
     })
 
-    function onGridReady(params) {
+    function onGridReady (params) {
       gridApi.closeToolPanel()
-      var allColumnIds = []
+      const allColumnIds = []
       gridOptions.value.columnApi.getAllColumns().forEach(function (column) {
-        allColumnIds.push(column.colId);
+        allColumnIds.push(column.colId)
       })
 
       gridOptions.value.columnApi.autoSizeColumns(allColumnIds, true)

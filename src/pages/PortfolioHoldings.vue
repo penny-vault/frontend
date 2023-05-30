@@ -84,10 +84,11 @@ import { AgGridVue } from 'ag-grid-vue3'
 import HoldingsPieChart from 'components/HoldingsPieChart.vue'
 import PxCard from 'components/PxCard.vue'
 
-Date.prototype.addDays = function(days) {
-    var date = new Date(this.valueOf());
-    date.setDate(date.getDate() + days);
-    return date;
+// eslint-disable-next-line no-extend-native
+Date.prototype.addDays = function (days) {
+  const date = new Date(this.valueOf())
+  date.setDate(date.getDate() + days)
+  return date
 }
 
 export default defineComponent({
@@ -124,7 +125,7 @@ export default defineComponent({
         resizable: true,
         editable: false,
         valueFormatter: (params) => {
-          var d = params.value
+          let d = params.value
           if (params.data.Predicted) {
             d = addDays(d, 5)
           }
@@ -140,7 +141,7 @@ export default defineComponent({
         resizable: true,
         editable: false,
         valueGetter: (params) => {
-          let res = new Array()
+          const res = []
           params.data.Holdings.forEach((item) => {
             if (item.Ticker !== '$CASH') {
               res.push(item.Ticker)
@@ -160,12 +161,12 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           if (isNaN(params.value)) {
-            return "-"
+            return '-'
           }
 
           // filter out predicted rows
           if (params.data.Predicted === true) {
-            return "-"
+            return '-'
           }
 
           return formatPercent(params.value)
@@ -173,9 +174,9 @@ export default defineComponent({
         cellStyle: params => {
           // negative values are red, positive green
           if (params.value > 0) {
-            return {color: 'green'}
+            return { color: 'green' }
           } else if (params.value < 0) {
-            return {color: 'red'}
+            return { color: 'red' }
           }
           return null
         }
@@ -190,12 +191,12 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           if (isNaN(params.value)) {
-            return "-"
+            return '-'
           }
 
           // filter out predicted rows
           if (params.data.Predicted === true) {
-            return "-"
+            return '-'
           }
 
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
@@ -212,7 +213,7 @@ export default defineComponent({
         sort: 'asc',
         sortable: true,
         resizable: true,
-        editable: false,
+        editable: false
       },
       {
         field: 'Shares',
@@ -233,7 +234,7 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           if (isNaN(params.value)) {
-            return "-"
+            return '-'
           }
           return formatPercent(params.value)
         }
@@ -247,7 +248,7 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           if (isNaN(params.value)) {
-            return "-"
+            return '-'
           }
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
@@ -261,7 +262,7 @@ export default defineComponent({
         sort: 'asc',
         sortable: true,
         resizable: true,
-        editable: false,
+        editable: false
       },
       {
         field: 'Shares',
@@ -282,7 +283,7 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           if (isNaN(params.value)) {
-            return "-"
+            return '-'
           }
           return formatPercent(params.value)
         }
@@ -296,7 +297,7 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           if (isNaN(params.value)) {
-            return "-"
+            return '-'
           }
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
@@ -307,16 +308,16 @@ export default defineComponent({
     const dynamicColumns = new Map()
     const gridOptions = ref({
       rowClassRules: {
-        'predicted-asset': function(params) {
+        'predicted-asset': function (params) {
           return params.data.Predicted
-        },
+        }
       },
       excelStyles: [
         {
-            id: 'numberType',
-            numberFormat: {
-                format: '0',
-            },
+          id: 'numberType',
+          numberFormat: {
+            format: '0'
+          }
         },
         {
           id: 'percentType',
@@ -325,25 +326,25 @@ export default defineComponent({
           }
         },
         {
-            id: 'currencyType',
-            numberFormat: {
-                format: '$#,##0.00',
-            },
+          id: 'currencyType',
+          numberFormat: {
+            format: '$#,##0.00'
+          }
         },
         {
-            id: 'booleanType',
-            dataType: 'boolean',
+          id: 'booleanType',
+          dataType: 'boolean'
         },
         {
-            id: 'stringType',
-            dataType: 'String',
+          id: 'stringType',
+          dataType: 'String'
         },
         {
-            id: 'dateType',
-            dataType: 'DateTime',
-            numberFormat: {
-              format: 'mm/dd/yyy'
-            }
+          id: 'dateType',
+          dataType: 'DateTime',
+          numberFormat: {
+            format: 'mm/dd/yyy'
+          }
         }
       ]
     })
@@ -365,9 +366,9 @@ export default defineComponent({
     })
 
     watch(holdingsCalcInput, async (newValue) => {
-      if (newValue !== "" && newValue > 0) {
-        holdings2.value.forEach( (elem) => {
-          let pricePerShare = elem.Value / elem.Shares
+      if (newValue !== '' && newValue > 0) {
+        holdings2.value.forEach((elem) => {
+          const pricePerShare = elem.Value / elem.Shares
           elem.Value = newValue * elem.PercentPortfolio
           elem.Shares = elem.Value / pricePerShare
         })
@@ -378,12 +379,12 @@ export default defineComponent({
     watch(rowData, async () => {
       getDynamicColumns()
       if (rowData.value.length > 0) {
-        let idx = rowData.value.length - 1
+        const idx = rowData.value.length - 1
 
         holdings.value = rowData.value[idx].Holdings
 
         holdings2.value = []
-        holdings.value.forEach( (elem) => {
+        holdings.value.forEach((elem) => {
           holdings2.value.push({
             Shares: elem.Shares,
             Ticker: elem.Ticker,
@@ -403,11 +404,11 @@ export default defineComponent({
     })
 
     // methods
-    function getDynamicColumns() {
+    function getDynamicColumns () {
       if (rowData.value.length > 1) {
-        let justificationTmpl = rowData.value[1].Justification
+        const justificationTmpl = rowData.value[1].Justification
         if (justificationTmpl !== undefined) {
-          var keep = new Map()
+          const keep = new Map()
           justificationTmpl.forEach((elem, idx) => {
             keep.set(elem.Key, 1)
             if (!dynamicColumns.has(elem.Key)) {
@@ -416,14 +417,14 @@ export default defineComponent({
                 isDynamic: true,
                 headerName: elem.Key,
                 valueGetter: (params) => {
-                  let justMap = new Map()
+                  const justMap = new Map()
                   params.data.Justification.forEach((e, i) => {
                     justMap.set(e.Key, e.Value)
                   })
-                  return justMap.get(elem.Key) || ""
+                  return justMap.get(elem.Key) || ''
                 },
                 valueFormatter: (params) => {
-                  if (typeof params.value === "number") {
+                  if (typeof params.value === 'number') {
                     return params.value.toFixed(2)
                   }
                   return params.value
@@ -443,15 +444,15 @@ export default defineComponent({
             return false
           })
 
-          setTimeout(function() {
+          setTimeout(function () {
             gridApi.setColumnDefs(columnDefs.value)
           }, 0)
         }
       }
     }
 
-    function onSelectionChanged() {
-      var selectedRows = gridApi.getSelectedRows()
+    function onSelectionChanged () {
+      const selectedRows = gridApi.getSelectedRows()
       if (selectedRows.length === 1) {
         holdings.value = selectedRows[0].Holdings
         holdings2.value = selectedRows[0].Holdings
@@ -459,7 +460,7 @@ export default defineComponent({
       }
     }
 
-    function fullscreen() {
+    function fullscreen () {
       if (fullscreenClass.value) {
         fullscreenClass.value = false
         fullscreenIcon.value = 'fullscreen'
@@ -468,30 +469,30 @@ export default defineComponent({
         fullscreenIcon.value = 'fullscreen_exit'
       }
 
-      setTimeout(function() {
-        var allColumnIds = []
+      setTimeout(function () {
+        const allColumnIds = []
         columnApi.getAllColumns().forEach(function (column) {
-          allColumnIds.push(column.colId);
+          allColumnIds.push(column.colId)
         })
 
         columnApi.autoSizeColumns(allColumnIds, true)
       }, 500)
     }
 
-    function exportExcel(e) {
+    function exportExcel (e) {
       e.preventDefault()
       gridApi.exportDataAsExcel({
-        processCellCallback: ({column, value}) => {
+        processCellCallback: ({ column, value }) => {
           switch (column.colDef.cellClass) {
-            case "dateType":
+            case 'dateType':
               return value.toISOString()
           }
           return value
-        },
+        }
       })
     }
 
-    function onGridReady(params) {
+    function onGridReady (params) {
       gridApi.closeToolPanel()
     }
 

@@ -133,7 +133,7 @@ export default defineComponent({
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
       },
-      toggleMiniDrawer() {
+      toggleMiniDrawer () {
         miniDrawer.value = !miniDrawer.value
       },
       login () {

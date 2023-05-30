@@ -26,8 +26,8 @@ export default defineComponent({
   components: {
     CardTitle
   },
-  setup() {
+  setup () {
 
-  },
+  }
 })
 </script>

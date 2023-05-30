@@ -7,10 +7,10 @@ const state = reactive({
   loading: true,
   isAuthenticated: false,
   user: {},
-  error: null,
+  error: null
 })
 
-async function handleRedirectCallback() {
+async function handleRedirectCallback () {
   state.loading = true
 
   try {
@@ -24,19 +24,19 @@ async function handleRedirectCallback() {
   }
 }
 
-function loginWithRedirect(o) {
+function loginWithRedirect (o) {
   return client.loginWithRedirect(o)
 }
 
-function getIdTokenClaims(o) {
+function getIdTokenClaims (o) {
   return client.getIdTokenClaims(o)
 }
 
-function getTokenSilently(o) {
+function getTokenSilently (o) {
   return client.getTokenSilently(o)
 }
 
-function logout(o) {
+function logout (o) {
   return client.logout(o)
 }
 
@@ -48,7 +48,7 @@ export const authPlugin = {
   getTokenSilently,
   handleRedirectCallback,
   loginWithRedirect,
-  logout,
+  logout
 }
 
 export const routeGuard = (to, from, next) => {
@@ -107,7 +107,7 @@ export const setupAuth = async (options, store, callbackRedirect) => {
     state.user = await client.getUser()
     // TODO - Include this in the auth0 profile
     if (state.user !== undefined) {
-      state.user.plan = "Platinum Pro"
+      state.user.plan = 'Platinum Pro'
       store.commit('user/setProfile', state.user)
     }
     state.loading = false

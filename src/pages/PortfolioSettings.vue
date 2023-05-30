@@ -30,7 +30,6 @@ import { authPlugin } from '../auth'
 import { api } from 'boot/axios'
 import { NoNotify, Daily, Weekly, Monthly, Annually } from '../store/portfolio/constants'
 
-
 export default defineComponent({
   name: 'PortfolioSettings',
   props: {
@@ -39,7 +38,7 @@ export default defineComponent({
       required: true
     }
   },
-  setup(props, context) {
+  setup (props, context) {
     const $store = useStore()
     const $q = useQuasar()
     const $router = useRouter()
@@ -58,16 +57,16 @@ export default defineComponent({
     })
 
     // methods
-    function unpackNotifications() {
-      notifications.value.daily.state = (portfolio.value.notifications & Daily) == Daily
-      notifications.value.weekly.state = (portfolio.value.notifications & Weekly) == Weekly
-      notifications.value.monthly.state = (portfolio.value.notifications & Monthly) == Monthly
-      notifications.value.annually.state = (portfolio.value.notifications & Annually) == Annually
+    function unpackNotifications () {
+      notifications.value.daily.state = (portfolio.value.notifications & Daily) === Daily
+      notifications.value.weekly.state = (portfolio.value.notifications & Weekly) === Weekly
+      notifications.value.monthly.state = (portfolio.value.notifications & Monthly) === Monthly
+      notifications.value.annually.state = (portfolio.value.notifications & Annually) === Annually
     }
 
-    function packNotifications() {
-      var notificationCode = NoNotify
-      Object.keys(notifications.value).forEach( elem => {
+    function packNotifications () {
+      let notificationCode = NoNotify
+      Object.keys(notifications.value).forEach(elem => {
         if (notifications.value[elem].state) {
           notificationCode |= notifications.value[elem].value
         }
@@ -75,13 +74,13 @@ export default defineComponent({
       return notificationCode
     }
 
-    async function onSubmit(e) {
+    async function onSubmit (e) {
       e.preventDefault()
-      var notificationCode = packNotifications()
+      const notificationCode = packNotifications()
       $store.commit('portfolio/setNotifications', notificationCode)
       $store.commit('portfolio/setPortfolioName', name.value)
 
-      var params = {
+      const params = {
         name: name.value,
         notifications: notificationCode
       }
@@ -89,7 +88,7 @@ export default defineComponent({
       updatePortfolio(params)
     }
 
-    async function deletePortfolio() {
+    async function deletePortfolio () {
       // Get the access token from the auth wrapper
       authPlugin.getTokenSilently().then((token) => {
         $q.dialog({
@@ -99,13 +98,13 @@ export default defineComponent({
           persistent: true
         }).onOk(() => {
           // Delete the portfolio
-          api.delete("/portfolio/" + props.portfolioId, {
+          api.delete('/portfolio/' + props.portfolioId, {
             headers: {
-              Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
+              Authorization: `Bearer ${token}` // send the access token through the 'Authorization' header
             }
-          }).then( ({ data }) => {
+          }).then(({ data }) => {
             $q.notify({
-              message: `Deleted portfolio`,
+              message: 'Deleted portfolio',
               progress: true,
               color: 'positive',
               icon: 'check_circle',
@@ -113,8 +112,8 @@ export default defineComponent({
             })
 
             $store.dispatch('portfolio/fetchPortfolios')
-            $router.replace("/app/portfolio/")
-          }).catch( err => {
+            $router.replace('/app/portfolio/')
+          }).catch(err => {
             $q.notify({
               message: `Failed to delete portfolio settings: ${err}`,
               progress: true,
@@ -127,13 +126,13 @@ export default defineComponent({
       })
     }
 
-    function updatePortfolio(params) {
+    function updatePortfolio (params) {
       // Get the access token from the auth wrapper
       authPlugin.getTokenSilently().then((token) => {
         // Use Axios to make a call to the API
-        api.patch("/portfolio/" + props.portfolioId, params, {
+        api.patch('/portfolio/' + props.portfolioId, params, {
           headers: {
-            Authorization: `Bearer ${token}`    // send the access token through the 'Authorization' header
+            Authorization: `Bearer ${token}` // send the access token through the 'Authorization' header
           }
         }).then(({ data }) => {
           $q.notify({

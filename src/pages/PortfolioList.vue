@@ -23,14 +23,15 @@ import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
 import { AgGridVue } from 'ag-grid-vue3'
-import AgGridBtnCellRenderer from "components/AgGridBtnCellRenderer.vue"
+import AgGridBtnCellRenderer from 'components/AgGridBtnCellRenderer.vue'
 
 export default defineComponent({
   name: 'PortfolioList',
 
   components: {
     AgGridVue,
-    'btnCellRenderer': AgGridBtnCellRenderer
+    // eslint-disable-next-line vue/no-unused-components
+    btnCellRenderer: AgGridBtnCellRenderer
   },
 
   setup () {
@@ -43,13 +44,14 @@ export default defineComponent({
     const columnDefs = ref([
 
       {
-        field: "id",
-        headerName: "",
+        field: 'id',
+        headerName: '',
         cellRendererFramework: 'btnCellRenderer',
         cellRendererParams: {
-          clicked: (function(field) {
+          clicked: function (field) {
             $router.push({ path: `/app/portfolio/${field}` })
-          }).bind(this)
+          // eslint-disable-next-line no-extra-bind
+          }.bind(this)
         },
         minWidth: 115,
         maxWidth: 115,
@@ -59,15 +61,18 @@ export default defineComponent({
         filter: false
       },
 
-      { field: 'name',
+      {
+        field: 'name',
         sortable: true,
         minWidth: 275,
         filter: 'agTextColumnFilter',
         filterParams: {
-          buttons: ['reset', 'apply'],
+          buttons: ['reset', 'apply']
         },
-        checkboxSelection: true },
-      { field: 'ytdReturn',
+        checkboxSelection: true
+      },
+      {
+        field: 'ytdReturn',
         headerName: 'YTD',
         sortable: true,
         minWidth: 100,
@@ -75,7 +80,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.ytdReturn.Status === 2) {
@@ -86,7 +91,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
       },
-      { field: 'cagr3Year',
+      {
+        field: 'cagr3Year',
         headerName: '3-Yr',
         sortable: true,
         minWidth: 100,
@@ -94,7 +100,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.cagr3Year.Status === 2) {
@@ -105,7 +111,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
       },
-      { field: 'cagr5Year',
+      {
+        field: 'cagr5Year',
         headerName: '5-Yr',
         sortable: true,
         minWidth: 100,
@@ -113,7 +120,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.cagr5Year.Status === 2) {
@@ -124,7 +131,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
       },
-      { field: 'cagr10Year',
+      {
+        field: 'cagr10Year',
         headerName: '10-Yr',
         sortable: true,
         minWidth: 100,
@@ -132,7 +140,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.cagr10Year.Status === 2) {
@@ -143,7 +151,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
       },
-      { field: 'cagrSinceInception',
+      {
+        field: 'cagrSinceInception',
         headerName: 'Since Inception',
         sortable: true,
         minWidth: 160,
@@ -151,7 +160,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.cagrSinceInception.Status === 2) {
@@ -162,7 +171,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
       },
-      { field: 'stdDev',
+      {
+        field: 'stdDev',
         headerName: 'Std Dev',
         sortable: true,
         hide: true,
@@ -171,7 +181,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.stdDev.Status === 2) {
@@ -182,7 +192,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) : '-'
       },
-      { field: 'downsideDeviation',
+      {
+        field: 'downsideDeviation',
         headerName: 'Downside Dev',
         sortable: true,
         hide: true,
@@ -191,7 +202,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.downsideDeviation.Status === 2) {
@@ -202,7 +213,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
       },
-      { field: 'maxDrawDown',
+      {
+        field: 'maxDrawDown',
         headerName: 'Max Draw Down',
         sortable: true,
         hide: true,
@@ -211,7 +223,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.maxDrawDown.Status === 2) {
@@ -222,7 +234,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
       },
-      { field: 'avgDrawDown',
+      {
+        field: 'avgDrawDown',
         headerName: 'Avg Draw Down',
         sortable: true,
         hide: true,
@@ -231,7 +244,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.avgDrawDown.Status === 2) {
@@ -242,7 +255,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) + '%' : '-'
       },
-      { field: 'sharpeRatio',
+      {
+        field: 'sharpeRatio',
         headerName: 'Sharpe',
         sortable: true,
         hide: true,
@@ -251,7 +265,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.sharpeRatio.Status === 2) {
@@ -262,7 +276,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) : '-'
       },
-      { field: 'sortinoRatio',
+      {
+        field: 'sortinoRatio',
         headerName: 'Sortino',
         sortable: true,
         minWidth: 100,
@@ -270,7 +285,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.sortinoRatio.Status === 2) {
@@ -281,7 +296,8 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) : '-'
       },
-      { field: 'ulcerIndex',
+      {
+        field: 'ulcerIndex',
         headerName: 'Ulcer Index',
         sortable: true,
         minWidth: 135,
@@ -289,7 +305,7 @@ export default defineComponent({
         filter: 'agNumberColumnFilter',
         filterParams: {
           buttons: ['apply', 'reset'],
-          closeOnApply: true,
+          closeOnApply: true
         },
         valueGetter: function (params) {
           if (params.data.ulcerIndex.Status === 2) {
@@ -300,32 +316,36 @@ export default defineComponent({
         },
         valueFormatter: params => !isNaN(params.value) ? params.value.toFixed(2) : '-'
       },
-      { field: 'strategy',
+      {
+        field: 'strategy',
         sortable: true,
         filter: true,
-        minWidth: 30, maxWidth: 125,
+        minWidth: 30,
+        maxWidth: 125,
         enableRowGroup: true,
         enablePivot: true
       },
-      { field: 'status',
+      {
+        field: 'status',
         sortable: true,
         filter: true,
-        minWidth: 40, maxWidth: 125,
+        minWidth: 40,
+        maxWidth: 125,
         enableRowGroup: true,
         enablePivot: true
       },
-      { field: 'startDate',
+      {
+        field: 'startDate',
         headerName: 'Start',
         sortable: true,
         hide: true,
-        filter: true,
         minWidth: 100,
         filter: 'agDateColumnFilter',
         valueFormatter: params => params.value.toDateString()
       }
     ])
 
-    //const frameworkComponents = ref({ btnCellRenderer: AgGridBtnCellRenderer })
+    // const frameworkComponents = ref({ btnCellRenderer: AgGridBtnCellRenderer })
     const sideBar = ref(true)
 
     const rowData = computed(() => $store.state.portfolio.portfolios)
@@ -333,19 +353,19 @@ export default defineComponent({
     $store.dispatch('portfolio/fetchPortfolios')
 
     onMounted(() => {
-      gridApi.value = gridOptions.value.api;
-      columnApi.value = gridOptions.value.columnApi;
+      gridApi.value = gridOptions.value.api
+      columnApi.value = gridOptions.value.columnApi
     })
 
     return {
       columnDefs,
-      //frameworkComponents,
+      // frameworkComponents,
       rowData,
       gridOptions,
       gridApi,
       columnApi,
       sideBar,
-      onGridReady(params) {
+      onGridReady (params) {
         gridApi.value.closeToolPanel()
       }
     }

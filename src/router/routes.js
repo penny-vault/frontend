@@ -56,7 +56,7 @@ const routes = [
     children: [
       {
         path: 'tos',
-        component: () => import('pages/TermsOfService.vue'),
+        component: () => import('pages/TermsOfService.vue')
       }
     ]
   },

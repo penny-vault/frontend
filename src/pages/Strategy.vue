@@ -128,6 +128,7 @@ import PxCard from 'components/PxCard.vue'
 import StrategyArguments from 'components/StrategyArguments.vue'
 
 export default defineComponent({
+  // eslint-disable-next-line vue/multi-word-component-names
   name: 'Strategy',
   props: {
     strategyShortCode: String
@@ -146,7 +147,7 @@ export default defineComponent({
 
     const expandedParameters = ref(true)
 
-    const simulationStart = ref(new Date(1980,0,1))
+    const simulationStart = ref(new Date(1980, 0, 1))
     const simulationEnd = ref(new Date())
 
     const tabModel = ref('description')
@@ -166,24 +167,24 @@ export default defineComponent({
 
     // methods
 
-    async function onSave({args, begin, benchmarkTicker}) {
+    async function onSave ({ args, begin, benchmarkTicker }) {
       const accessToken = await authPlugin.getTokenSilently()
-      var params = {
+      const params = {
         name: strategy.value.name,
         arguments: args,
         strategy: strategy.value.shortcode,
-        benchmarkTicker: benchmarkTicker,
+        benchmarkTicker,
         startDate: begin
       }
 
-      const endpoint = `/portfolio/`
+      const endpoint = '/portfolio/'
       api.post(endpoint, params, {
         headers: {
-          Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
+          Authorization: `Bearer ${accessToken}` // send the access token through the 'Authorization' header
         }
       }).then(response => {
         $q.notify({
-          message: `Saved portfolio`,
+          message: 'Saved portfolio',
           progress: true,
           color: 'positive',
           icon: 'success',
@@ -200,7 +201,7 @@ export default defineComponent({
       })
     }
 
-    async function onSubmit({userArgs, begin, end, benchmarkTicker}) {
+    async function onSubmit ({ userArgs, begin, end, benchmarkTicker }) {
       $store.dispatch('strategy/executeStrategy', { shortCode: props.strategyShortCode, name: strategy.value.name, stratParams: userArgs, startDate: begin, endDate: end, benchmark: benchmarkTicker })
       expandedParameters.value = false
     }

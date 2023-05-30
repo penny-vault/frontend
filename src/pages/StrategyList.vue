@@ -47,7 +47,7 @@ import { useRouter } from 'vue-router'
 import { formatPercent, formatNumber, wordWrap } from '../assets/filters'
 
 import { AgGridVue } from 'ag-grid-vue3'
-import AgGridBtnCellRenderer from "components/AgGridBtnCellRenderer.vue"
+import AgGridBtnCellRenderer from 'components/AgGridBtnCellRenderer.vue'
 
 import AmScatterPlot from 'src/components/AmScatterPlot.vue'
 import PxCard from 'components/PxCard.vue'
@@ -58,8 +58,9 @@ export default defineComponent({
   components: {
     AgGridVue,
     AmScatterPlot,
-    'btnCellRenderer': AgGridBtnCellRenderer,
-    PxCard,
+    // eslint-disable-next-line vue/no-unused-components
+    btnCellRenderer: AgGridBtnCellRenderer,
+    PxCard
   },
 
   setup () {
@@ -78,20 +79,20 @@ export default defineComponent({
         minWidth: 200,
         sortable: true,
         resizable: true,
-        floatingFilter: true,
-      },
+        floatingFilter: true
+      }
     })
     const gridApi = ref({})
     const columnApi = ref({})
     const columnDefs = ref([
       {
-        field: "shortcode",
-        headerName: "",
+        field: 'shortcode',
+        headerName: '',
         cellRendererFramework: 'btnCellRenderer',
         cellRendererParams: {
-          clicked: (function(field) {
+          clicked: function (field) {
             $router.push({ path: `/app/strategy/${field}` })
-          }).bind(this)
+          }
         },
         minWidth: 115,
         maxWidth: 115,
@@ -100,7 +101,7 @@ export default defineComponent({
         editable: false,
         floatingFilter: false,
         suppressMenu: true,
-        filter: false,
+        filter: false
       },
 
       {
@@ -108,12 +109,12 @@ export default defineComponent({
         minWidth: 250,
         filter: 'agTextColumnFilter',
         filterParams: {
-          buttons: ['reset', 'apply'],
-        },
+          buttons: ['reset', 'apply']
+        }
       },
 
       {
-        headerName: "% YTD",
+        headerName: '% YTD',
         minWidth: 80,
         width: 110,
         filter: 'agNumberColumnFilter',
@@ -132,7 +133,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "CAGR Since Inception",
+        headerName: 'CAGR Since Inception',
         minWidth: 80,
         width: 110,
         hide: true,
@@ -152,7 +153,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "CAGR 3-yr",
+        headerName: 'CAGR 3-yr',
         minWidth: 80,
         width: 110,
         hide: true,
@@ -172,7 +173,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "CAGR 5-yr",
+        headerName: 'CAGR 5-yr',
         minWidth: 80,
         width: 110,
         hide: true,
@@ -192,7 +193,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "CAGR 10-yr",
+        headerName: 'CAGR 10-yr',
         minWidth: 80,
         width: 110,
         hide: false,
@@ -212,7 +213,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "Std. Dev.",
+        headerName: 'Std. Dev.',
         minWidth: 80,
         width: 110,
         hide: true,
@@ -232,7 +233,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "Downside Deviation",
+        headerName: 'Downside Deviation',
         hide: true,
         minWidth: 80,
         width: 110,
@@ -252,7 +253,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "Max DD",
+        headerName: 'Max DD',
         minWidth: 80,
         width: 110,
         filter: 'agNumberColumnFilter',
@@ -271,7 +272,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "Avg DD",
+        headerName: 'Avg DD',
         hide: true,
         minWidth: 80,
         width: 110,
@@ -291,7 +292,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "Sharpe",
+        headerName: 'Sharpe',
         hide: true,
         minWidth: 80,
         width: 110,
@@ -311,7 +312,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "Sortino",
+        headerName: 'Sortino',
         minWidth: 80,
         width: 110,
         filter: 'agNumberColumnFilter',
@@ -330,7 +331,7 @@ export default defineComponent({
       },
 
       {
-        headerName: "Ulcer Idx",
+        headerName: 'Ulcer Idx',
         minWidth: 80,
         width: 110,
         filter: 'agNumberColumnFilter',
@@ -346,7 +347,7 @@ export default defineComponent({
           }
           return formatNumber(params.value)
         }
-      },
+      }
 
     ])
 
@@ -360,15 +361,15 @@ export default defineComponent({
     $store.dispatch('strategy/fetchStrategies')
 
     async function updateChartData () {
-      data.value = new Array()
+      data.value = []
       console.log(rowData)
       rowData.value.forEach((elem) => {
-        var risk, ret;
+        let risk, ret
 
         if (elem.metrics.ulcerIndex.Status === 2) {
-          risk = (elem.metrics.ulcerIndex.Float).toFixed(2);
+          risk = (elem.metrics.ulcerIndex.Float).toFixed(2)
         } else {
-          risk = 1;
+          risk = 1
         }
 
         if (elem.metrics.cagr10yr.Status === 2) {
@@ -396,8 +397,8 @@ export default defineComponent({
     })
 
     onMounted(() => {
-      gridApi.value = gridOptions.value.api;
-      columnApi.value = gridOptions.value.columnApi;
+      gridApi.value = gridOptions.value.api
+      columnApi.value = gridOptions.value.columnApi
     })
 
     return {
@@ -409,8 +410,8 @@ export default defineComponent({
       rowData,
       series,
       sideBar,
-      onGridReady(params) {
-        //gridApi.value.sizeColumnsToFit();
+      onGridReady (params) {
+        // gridApi.value.sizeColumnsToFit();
         gridApi.value.closeToolPanel()
       }
     }

@@ -51,17 +51,17 @@ export default defineComponent({
     }
   },
   computed: {
-    directionIcon() {
+    directionIcon () {
       if (this.value < 0) {
         return 'ion-arrow-dropdown-circle'
       } else {
         return 'ion-arrow-dropup-circle'
       }
     },
-    footerClass() {
+    footerClass () {
       return `bg-gradient-${this.color} footer-shape`
     },
-    stat() {
+    stat () {
       if (typeof this.value === 'string') {
         return this.value
       } else {

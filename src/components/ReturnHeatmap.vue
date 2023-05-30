@@ -19,7 +19,7 @@ export default defineComponent({
       type: Object,
       default: function () {
         return {
-          Items: [],
+          Items: []
         }
       }
     },
@@ -32,13 +32,13 @@ export default defineComponent({
       default: '800px'
     }
   },
-  setup(props) {
+  setup (props) {
     // amcharts setup
     am4core.useTheme(animated)
-    var chart
-    var series
-    var xAxis
-    var yAxis
+    let chart
+    let series
+    let xAxis
+    let yAxis
 
     // reactive data
     const { measurements, width: chartWidth, height: chartHeight } = toRefs(props)
@@ -49,21 +49,21 @@ export default defineComponent({
     })
 
     // methods
-    async function renderChart() {
+    async function renderChart () {
       if (chart) {
         chart.dispose()
       }
 
-      chart = am4core.create("amcharts-returns-heatmap", am4charts.XYChart)
-      chart.maskBullets  = false
+      chart = am4core.create('amcharts-returns-heatmap', am4charts.XYChart)
+      chart.maskBullets = false
 
       xAxis = chart.xAxes.push(new am4charts.CategoryAxis())
       yAxis = chart.yAxes.push(new am4charts.CategoryAxis())
 
-      xAxis.dataFields.category = "year"
-      yAxis.dataFields.category = "month"
+      xAxis.dataFields.category = 'year'
+      yAxis.dataFields.category = 'month'
 
-      xAxis.renderer.grid.template.disabled = true;
+      xAxis.renderer.grid.template.disabled = true
       xAxis.renderer.minGridDistance = 40
 
       yAxis.renderer.grid.template.disabled = true
@@ -73,15 +73,15 @@ export default defineComponent({
       // configure series
 
       series = chart.series.push(new am4charts.ColumnSeries())
-      series.dataFields.categoryX = "year"
-      series.dataFields.categoryY = "month"
-      series.dataFields.value = "value"
+      series.dataFields.categoryX = 'year'
+      series.dataFields.categoryY = 'month'
+      series.dataFields.value = 'value'
       series.sequencedInterpolation = true
       series.defaultState.transitionDuration = 3000
 
-      const bgColor = new am4core.InterfaceColorSet().getFor("background")
+      const bgColor = new am4core.InterfaceColorSet().getFor('background')
 
-      let columnTemplate = series.columns.template
+      const columnTemplate = series.columns.template
       columnTemplate.strokeWidth = 1
       columnTemplate.strokeOpacity = 0.2
       columnTemplate.stroke = bgColor
@@ -91,7 +91,7 @@ export default defineComponent({
 
       series.heatRules.push({
         target: columnTemplate,
-        property: "fill",
+        property: 'fill',
         minValue: -4, // this needs to be equal so the transition point is about 0
         maxValue: 4,
         min: chart.colors.getIndex(8),
@@ -99,7 +99,7 @@ export default defineComponent({
       })
 
       // heat legend
-      var heatLegend = chart.bottomAxesContainer.createChild(am4charts.HeatLegend)
+      const heatLegend = chart.bottomAxesContainer.createChild(am4charts.HeatLegend)
       heatLegend.width = am4core.percent(100)
       heatLegend.series = series
       heatLegend.maxValue = -4
@@ -107,33 +107,32 @@ export default defineComponent({
       heatLegend.valueAxis.renderer.labels.template.fontSize = 9
       heatLegend.valueAxis.renderer.minGridDistance = 30
 
-      series.columns.template.events.on("over", function(ev) {
+      series.columns.template.events.on('over', function (ev) {
         if (!isNaN(ev.target.dataItem.value)) {
           heatLegend.valueAxis.showTooltipAt(ev.target.dataItem.value)
-        }
-        else {
-          heatLegend.valueAxis.hideTooltip();
+        } else {
+          heatLegend.valueAxis.hideTooltip()
         }
       })
 
-      series.columns.template.events.on("out", function(ev) {
-        heatLegend.valueAxis.hideTooltip();
+      series.columns.template.events.on('out', function (ev) {
+        heatLegend.valueAxis.hideTooltip()
       })
 
       chart.data = await buildData()
     }
 
-    async function buildData() {
-      let data = new Array()
+    async function buildData () {
+      const data = []
 
-      if (measurements.value.Items.length == 0) {
+      if (measurements.value.Items.length === 0) {
         return
       }
 
       let started = false
-      var monthlyReturn = 1.0
+      let monthlyReturn = 1.0
       measurements.value.Items.forEach((elem, idx, arr) => {
-        let dt = elem.Time
+        const dt = elem.Time
         if (!started) {
           if (dt.getMonth() === 0) {
             started = true
@@ -143,11 +142,11 @@ export default defineComponent({
         }
 
         if (idx > 0) {
-          let last = arr[idx-1]
-          if (dt.getMonth() != last.Time.getMonth()) {
-            let item = {
+          const last = arr[idx - 1]
+          if (dt.getMonth() !== last.Time.getMonth()) {
+            const item = {
               year: `${last.Time.getFullYear()}`,
-              month: format(last.Time, "MMM"),
+              month: format(last.Time, 'MMM'),
               value: (monthlyReturn - 1.0) * 100
             }
             data.push(item)
@@ -159,18 +158,18 @@ export default defineComponent({
       })
 
       // add month-to-date
-      let numMeasurements = measurements.value.Items.length
+      const numMeasurements = measurements.value.Items.length
       if (numMeasurements > 1) {
-        let n0 = measurements.value.Items[numMeasurements - 1]
-        let n1 = measurements.value.Items[numMeasurements - 2]
+        const n0 = measurements.value.Items[numMeasurements - 1]
+        const n1 = measurements.value.Items[numMeasurements - 2]
         // check if the last date is a new month
         if (n0.Time.getMonth() === n1.Time.getMonth()) {
-            let item = {
-              year: `${n0.Time.getFullYear()}`,
-              month: format(n0.Time, "MMM"),
-              value: (monthlyReturn - 1.0) * 100
-            }
-            data.push(item)
+          const item = {
+            year: `${n0.Time.getFullYear()}`,
+            month: format(n0.Time, 'MMM'),
+            value: (monthlyReturn - 1.0) * 100
+          }
+          data.push(item)
         }
       }
       return data
@@ -189,7 +188,7 @@ export default defineComponent({
 
     return {
       chartHeight,
-      chartWidth,
+      chartWidth
     }
   }
 })

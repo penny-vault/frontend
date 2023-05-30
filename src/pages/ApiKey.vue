@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref, watch } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useStore } from 'vuex'
 
 import PxCard from 'components/PxCard.vue'

@@ -10,7 +10,7 @@ export default {
     title: String,
     slugifiedTitle: String,
     prefix: String
-  },
+  }
 }
 </script>
 

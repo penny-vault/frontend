@@ -11,6 +11,7 @@ import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
 export default defineComponent({
+  // eslint-disable-next-line vue/multi-word-component-names
   name: 'Splash',
   setup () {
     const $store = useStore()
@@ -20,7 +21,7 @@ export default defineComponent({
 
     if (authenticated.value) {
       $router.push({
-        path: "/app",
+        path: '/app',
         query: null
       })
     }
@@ -28,7 +29,11 @@ export default defineComponent({
     return {
       authenticated,
       login () {
-        this.$auth.loginWithRedirect({appState: {target: "/"}})
+        this.$auth.loginWithRedirect({
+          appState: {
+            target: '/'
+          }
+        })
       }
     }
   }
@@ -37,7 +42,7 @@ export default defineComponent({
 
 <style scoped>
 .bg-wallpaper {
-  background-image: url("~assets/wallpaper.webp");
+  background-image: url("/src/assets/wallpaper.webp");
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;

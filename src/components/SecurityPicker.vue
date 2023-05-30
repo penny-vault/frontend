@@ -60,11 +60,11 @@ export default defineComponent({
     multiple: Boolean,
     label: {
       type: String,
-      default(rawProps) {
+      default (rawProps) {
         if (rawProps.multiple === true) {
-          return "Select securities"
+          return 'Select securities'
         }
-        return "Select security"
+        return 'Select security'
       }
     }
   },
@@ -82,7 +82,7 @@ export default defineComponent({
           api.get(`/security?q=${val}`, {
             headers: {
               Authorization: `Bearer ${accessToken}`,
-              Range: "items=0-3"
+              Range: 'items=0-3'
             }
           }).then(response => {
             options.value = response.data

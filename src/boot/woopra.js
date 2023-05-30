@@ -14,7 +14,7 @@ export default boot(async ({ app, router }) => {
   woopra.isUserSet = false
 
   router.afterEach((to) => {
-    if (auth0.user !== undefined) {
+    if (auth0.user.value !== undefined) {
       woopra.identify({
         email: auth0.user.value.email,
         name: auth0.user.value.name

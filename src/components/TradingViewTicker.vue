@@ -15,24 +15,24 @@ export default {
       default: function () {
         return [
           {
-            "description": "S&P 500",
-            "proName": "AMEX:SPY"
+            description: 'S&P 500',
+            proName: 'AMEX:SPY'
           },
           {
-            "description": "Dow 30",
-            "proName": "AMEX:IYY"
+            description: 'Dow 30',
+            proName: 'AMEX:IYY'
           },
           {
-            "description": "Nasdaq",
-            "proName": "NASDAQ:QQQ"
+            description: 'Nasdaq',
+            proName: 'NASDAQ:QQQ'
           },
           {
-            "description": "MSCI EAFE",
-            "proName": "AMEX:EFA"
+            description: 'MSCI EAFE',
+            proName: 'AMEX:EFA'
           },
           {
-            "description": "Emerging Markets",
-            "proName": "AMEX:EEM"
+            description: 'Emerging Markets',
+            proName: 'AMEX:EEM'
           }
         ]
       }
@@ -43,7 +43,7 @@ export default {
     },
     colorTheme: {
       type: String,
-      default: "light"
+      default: 'light'
     },
     transparent: {
       type: Boolean,
@@ -55,34 +55,34 @@ export default {
     },
     displayMode: {
       type: String,
-      default: "adaptive"
+      default: 'adaptive'
     },
     locale: {
       type: String,
-      default: "en"
+      default: 'en'
     },
     host: {
       type: String,
-      default: "https://s.tradingview.com"
+      default: 'https://s.tradingview.com'
     },
     path: {
       type: String,
-      default: "/embed-widget/ticker-tape/"
+      default: '/embed-widget/ticker-tape/'
     }
   },
   computed: {
-    tradingViewUrl: function() {
-      let args = {
-        "symbols": this.symbols,
-        "showSymbolLogo": this.showSymbolLogo,
-        "colorTheme": this.colorTheme,
-        "isTransparent": this.transparent,
-        "displayMode": this.displayMode,
-        "width": "100%",
-        "height": 78,
-        "utm_source": "www.tradingview.com",
-        "utm_medium": "widget_new",
-        "utm_campaign": "ticker-tape"
+    tradingViewUrl: function () {
+      const args = {
+        symbols: this.symbols,
+        showSymbolLogo: this.showSymbolLogo,
+        colorTheme: this.colorTheme,
+        isTransparent: this.transparent,
+        displayMode: this.displayMode,
+        width: '100%',
+        height: 78,
+        utm_source: 'www.tradingview.com',
+        utm_medium: 'widget_new',
+        utm_campaign: 'ticker-tape'
       }
       return `${this.host}${this.path}?locale=${this.locale}#${encodeURIComponent(JSON.stringify(args))}`
     }

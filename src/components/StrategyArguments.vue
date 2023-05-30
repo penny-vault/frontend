@@ -175,7 +175,7 @@ export default defineComponent({
     },
     begin: {
       type: Date,
-      default: new Date(1982,7,27)
+      default: new Date(1982, 7, 27)
     },
     end: {
       type: Date,
@@ -187,7 +187,7 @@ export default defineComponent({
     SecurityPicker
   },
   emits: ['execute', 'save'],
-  setup(props, { emit }) {
+  setup (props, { emit }) {
     const { strategy, begin, end, benchmarkTicker } = toRefs(props)
 
     const dateFmt = ref('yyyy/MM/dd')
@@ -205,41 +205,41 @@ export default defineComponent({
     const qStartDateProxy = ref(null)
     const qEndDateProxy = ref(null)
 
-    async function initializeArguments() {
+    async function initializeArguments () {
       advanced.value = []
       standard.value = []
-      Object.entries(strategy.value.arguments).forEach( elem => {
+      Object.entries(strategy.value.arguments).forEach(elem => {
         const [k, v] = elem
-        var item = {
+        const item = {
           arg: k,
           name: v.name,
           description: v.description,
           advanced: v.advanced,
-          id: v.name + "_id",
-          inpid: v.name + "_inp_id",
-          inptype: "text",
+          id: v.name + '_id',
+          inpid: v.name + '_inp_id',
+          inptype: 'text',
           typecode: v.typecode,
           inpdefault: v.default,
           options: v.options,
           required: true
         }
 
-        if (v.typecode == "number") {
-          item.inptype = "number"
+        if (v.typecode === 'number') {
+          item.inptype = 'number'
           item.inpdefault = Number(item.inpdefault)
         }
 
-        if (v.typecode == "[]string") {
-          var val = item.inpdefault
-          if (typeof item.inpdefault === "string") {
+        if (v.typecode === '[]string') {
+          let val = item.inpdefault
+          if (typeof item.inpdefault === 'string') {
             val = JSON.parse(val)
           }
-          item.inpdefault = val.join(" ")
+          item.inpdefault = val.join(' ')
         }
 
-        if (v.typecode == "stock" || v.typecode == "[]stock") {
-          var val = item.inpdefault
-          if (typeof item.inpdefault === "string") {
+        if (v.typecode === 'stock' || v.typecode === '[]stock') {
+          let val = item.inpdefault
+          if (typeof item.inpdefault === 'string') {
             val = JSON.parse(val)
           }
           item.inpdefault = val
@@ -257,10 +257,10 @@ export default defineComponent({
       })
     }
 
-    async function initializeFrequentlyUsed() {
+    async function initializeFrequentlyUsed () {
       frequentlyUsedOptions.value = []
-      Object.entries(strategy.value.suggestedParams).forEach( elem => {
-        var opt = {
+      Object.entries(strategy.value.suggestedParams).forEach(elem => {
+        const opt = {
           label: elem[0],
           value: elem[1]
         }
@@ -268,21 +268,21 @@ export default defineComponent({
       })
     }
 
-    async function onSave(e) {
+    async function onSave (e) {
       e.preventDefault()
-      let options = {
+      const options = {
         args: clone(form.value),
         begin: getUnixTime(parse(startDate.value, dateFmt.value, new Date())),
         benchmarkTicker: clone(benchmarkTickerData.value.compositeFigi)
       }
 
-      Object.entries(strategy.value.arguments).forEach( elem => {
-        const [k, v] = elem;
+      Object.entries(strategy.value.arguments).forEach(elem => {
+        const [k, v] = elem
         switch (v.typecode) {
-          case "[]string":
+          case '[]string':
             options.args[k] = options.args[k].split(' ')
             break
-          case "number":
+          case 'number':
             options.args[k] = Number(options.args[k])
             break
         }
@@ -291,22 +291,22 @@ export default defineComponent({
       emit('save', options)
     }
 
-    async function onSubmit(e) {
+    async function onSubmit (e) {
       e.preventDefault()
-      let options = {
+      const options = {
         userArgs: clone(form.value),
         begin: parse(startDate.value, dateFmt.value, new Date()),
         end: parse(endDate.value, dateFmt.value, new Date()),
         benchmarkTicker: clone(benchmarkTickerData.value.compositeFigi)
       }
 
-      Object.entries(strategy.value.arguments).forEach( elem => {
-        const [k, v] = elem;
+      Object.entries(strategy.value.arguments).forEach(elem => {
+        const [k, v] = elem
         switch (v.typecode) {
-          case "[]string":
+          case '[]string':
             options.userArgs[k] = options.userArgs[k].split(' ')
             break
-          case "number":
+          case 'number':
             options.userArgs[k] = Number(options.userArgs[k])
             break
         }
@@ -315,21 +315,21 @@ export default defineComponent({
       emit('execute', options)
     }
 
-    function checkStartDate(value) {
+    function checkStartDate (value) {
       const v = parse(value, dateFmt.value, new Date())
       let e = parse(endDate.value, dateFmt.value, new Date())
       e = subMonths(e, 1)
       return v < e || 'start > end - 1 month'
     }
 
-    function checkEndDate(value) {
+    function checkEndDate (value) {
       let v = parse(value, dateFmt.value, new Date())
       const s = parse(startDate.value, dateFmt.value, new Date())
       v = subMonths(v, 1)
       return s < v || 'start > end - 1 month'
     }
 
-    function dateRange(value) {
+    function dateRange (value) {
       const today = new Date()
       let start = null
       if (value === 0) {
@@ -353,20 +353,20 @@ export default defineComponent({
     })
 
     watch(frequentlyUsed, (n) => {
-      let v = n.value
-      spec.value.forEach( elem => {
+      const v = n.value
+      spec.value.forEach(elem => {
         let val = v[elem.arg]
         switch (elem.typecode) {
-          case "[]string":
-            form.value[elem.arg] = JSON.parse(val).join(" ")
+          case '[]string':
+            form.value[elem.arg] = JSON.parse(val).join(' ')
             break
-          case "number":
+          case 'number':
             form.value[elem.arg] = Number(val)
             break
-          case "stock":
-          case "[]stock":
+          case 'stock':
+          case '[]stock':
             try {
-            val = JSON.parse(val)
+              val = JSON.parse(val)
             } catch (e) {
               console.error(e)
             }

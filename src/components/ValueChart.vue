@@ -3,10 +3,10 @@
 </template>
 
 <script>
-let eventBus = require('tiny-emitter/instance')
+const eventBus = require('tiny-emitter/instance')
 
-import { defineComponent, watch, ref, onMounted, onUnmounted, toRefs } from 'vue'
-import { format, fromUnixTime, parse, add } from 'date-fns'
+import { defineComponent, watch, onMounted, onUnmounted, toRefs } from 'vue'
+import { format, add } from 'date-fns'
 
 import * as am4core from '@amcharts/amcharts4/core'
 import * as am4charts from '@amcharts/amcharts4/charts'
@@ -27,7 +27,9 @@ export default defineComponent({
     measurements: {
       type: Object,
       default: () => {
+        // eslint-disable-next-line no-lone-blocks
         {
+          // eslint-disable-next-line no-labels, no-unused-expressions
           Items: []
         }
       }
@@ -37,26 +39,26 @@ export default defineComponent({
   setup (props) {
     // amcharts setup
     am4core.useTheme(animated)
-    var chart
-    var strategyValueSeries
-    var benchmarkValueSeries
-    var dateAxis
-    var valueAxis
-    var referenceMarker
-    var strategyData = new Map()
+    let chart
+    let strategyValueSeries
+    let benchmarkValueSeries
+    let dateAxis
+    let valueAxis
+    let referenceMarker
+    let strategyData = new Map()
 
     // reactive data
     const { logScale, showDrawDowns, measurements, drawDowns } = toRefs(props)
 
-    let cursorPosition = {
+    const cursorPosition = {
       x: null,
       y: null,
-      seriesValue: null,
+      seriesValue: null
     }
 
     // handle events
 
-    eventBus.on('valueChart:zoom', ({from, to}) => {
+    eventBus.on('valueChart:zoom', ({ from, to }) => {
       if (from === -1) {
         from = dateAxis.min
       }
@@ -67,7 +69,7 @@ export default defineComponent({
     })
 
     // functions
-    async function renderChart() {
+    async function renderChart () {
       if (chart) {
         chart.dispose()
       }
@@ -81,7 +83,7 @@ export default defineComponent({
         fillStrategyData()
       }
 
-      chart.numberFormatter.numberFormat = "#,###.##a"
+      chart.numberFormatter.numberFormat = '#,###.##a'
 
       // Create axes
       dateAxis = chart.xAxes.push(new am4charts.DateAxis())
@@ -91,19 +93,19 @@ export default defineComponent({
       valueAxis = chart.yAxes.push(new am4charts.ValueAxis())
       valueAxis.logarithmic = logScale.value
       valueAxis.tooltip.disabled = true
-      valueAxis.title.text = "Growth of 10k"
+      valueAxis.title.text = 'Growth of 10k'
 
       // Add strategy value series
       strategyValueSeries = chart.series.push(new am4charts.LineSeries())
-      strategyValueSeries.name = "Strategy"
-      strategyValueSeries.dataFields.dateX = "Time"
-      strategyValueSeries.dataFields.valueY = "Value1"
+      strategyValueSeries.name = 'Strategy'
+      strategyValueSeries.dataFields.dateX = 'Time'
+      strategyValueSeries.dataFields.valueY = 'Value1'
       strategyValueSeries.dataItems.template.locations.dateX = 1
 
       strategyValueSeries.showPercentDiff = false
       strategyValueSeries.referencePercentDiff = NaN
 
-      chart.events.on("hit", function(ev) {
+      chart.events.on('hit', function (ev) {
         if (!strategyValueSeries.showPercentDiff) {
           strategyValueSeries.showPercentDiff = true
 
@@ -126,24 +128,24 @@ export default defineComponent({
           strategyValueSeries.referencePercentDiff = NaN
           strategyValueSeries.tooltipText = `[bold]{dateX}[/]\n[${strategyValueSeries.stroke.hex}]●[/] ${strategyValueSeries.name}: \${${strategyValueSeries.dataFields.valueY}.formatNumber("#,###.00")}\n`
         }
-      }, this);
+      }, this)
 
       strategyValueSeries.tooltipText = `[bold]{dateX}[/]\n[${strategyValueSeries.stroke.hex}]●[/] ${strategyValueSeries.name}: \${${strategyValueSeries.dataFields.valueY}.formatNumber("#,###.00")}\n`
 
       strategyValueSeries.tooltip.background.cornerRadius = 5
       strategyValueSeries.tooltip.background.strokeOpacity = 0
-      strategyValueSeries.tooltip.pointerOrientation = "right"
+      strategyValueSeries.tooltip.pointerOrientation = 'right'
       strategyValueSeries.tooltip.label.minWidth = 40
       strategyValueSeries.tooltip.label.minHeight = 40
-      strategyValueSeries.tooltip.label.textAlign = "left"
-      strategyValueSeries.tooltip.label.textValign = "middle"
+      strategyValueSeries.tooltip.label.textAlign = 'left'
+      strategyValueSeries.tooltip.label.textValign = 'middle'
       strategyValueSeries.tooltip.getFillFromObject = false
-      strategyValueSeries.tooltip.label.fill = am4core.color("black")
-      strategyValueSeries.tooltip.background.fill = am4core.color("#FFFFFF")
+      strategyValueSeries.tooltip.label.fill = am4core.color('black')
+      strategyValueSeries.tooltip.background.fill = am4core.color('#FFFFFF')
 
       strategyValueSeries.fillOpacity = 0.3
       strategyValueSeries.fillOpacity = 1
-      let gradient = new am4core.LinearGradient()
+      const gradient = new am4core.LinearGradient()
       gradient.rotation = 30
       gradient.addColor(chart.colors.getIndex(0), 0.2)
       gradient.addColor(chart.colors.getIndex(0), 0)
@@ -153,9 +155,9 @@ export default defineComponent({
 
       // Add strategy value series
       benchmarkValueSeries = chart.series.push(new am4charts.LineSeries())
-      benchmarkValueSeries.name = "Benchmark"
-      benchmarkValueSeries.dataFields.dateX = "Time"
-      benchmarkValueSeries.dataFields.valueY = "Value2"
+      benchmarkValueSeries.name = 'Benchmark'
+      benchmarkValueSeries.dataFields.dateX = 'Time'
+      benchmarkValueSeries.dataFields.valueY = 'Value2'
       benchmarkValueSeries.stroke = chart.colors.getIndex(2)
       benchmarkValueSeries.strokeWidth = 1
 
@@ -166,9 +168,9 @@ export default defineComponent({
       chart.scrollbarX.parent = chart.bottomAxesContainer
       chart.scrollbarX.series.push(strategyValueSeries)
 
-      chart.cursor.events.on("cursorpositionchanged", function(ev) {
-        let xAxis = ev.target.chart.xAxes.getIndex(0)
-        let yAxis = ev.target.chart.yAxes.getIndex(0)
+      chart.cursor.events.on('cursorpositionchanged', function (ev) {
+        const xAxis = ev.target.chart.xAxes.getIndex(0)
+        const yAxis = ev.target.chart.yAxes.getIndex(0)
         cursorPosition.x = dateAxis.positionToDate(xAxis.toAxisPosition(ev.target.xPosition))
         cursorPosition.y = valueAxis.positionToValue(yAxis.toAxisPosition(ev.target.yPosition))
         let val = strategyData.get(format(cursorPosition.x, 'yyyy-MM-dd'))
@@ -191,7 +193,7 @@ export default defineComponent({
       chart.legend = new am4charts.Legend()
     }
 
-    async function fillStrategyData() {
+    async function fillStrategyData () {
       strategyData = new Map()
       if (measurements.value.Items !== undefined && measurements.value.Items !== null) {
         measurements.value.Items.forEach((elem, idx) => {
@@ -200,10 +202,10 @@ export default defineComponent({
       }
     }
 
-    async function updatePlotBands() {
+    async function updatePlotBands () {
       if (dateAxis.axisRanges.length > 0) {
         dateAxis.axisRanges.clear()
-        let tmp = strategyValueSeries.defaultState.transitionDuration
+        const tmp = strategyValueSeries.defaultState.transitionDuration
         strategyValueSeries.defaultState.transitionDuration = 0
         strategyValueSeries.appear()
         strategyValueSeries.defaultState.transitionDuration = tmp
@@ -215,12 +217,12 @@ export default defineComponent({
           // let end = parse(format(fromUnixTime(elem.End + (86400*2.5)), 'yyyy-MM-dd'), 'yyyy-MM-dd', new Date())
 
           // for the drawDown period (peak to trough)
-          let range = dateAxis.createSeriesRange(strategyValueSeries)
+          const range = dateAxis.createSeriesRange(strategyValueSeries)
 
           range.date = elem.Begin
           range.endDate = elem.End
-          range.contents.stroke = am4core.color("#A60017")
-          range.contents.fill = am4core.color("#D5001D")
+          range.contents.stroke = am4core.color('#A60017')
+          range.contents.fill = am4core.color('#D5001D')
           range.contents.fillOpacity = 0.5
         })
       }

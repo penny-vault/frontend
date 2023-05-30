@@ -35,6 +35,6 @@ export default defineComponent({
 
   components: {
     Copyright
-  },
+  }
 })
 </script>

@@ -9,13 +9,13 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, ref } from 'vue';
+import { defineComponent, onMounted } from 'vue'
 import { api } from '../boot/axios'
 import { useQuasar } from 'quasar'
 
 export default defineComponent({
   name: 'PageIndex',
-  setup() {
+  setup () {
     const $q = useQuasar()
     onMounted(async () => {
       // Ping the server to make sure its working

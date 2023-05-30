@@ -93,7 +93,7 @@
 </template>
 
 <script>
-let eventBus = require('tiny-emitter/instance')
+const eventBus = require('tiny-emitter/instance')
 
 import { defineComponent, computed, ref } from 'vue'
 import { useStore } from 'vuex'
@@ -122,112 +122,112 @@ export default defineComponent({
     const logScale = ref(false)
     const showDrawDowns = ref(false)
     const dateRange = ref({
-        min: -1,
-        max: -1
+      min: -1,
+      max: -1
     })
 
     // Computed properties
     const currentAsset = computed(() => {
-        var res = new Array()
-        portfolio.value.performance.CurrentAssets.forEach((elem) => {
-            if (elem.Ticker !== "$CASH") {
-                res.push(elem.Ticker)
-            }
-        })
-        return res.join(" ")
+      const res = []
+      portfolio.value.performance.CurrentAssets.forEach((elem) => {
+        if (elem.Ticker !== '$CASH') {
+          res.push(elem.Ticker)
+        }
+      })
+      return res.join(' ')
     })
     const measurements = computed(() => $store.state.portfolio.measurements)
     const metrics = computed(() => $store.state.portfolio.metrics)
     const portfolio = computed(() => $store.state.portfolio.current)
 
     const returns = computed(() => {
-        var result = []
-        let taxRatio = portfolio.value.performance.PortfolioMetrics.TaxCostRatio
-        let benchmarkTaxRatio = .15
-        let portfolioReturns = portfolio.value.performance.PortfolioReturns
-        let benchmarkReturns = portfolio.value.performance.BenchmarkReturns
+      const result = []
+      const taxRatio = portfolio.value.performance.PortfolioMetrics.TaxCostRatio
+      const benchmarkTaxRatio = 0.15
+      const portfolioReturns = portfolio.value.performance.PortfolioReturns
+      const benchmarkReturns = portfolio.value.performance.BenchmarkReturns
 
-        result.push({
-            title: "Portfolio Time-Weighted Rate of Return",
-            ytd: portfolioReturns.TWRRYTD,
-            oneYear: portfolioReturns.TWRROneYear,
-            threeYear: portfolioReturns.TWRRThreeYear,
-            fiveYear: portfolioReturns.TWRRFiveYear,
-            tenYear: portfolioReturns.TWRRTenYear,
-            sinceInception: portfolioReturns.TWRRSinceInception,
-        })
-        result.push({
-            title: "Benchmark Time-Weighted Rate of Return",
-            ytd: benchmarkReturns.TWRRYTD,
-            oneYear: benchmarkReturns.TWRROneYear,
-            threeYear: benchmarkReturns.TWRRThreeYear,
-            fiveYear: benchmarkReturns.TWRRFiveYear,
-            tenYear: benchmarkReturns.TWRRTenYear,
-            sinceInception: benchmarkReturns.TWRRSinceInception,
-        })
-        result.push({
-            title: "Portfolio TWRR (tax-adjusted)",
-            ytd: (portfolioReturns.TWRRYTD - (portfolioReturns.TWRRYTD * taxRatio)),
-            oneYear: (portfolioReturns.TWRROneYear - (portfolioReturns.TWRROneYear * taxRatio)),
-            threeYear: (portfolioReturns.TWRRThreeYear - (portfolioReturns.TWRRThreeYear * taxRatio)),
-            fiveYear: (portfolioReturns.TWRRFiveYear - (portfolioReturns.TWRRFiveYear * taxRatio)),
-            tenYear: (portfolioReturns.TWRRTenYear - (portfolioReturns.TWRRTenYear * taxRatio)),
-            sinceInception: (portfolioReturns.TWRRSinceInception - (portfolioReturns.TWRRSinceInception * taxRatio)),
-        })
-        result.push({
-            title: "Benchmark TWRR (tax-adjusted)",
-            ytd: (benchmarkReturns.TWRRYTD - (benchmarkReturns.TWRRYTD * benchmarkTaxRatio)),
-            oneYear: (benchmarkReturns.TWRROneYear - (benchmarkReturns.TWRROneYear * benchmarkTaxRatio)),
-            threeYear: (benchmarkReturns.TWRRThreeYear - (benchmarkReturns.TWRRThreeYear * benchmarkTaxRatio)),
-            fiveYear: (benchmarkReturns.TWRRFiveYear - (benchmarkReturns.TWRRFiveYear * benchmarkTaxRatio)),
-            tenYear: (benchmarkReturns.TWRRTenYear - (benchmarkReturns.TWRRTenYear * benchmarkTaxRatio)),
-            sinceInception: (benchmarkReturns.TWRRSinceInception - (benchmarkReturns.TWRRSinceInception * benchmarkTaxRatio)),
-        })
+      result.push({
+        title: 'Portfolio Time-Weighted Rate of Return',
+        ytd: portfolioReturns.TWRRYTD,
+        oneYear: portfolioReturns.TWRROneYear,
+        threeYear: portfolioReturns.TWRRThreeYear,
+        fiveYear: portfolioReturns.TWRRFiveYear,
+        tenYear: portfolioReturns.TWRRTenYear,
+        sinceInception: portfolioReturns.TWRRSinceInception
+      })
+      result.push({
+        title: 'Benchmark Time-Weighted Rate of Return',
+        ytd: benchmarkReturns.TWRRYTD,
+        oneYear: benchmarkReturns.TWRROneYear,
+        threeYear: benchmarkReturns.TWRRThreeYear,
+        fiveYear: benchmarkReturns.TWRRFiveYear,
+        tenYear: benchmarkReturns.TWRRTenYear,
+        sinceInception: benchmarkReturns.TWRRSinceInception
+      })
+      result.push({
+        title: 'Portfolio TWRR (tax-adjusted)',
+        ytd: (portfolioReturns.TWRRYTD - (portfolioReturns.TWRRYTD * taxRatio)),
+        oneYear: (portfolioReturns.TWRROneYear - (portfolioReturns.TWRROneYear * taxRatio)),
+        threeYear: (portfolioReturns.TWRRThreeYear - (portfolioReturns.TWRRThreeYear * taxRatio)),
+        fiveYear: (portfolioReturns.TWRRFiveYear - (portfolioReturns.TWRRFiveYear * taxRatio)),
+        tenYear: (portfolioReturns.TWRRTenYear - (portfolioReturns.TWRRTenYear * taxRatio)),
+        sinceInception: (portfolioReturns.TWRRSinceInception - (portfolioReturns.TWRRSinceInception * taxRatio))
+      })
+      result.push({
+        title: 'Benchmark TWRR (tax-adjusted)',
+        ytd: (benchmarkReturns.TWRRYTD - (benchmarkReturns.TWRRYTD * benchmarkTaxRatio)),
+        oneYear: (benchmarkReturns.TWRROneYear - (benchmarkReturns.TWRROneYear * benchmarkTaxRatio)),
+        threeYear: (benchmarkReturns.TWRRThreeYear - (benchmarkReturns.TWRRThreeYear * benchmarkTaxRatio)),
+        fiveYear: (benchmarkReturns.TWRRFiveYear - (benchmarkReturns.TWRRFiveYear * benchmarkTaxRatio)),
+        tenYear: (benchmarkReturns.TWRRTenYear - (benchmarkReturns.TWRRTenYear * benchmarkTaxRatio)),
+        sinceInception: (benchmarkReturns.TWRRSinceInception - (benchmarkReturns.TWRRSinceInception * benchmarkTaxRatio))
+      })
 
-        if (((portfolioReturns.MWRRYTD).toFixed(5) != (portfolioReturns.TWRRYTD).toFixed(5)) &&
-            ((portfolioReturns.MWRROneYear).toFixed(5) != (portfolioReturns.TWRROneYear).toFixed(5)) &&
-            ((portfolioReturns.MWRRThreeYear).toFixed(5) != (portfolioReturns.TWRRThreeYear).toFixed(5)) &&
-            ((portfolioReturns.MWRRFiveYear).toFixed(5) != (portfolioReturns.TWRRFiveYear).toFixed(5)) &&
-            ((portfolioReturns.MWRRTenYear).toFixed(5) != (portfolioReturns.TWRRTenYear).toFixed(5)) &&
-            ((portfolioReturns.MWRRSinceInception).toFixed(5) != (portfolioReturns.TWRRSinceInception).toFixed(5))) {
-            result.push({
-                title: "Portfolio Money-Weighted Rate of Return",
-                ytd: portfolioReturns.MWRRYTD,
-                oneYear: portfolioReturns.MWRROneYear,
-                threeYear: portfolioReturns.MWRRThreeYear,
-                fiveYear: portfolioReturns.MWRRFiveYear,
-                tenYear: portfolioReturns.MWRRTenYear,
-                sinceInception: portfolioReturns.MWRRSinceInception,
-            })
-            result.push({
-                title: "Benchmark Money-Weighted Rate of Return",
-                ytd: benchmarkReturns.MWRRYTD,
-                oneYear: benchmarkReturns.MWRROneYear,
-                threeYear: benchmarkReturns.MWRRThreeYear,
-                fiveYear: benchmarkReturns.MWRRFiveYear,
-                tenYear: benchmarkReturns.MWRRTenYear,
-                sinceInception: benchmarkReturns.MWRRSinceInception,
-            })
-            result.push({
-                title: "Portfolio MWRR (tax-adjusted)",
-                ytd: (portfolioReturns.MWRRYTD - (portfolioReturns.MWRRYTD * taxRatio)),
-                oneYear: (portfolioReturns.MWRROneYear - (portfolioReturns.MWRROneYear * taxRatio)),
-                threeYear: (portfolioReturns.MWRRThreeYear - (portfolioReturns.MWRRThreeYear * taxRatio)),
-                fiveYear: (portfolioReturns.MWRRFiveYear - (portfolioReturns.MWRRFiveYear * taxRatio)),
-                tenYear: (portfolioReturns.MWRRTenYear - (portfolioReturns.MWRRTenYear * taxRatio)),
-                sinceInception: (portfolioReturns.MWRRSinceInception - (portfolioReturns.MWRRSinceInception * taxRatio)),
-            })
-            result.push({
-                title: "Benchmark MWRR (tax-adjusted)",
-                ytd: (benchmarkReturns.MWRRYTD - (benchmarkReturns.MWRRYTD * benchmarkTaxRatio)),
-                oneYear: (benchmarkReturns.MWRROneYear - (benchmarkReturns.MWRROneYear * benchmarkTaxRatio)),
-                threeYear: (benchmarkReturns.MWRRThreeYear - (benchmarkReturns.MWRRThreeYear * benchmarkTaxRatio)),
-                fiveYear: (benchmarkReturns.MWRRFiveYear - (benchmarkReturns.MWRRFiveYear * benchmarkTaxRatio)),
-                tenYear: (benchmarkReturns.MWRRTenYear - (benchmarkReturns.MWRRTenYear * benchmarkTaxRatio)),
-                sinceInception: (benchmarkReturns.MWRRSinceInception - (benchmarkReturns.MWRRSinceInception * benchmarkTaxRatio)),
-            })
-        }
-        return result
+      if (((portfolioReturns.MWRRYTD).toFixed(5) !== (portfolioReturns.TWRRYTD).toFixed(5)) &&
+            ((portfolioReturns.MWRROneYear).toFixed(5) !== (portfolioReturns.TWRROneYear).toFixed(5)) &&
+            ((portfolioReturns.MWRRThreeYear).toFixed(5) !== (portfolioReturns.TWRRThreeYear).toFixed(5)) &&
+            ((portfolioReturns.MWRRFiveYear).toFixed(5) !== (portfolioReturns.TWRRFiveYear).toFixed(5)) &&
+            ((portfolioReturns.MWRRTenYear).toFixed(5) !== (portfolioReturns.TWRRTenYear).toFixed(5)) &&
+            ((portfolioReturns.MWRRSinceInception).toFixed(5) !== (portfolioReturns.TWRRSinceInception).toFixed(5))) {
+        result.push({
+          title: 'Portfolio Money-Weighted Rate of Return',
+          ytd: portfolioReturns.MWRRYTD,
+          oneYear: portfolioReturns.MWRROneYear,
+          threeYear: portfolioReturns.MWRRThreeYear,
+          fiveYear: portfolioReturns.MWRRFiveYear,
+          tenYear: portfolioReturns.MWRRTenYear,
+          sinceInception: portfolioReturns.MWRRSinceInception
+        })
+        result.push({
+          title: 'Benchmark Money-Weighted Rate of Return',
+          ytd: benchmarkReturns.MWRRYTD,
+          oneYear: benchmarkReturns.MWRROneYear,
+          threeYear: benchmarkReturns.MWRRThreeYear,
+          fiveYear: benchmarkReturns.MWRRFiveYear,
+          tenYear: benchmarkReturns.MWRRTenYear,
+          sinceInception: benchmarkReturns.MWRRSinceInception
+        })
+        result.push({
+          title: 'Portfolio MWRR (tax-adjusted)',
+          ytd: (portfolioReturns.MWRRYTD - (portfolioReturns.MWRRYTD * taxRatio)),
+          oneYear: (portfolioReturns.MWRROneYear - (portfolioReturns.MWRROneYear * taxRatio)),
+          threeYear: (portfolioReturns.MWRRThreeYear - (portfolioReturns.MWRRThreeYear * taxRatio)),
+          fiveYear: (portfolioReturns.MWRRFiveYear - (portfolioReturns.MWRRFiveYear * taxRatio)),
+          tenYear: (portfolioReturns.MWRRTenYear - (portfolioReturns.MWRRTenYear * taxRatio)),
+          sinceInception: (portfolioReturns.MWRRSinceInception - (portfolioReturns.MWRRSinceInception * taxRatio))
+        })
+        result.push({
+          title: 'Benchmark MWRR (tax-adjusted)',
+          ytd: (benchmarkReturns.MWRRYTD - (benchmarkReturns.MWRRYTD * benchmarkTaxRatio)),
+          oneYear: (benchmarkReturns.MWRROneYear - (benchmarkReturns.MWRROneYear * benchmarkTaxRatio)),
+          threeYear: (benchmarkReturns.MWRRThreeYear - (benchmarkReturns.MWRRThreeYear * benchmarkTaxRatio)),
+          fiveYear: (benchmarkReturns.MWRRFiveYear - (benchmarkReturns.MWRRFiveYear * benchmarkTaxRatio)),
+          tenYear: (benchmarkReturns.MWRRTenYear - (benchmarkReturns.MWRRTenYear * benchmarkTaxRatio)),
+          sinceInception: (benchmarkReturns.MWRRSinceInception - (benchmarkReturns.MWRRSinceInception * benchmarkTaxRatio))
+        })
+      }
+      return result
     })
 
     return {

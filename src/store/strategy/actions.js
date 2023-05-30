@@ -1,15 +1,14 @@
 import { emptyPerformance } from '../portfolio/constants'
 import { api } from 'boot/axios'
 import { authPlugin } from '../../auth'
-import { colfer } from "../../assets/colfer.js"
-import { toHexString } from "../../assets/util.js"
-import { Notify } from 'quasar'
-import { Loading } from 'quasar'
+import { colfer } from '../../assets/colfer.js'
+import { toHexString } from '../../assets/util.js'
+import { Notify, Loading } from 'quasar'
 
 // Helpers
 
-function ymdString(dt) {
-  return dt.toISOString().split("T")[0]
+function ymdString (dt) {
+  return dt.toISOString().split('T')[0]
 }
 
 // Exported actions
@@ -19,11 +18,11 @@ export async function fetchStrategies ({ commit }) {
   Loading.show()
   api.get('/strategy', {
     headers: {
-        Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
+      Authorization: `Bearer ${accessToken}` // send the access token through the 'Authorization' header
     }
   }).then(response => {
-      commit('setStrategies', response.data)
-      Loading.hide()
+    commit('setStrategies', response.data)
+    Loading.hide()
   }).catch(err => {
     Loading.hide()
     Notify.create({
@@ -41,7 +40,7 @@ export async function fetchStrategy ({ commit }, shortCode) {
   Loading.show()
   api.get(`/strategy/${shortCode}`, {
     headers: {
-      Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
+      Authorization: `Bearer ${accessToken}` // send the access token through the 'Authorization' header
     }
   }).then(response => {
     commit('setStrategy', response.data)
@@ -58,40 +57,40 @@ export async function fetchStrategy ({ commit }, shortCode) {
   })
 }
 
-export async function executeStrategy ({ commit, dispatch }, { shortCode, name, stratParams, startDate, endDate, benchmark } ) {
+export async function executeStrategy ({ commit, dispatch }, { shortCode, name, stratParams, startDate, endDate, benchmark }) {
   const accessToken = await authPlugin.getTokenSilently()
   Loading.show()
 
   const endpoint = `/strategy/${shortCode}/execute?startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}&benchmark=${benchmark}`
   api.post(endpoint, stratParams, {
     headers: {
-      Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
+      Authorization: `Bearer ${accessToken}` // send the access token through the 'Authorization' header
     },
     responseType: 'arraybuffer'
   }).then(response => {
     // Create a mock portfolio and fill out the info
-    let performance = new colfer.Performance({})
-    var uint8View = new Uint8Array(response.data)
+    const performance = new colfer.Performance({})
+    const uint8View = new Uint8Array(response.data)
     performance.unmarshal(uint8View)
-    let portfolio = {
-      "id": "",
-      "name": name,
-      "strategy": shortCode,
-      "arguments": stratParams,
-      "startDate": startDate,
-      "ytdReturn": {
-        "Float": 0.0,
-        "Status": 0
+    const portfolio = {
+      id: '',
+      name,
+      strategy: shortCode,
+      arguments: stratParams,
+      startDate,
+      ytdReturn: {
+        Float: 0.0,
+        Status: 0
       },
-      "cagrSinceInception": {
-        "Float": 0.0,
-        "Status": 0
+      cagrSinceInception: {
+        Float: 0.0,
+        Status: 0
       },
-      "notifications": 0,
-      "created": 0,
-      "lastChanged": endDate,
-      "performance": performance,
-      "benchmark": emptyPerformance,
+      notifications: 0,
+      created: 0,
+      lastChanged: endDate,
+      performance,
+      benchmark: emptyPerformance
     }
 
     try {
@@ -106,8 +105,8 @@ export async function executeStrategy ({ commit, dispatch }, { shortCode, name, 
 
     dispatch('portfolio/fetchMeasurements', {
       portfolioId: portfolio.id,
-      metric1: "strategy_growth_of_10k",
-      metric2: "benchmark_growth_of_10k"
+      metric1: 'strategy_growth_of_10k',
+      metric2: 'benchmark_growth_of_10k'
     }, { root: true })
 
     // calculate metrics

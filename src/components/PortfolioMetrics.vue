@@ -33,9 +33,9 @@ export default {
   props: {
     metrics: Object
   },
-  data() {
+  data () {
     return {
-      metricNames: ["finalBalance", "bestYear", "worstYear", "taxCostRatio", "sharpeRatio", "sortinoRatio", "stdDev", "ulcerIndex"]
+      metricNames: ['finalBalance', 'bestYear', 'worstYear', 'taxCostRatio', 'sharpeRatio', 'sortinoRatio', 'stdDev', 'ulcerIndex']
     }
   }
 }

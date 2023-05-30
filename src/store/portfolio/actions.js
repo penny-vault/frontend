@@ -1,30 +1,29 @@
-import { colfer } from "../../assets/colfer.js"
+import { colfer } from '../../assets/colfer.js'
 import { emptyPortfolio, emptyPerformance } from './constants'
 
 import { api } from 'boot/axios'
 import { authPlugin } from '../../auth'
 
-import { toHexString } from "../../assets/util.js"
+import { toHexString } from '../../assets/util.js'
 
-import { Notify } from 'quasar'
-import { Loading } from 'quasar'
+import { Notify, Loading } from 'quasar'
 
 // Helper functions
 
-function ymdString(dt) {
-  return dt.toISOString().split("T")[0]
+function ymdString (dt) {
+  return dt.toISOString().split('T')[0]
 }
 
-function normalizePortfolio(portfolio) {
+function normalizePortfolio (portfolio) {
   portfolio.startDate = new Date(portfolio.startDate * 1000)
   portfolio.lastChanged = new Date(portfolio.lastChanged * 1000)
   return portfolio
 }
 
-async function lookupPortfolio(api, options, portfolioDict, currentPortfolio, portfolioId) {
+async function lookupPortfolio (api, options, portfolioDict, currentPortfolio, portfolioId) {
   return new Promise((resolve, reject) => {
     let portfolio = {}
-    if (currentPortfolio.id == portfolioId) {
+    if (currentPortfolio.id === portfolioId) {
       Object.assign(portfolio, currentPortfolio)
       resolve(portfolio)
     } else if (portfolioDict[portfolioId] === undefined) {
@@ -40,50 +39,6 @@ async function lookupPortfolio(api, options, portfolioDict, currentPortfolio, po
   })
 }
 
-function AnnualizeReturns(measurements) {
-  let annualized = new Map()
-  measurements.forEach( elem => {
-      let dt = new Date(elem.time * 1000)
-      var curr = annualized.get(dt.getFullYear())
-      if (curr === undefined) {
-          annualized.set(dt.getFullYear(), (1 + elem.percentReturn))
-      } else {
-          annualized.set(dt.getFullYear(), curr * (1 + elem.percentReturn))
-      }
-  })
-  return annualized
-}
-
-function BestYear(measurements) {
-  let annualized = AnnualizeReturns(measurements)
-  var yr = 0
-  var ret = Number.MIN_SAFE_INTEGER
-  annualized.forEach( (v, k) => {
-      if (v > ret) {
-          yr = k
-          ret = v
-      }
-  })
-
-  ret = (ret - 1)
-  return {value: ret, year: yr}
-}
-
-function WorstYear(measurements) {
-  let annualized = AnnualizeReturns(measurements)
-  var yr = 0
-  var ret = Number.MAX_SAFE_INTEGER
-  annualized.forEach( (v, k) => {
-      if (v < ret) {
-          yr = k
-          ret = v
-      }
-  })
-
-  ret = (ret - 1)
-  return {value: ret, year: yr}
-}
-
 // Exported actions
 
 export async function fetchPortfolios ({ commit }) {
@@ -91,28 +46,28 @@ export async function fetchPortfolios ({ commit }) {
   api.get('/portfolio', {
     clearCacheEntry: true,
     headers: {
-        Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
+      Authorization: `Bearer ${accessToken}` // send the access token through the 'Authorization' header
     }
   }).then(response => {
-      commit('setPortfolios', response.data)
+    commit('setPortfolios', response.data)
   })
 }
 
-export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, endDate, symbol } ) {
+export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, endDate, symbol }) {
   // load benchmark
   if (symbol === undefined || symbol === '') {
     symbol = 'VFINX'
   }
 
   const accessToken = await authPlugin.getTokenSilently()
-  let options = {
+  const options = {
     headers: {
       Authorization: `Bearer ${accessToken}`
     }
   }
 
   api.get(`/benchmark/${symbol.toLowerCase()}?snapToStart=true&startDate=${ymdString(startDate)}&endDate=${ymdString(endDate)}`, options).then(response => {
-    let benchmark = response.data
+    const benchmark = response.data
     benchmark.startDate = new Date(benchmark.startDate * 1000)
     benchmark.lastChanged = new Date(benchmark.lastChanged * 1000)
 
@@ -124,45 +79,45 @@ export async function fetchBenchmark ({ commit, dispatch, state }, { startDate, 
   })
 }
 
-export async function fetchHoldings({ commit }, { portfolioId } ) {
+export async function fetchHoldings ({ commit }, { portfolioId }) {
   const accessToken = await authPlugin.getTokenSilently()
-  let options = {
+  const options = {
     headers: {
       Authorization: `Bearer ${accessToken}`
     },
     responseType: 'arraybuffer'
   }
 
-  let endpoint = `portfolio/${portfolioId}/holdings`
+  const endpoint = `portfolio/${portfolioId}/holdings`
   api.get(endpoint, options).then(response => {
-    let holdings = new colfer.PortfolioHoldingItemList({})
-    var uint8View = new Uint8Array(response.data)
+    const holdings = new colfer.PortfolioHoldingItemList({})
+    const uint8View = new Uint8Array(response.data)
     holdings.unmarshal(uint8View)
     commit('setHoldings', holdings)
   })
 }
 
-export async function fetchMeasurements({ commit }, { portfolioId, metric1, metric2 } ) {
+export async function fetchMeasurements ({ commit }, { portfolioId, metric1, metric2 }) {
   const accessToken = await authPlugin.getTokenSilently()
-  let options = {
+  const options = {
     headers: {
       Authorization: `Bearer ${accessToken}`
     },
     responseType: 'arraybuffer'
   }
 
-  let endpoint = `portfolio/${portfolioId}/measurements?field1=${metric1}&field2=${metric2}`
+  const endpoint = `portfolio/${portfolioId}/measurements?field1=${metric1}&field2=${metric2}`
   api.get(endpoint, options).then(response => {
-    let measurements = new colfer.PerformanceMeasurementItemList({})
-    var uint8View = new Uint8Array(response.data)
+    const measurements = new colfer.PerformanceMeasurementItemList({})
+    const uint8View = new Uint8Array(response.data)
     measurements.unmarshal(uint8View)
     commit('setMeasurements', measurements)
   })
 }
 
-export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) {
+export async function fetchPortfolio ({ commit, dispatch, state }, portfolioId) {
   const accessToken = await authPlugin.getTokenSilently()
-  let options = {
+  const options = {
     headers: {
       Authorization: `Bearer ${accessToken}`
     }
@@ -171,12 +126,11 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
   commit('setPortfolioLoaded', false)
   Loading.show()
 
-  let portfolio = await lookupPortfolio(api, options, state.portfolioDict, state.current, portfolioId)
-  let now = new Date()
-  if (portfolio.id != portfolioId ||
+  const portfolio = await lookupPortfolio(api, options, state.portfolioDict, state.current, portfolioId)
+  const now = new Date()
+  if (portfolio.id !== portfolioId ||
       portfolio.lastfetch === undefined ||
-      (now - portfolio.lastfetch) > (15 * 60 * 1000))
-  {
+      (now - portfolio.lastfetch) > (15 * 60 * 1000)) {
     commit('setCurrentPortfolio', emptyPortfolio)
     commit('setBenchmark', emptyPerformance)
   } else {
@@ -185,16 +139,16 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
     return
   }
 
-  let endpoint = `/portfolio/${portfolioId}/performance`
-  console.log("Load portfolio performance")
+  const endpoint = `/portfolio/${portfolioId}/performance`
+  console.log('Load portfolio performance')
   api.get(endpoint, {
     headers: {
-      Authorization: `Bearer ${accessToken}`    // send the access token through the 'Authorization' header
+      Authorization: `Bearer ${accessToken}` // send the access token through the 'Authorization' header
     },
     responseType: 'arraybuffer'
   }).then(response => {
-    let performance = new colfer.Performance({})
-    var uint8View = new Uint8Array(response.data)
+    const performance = new colfer.Performance({})
+    const uint8View = new Uint8Array(response.data)
     performance.unmarshal(uint8View)
 
     try {
@@ -208,11 +162,11 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
     portfolio.id = toHexString(performance.PortfolioID)
     performance.PortfolioID = portfolio.id
 
-    console.log("calling fetch measurements")
+    console.log('calling fetch measurements')
     dispatch('portfolio/fetchMeasurements', {
       portfolioId: portfolio.id,
-      metric1: "strategy_growth_of_10k",
-      metric2: "benchmark_growth_of_10k"
+      metric1: 'strategy_growth_of_10k',
+      metric2: 'benchmark_growth_of_10k'
     }, { root: true })
 
     // calculate metrics
@@ -241,41 +195,41 @@ export async function fetchPortfolio({ commit, dispatch, state }, portfolioId ) 
   })
 }
 
-export async function fetchTransactions({ commit }, { portfolioId } ) {
+export async function fetchTransactions ({ commit }, { portfolioId }) {
   const accessToken = await authPlugin.getTokenSilently()
-  let options = {
+  const options = {
     headers: {
       Authorization: `Bearer ${accessToken}`
     },
     responseType: 'arraybuffer'
   }
 
-  let endpoint = `portfolio/${portfolioId}/transactions`
+  const endpoint = `portfolio/${portfolioId}/transactions`
   api.get(endpoint, options).then(response => {
-    let trxs = new colfer.PortfolioTransactionList({})
-    var uint8View = new Uint8Array(response.data)
+    const trxs = new colfer.PortfolioTransactionList({})
+    const uint8View = new Uint8Array(response.data)
     trxs.unmarshal(uint8View)
     commit('setTransactions', trxs)
   })
 }
 
-export async function calculateMetrics({ commit }, { performance, key }) {
-  let currencyFormatter = new Intl.NumberFormat('en-US', {
+export async function calculateMetrics ({ commit }, { performance, key }) {
+  const currencyFormatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
 
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   })
 
-  let percentFormatter = new Intl.NumberFormat('en-US', {
+  const percentFormatter = new Intl.NumberFormat('en-US', {
     style: 'percent',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })
 
-  let metric = {
-    key: key,
+  const metric = {
+    key,
     name: 'finalBalance',
     value: {}
   }
@@ -289,7 +243,7 @@ export async function calculateMetrics({ commit }, { performance, key }) {
   metric.name = 'totalDeposited'
   metric.value[`${key}Value`] = performance.TotalDeposited
   if (isNaN(performance.TotalDeposited)) {
-    metric.value[`${key}FormattedValue`] = "-"
+    metric.value[`${key}FormattedValue`] = '-'
   } else {
     metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.TotalDeposited)
   }
@@ -299,7 +253,7 @@ export async function calculateMetrics({ commit }, { performance, key }) {
   metric.name = 'totalWithdrawn'
   metric.value[`${key}Value`] = performance.TotalWithdrawn
   if (isNaN(performance.TotalWithdrawn)) {
-    metric.value[`${key}FormattedValue`] = "-"
+    metric.value[`${key}FormattedValue`] = '-'
   } else {
     metric.value[`${key}FormattedValue`] = currencyFormatter.format(performance.TotalWithdrawn)
   }
@@ -327,7 +281,7 @@ export async function calculateMetrics({ commit }, { performance, key }) {
   metric.name = 'taxCostRatio'
   metric.value[`${key}Value`] = performance.TaxCostRatio
   if (isNaN(performance.TaxCostRatio) || key === 'benchmark') {
-    metric.value[`${key}FormattedValue`] = "-"
+    metric.value[`${key}FormattedValue`] = '-'
   } else {
     metric.value[`${key}FormattedValue`] = percentFormatter.format(performance.TaxCostRatio)
   }
@@ -351,10 +305,10 @@ export async function calculateMetrics({ commit }, { performance, key }) {
   metric.name = 'ulcerIndex'
   metric.value[`${key}Value`] = performance.UlcerIndexP90
   if (isNaN(performance.UlcerIndexP90)) {
-    metric.value[`${key}FormattedValue`] = "-"
+    metric.value[`${key}FormattedValue`] = '-'
   } else {
     metric.value[`${key}FormattedValue`] = performance.UlcerIndexP90.toFixed(2)
   }
-  metric.value[`${key}Suffix`] = ``
+  metric.value[`${key}Suffix`] = ''
   commit('setMetric', metric)
 }

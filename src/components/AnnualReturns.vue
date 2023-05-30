@@ -3,38 +3,38 @@
 </template>
 
 <script>
-import { defineComponent, ref, toRefs, watch, onMounted, onUnmounted } from 'vue'
+import { defineComponent, toRefs, watch, onMounted, onUnmounted } from 'vue'
 
 import * as am4core from '@amcharts/amcharts4/core'
 import * as am4charts from '@amcharts/amcharts4/charts'
 import '@amcharts/amcharts4/charts'
 import animated from '@amcharts/amcharts4/themes/animated'
 
-let AnnualizeReturns = function (measurements) {
-    let annualized = new Map()
-    measurements.forEach( (elem, idx, arr) => {
-        let dt = elem.Time
-        var curr = annualized.get(dt.getFullYear())
-        var stratPercent = 1.0
-        var benchPercent = 1.0
-        if (idx > 0) {
-          let last = arr[idx-1]
-          stratPercent = elem.Value1 / last.Value1
-          benchPercent = elem.Value2 / last.Value2
-        }
-        if (curr === undefined) {
-            annualized.set(dt.getFullYear(), {
-              strategy: stratPercent,
-              benchmark: benchPercent
-            })
-        } else {
-            annualized.set(dt.getFullYear(), {
-              strategy: curr.strategy * stratPercent,
-              benchmark: curr.benchmark * benchPercent
-            })
-        }
-    })
-    return annualized
+const AnnualizeReturns = function (measurements) {
+  const annualized = new Map()
+  measurements.forEach((elem, idx, arr) => {
+    const dt = elem.Time
+    const curr = annualized.get(dt.getFullYear())
+    let stratPercent = 1.0
+    let benchPercent = 1.0
+    if (idx > 0) {
+      const last = arr[idx - 1]
+      stratPercent = elem.Value1 / last.Value1
+      benchPercent = elem.Value2 / last.Value2
+    }
+    if (curr === undefined) {
+      annualized.set(dt.getFullYear(), {
+        strategy: stratPercent,
+        benchmark: benchPercent
+      })
+    } else {
+      annualized.set(dt.getFullYear(), {
+        strategy: curr.strategy * stratPercent,
+        benchmark: curr.benchmark * benchPercent
+      })
+    }
+  })
+  return annualized
 }
 
 export default defineComponent({
@@ -53,14 +53,14 @@ export default defineComponent({
       default: '425px'
     }
   },
-  setup(props) {
+  setup (props) {
     // amcharts setup
     am4core.useTheme(animated)
-    var chart
-    var strategySeries
-    var benchmarkSeries
-    var xAxis
-    var yAxis
+    let chart
+    let strategySeries
+    let benchmarkSeries
+    let xAxis
+    let yAxis
 
     // reactive data
     const { measurements, width: chartWidth, height: chartHeight } = toRefs(props)
@@ -71,7 +71,7 @@ export default defineComponent({
     })
 
     // methods
-    async function renderChart() {
+    async function renderChart () {
       if (chart) {
         chart.dispose()
       }
@@ -95,7 +95,7 @@ export default defineComponent({
       xAxis.renderer.grid.template.location = 0
 
       yAxis = chart.yAxes.push(new am4charts.ValueAxis())
-      yAxis.title.text = "Return (%)"
+      yAxis.title.text = 'Return (%)'
 
       // Add strategy series
       strategySeries = chart.series.push(new am4charts.ColumnSeries())
@@ -107,12 +107,12 @@ export default defineComponent({
       strategySeries.tooltip.getFillFromObject = false
       strategySeries.tooltip.background.cornerRadius = 5
       strategySeries.tooltip.background.strokeOpacity = 0
-      strategySeries.tooltip.pointerOrientation = "vertical"
-      strategySeries.tooltip.background.fill = am4core.color("#fff")
-      strategySeries.tooltip.label.fill = am4core.color("#00")
+      strategySeries.tooltip.pointerOrientation = 'vertical'
+      strategySeries.tooltip.background.fill = am4core.color('#fff')
+      strategySeries.tooltip.label.fill = am4core.color('#00')
 
-      strategySeries.events.on("hidden", arrangeColumns)
-      strategySeries.events.on("shown", arrangeColumns)
+      strategySeries.events.on('hidden', arrangeColumns)
+      strategySeries.events.on('shown', arrangeColumns)
 
       // Add benchmark series
       benchmarkSeries = chart.series.push(new am4charts.ColumnSeries())
@@ -124,12 +124,12 @@ export default defineComponent({
       benchmarkSeries.tooltip.getFillFromObject = false
       benchmarkSeries.tooltip.background.cornerRadius = 5
       benchmarkSeries.tooltip.background.strokeOpacity = 0
-      benchmarkSeries.tooltip.pointerOrientation = "vertical"
-      benchmarkSeries.tooltip.background.fill = am4core.color("#fff")
-      benchmarkSeries.tooltip.label.fill = am4core.color("#00")
+      benchmarkSeries.tooltip.pointerOrientation = 'vertical'
+      benchmarkSeries.tooltip.background.fill = am4core.color('#fff')
+      benchmarkSeries.tooltip.label.fill = am4core.color('#00')
 
-      benchmarkSeries.events.on("hidden", arrangeColumns)
-      benchmarkSeries.events.on("shown", arrangeColumns)
+      benchmarkSeries.events.on('hidden', arrangeColumns)
+      benchmarkSeries.events.on('shown', arrangeColumns)
 
       // setup tooltips
       strategySeries.columns.template.tooltipText = `[bold]{year}[/]\n[${strategySeries.stroke.hex}]●[/] ${strategySeries.name}: {strategy.formatNumber("#,###.#")}%\n[${benchmarkSeries.stroke.hex}]●[/] ${benchmarkSeries.name}: {benchmark.formatNumber("#,###.#")}%\n`
@@ -138,35 +138,35 @@ export default defineComponent({
       chart.data = await buildData()
     }
 
-    async function buildData() {
-      let rets = AnnualizeReturns(measurements.value.Items)
+    async function buildData () {
+      const rets = AnnualizeReturns(measurements.value.Items)
 
-      let data = []
+      const data = []
 
-      rets.forEach( (v, k) => {
+      rets.forEach((v, k) => {
         data.push({
           year: `${k}`,
           benchmark: (v.benchmark - 1) * 100,
-          strategy: (v.strategy - 1) * 100,
+          strategy: (v.strategy - 1) * 100
         })
       })
 
       return data
     }
 
-    function arrangeColumns() {
-      var series = chart.series.getIndex(0)
-      var w = 1 - xAxis.renderer.cellStartLocation - (1 - xAxis.renderer.cellEndLocation)
+    function arrangeColumns () {
+      const series = chart.series.getIndex(0)
+      const w = 1 - xAxis.renderer.cellStartLocation - (1 - xAxis.renderer.cellEndLocation)
 
       if (series.dataItems.length > 1) {
-        var x0 = xAxis.getX(series.dataItems.getIndex(0), "categoryX")
-        var x1 = xAxis.getX(series.dataItems.getIndex(1), "categoryX")
-        var delta = ((x1 - x0) / chart.series.length) * w
+        const x0 = xAxis.getX(series.dataItems.getIndex(0), 'categoryX')
+        const x1 = xAxis.getX(series.dataItems.getIndex(1), 'categoryX')
+        const delta = ((x1 - x0) / chart.series.length) * w
         if (am4core.isNumber(delta)) {
-          var middle = chart.series.length / 2
-          var newIndex = 0
+          const middle = chart.series.length / 2
+          let newIndex = 0
 
-          chart.series.each(function(series) {
+          chart.series.each(function (series) {
             if (!series.isHidden && !series.isHiding) {
               series.dummyData = newIndex
               newIndex++
@@ -175,16 +175,16 @@ export default defineComponent({
             }
           })
 
-          var visibleCount = newIndex
-          var newMiddle = visibleCount / 2
+          const visibleCount = newIndex
+          const newMiddle = visibleCount / 2
 
-          chart.series.each(function(series) {
-            var trueIndex = chart.series.indexOf(series)
-            var newIndex = series.dummyData
+          chart.series.each(function (series) {
+            const trueIndex = chart.series.indexOf(series)
+            const newIndex = series.dummyData
 
-            var dx = (newIndex - trueIndex + middle - newMiddle) * delta
+            const dx = (newIndex - trueIndex + middle - newMiddle) * delta
 
-            series.animate({ property: "dx", to: dx }, series.interpolationDuration, series.interpolationEasing)
+            series.animate({ property: 'dx', to: dx }, series.interpolationDuration, series.interpolationEasing)
           })
         }
       }
@@ -204,7 +204,7 @@ export default defineComponent({
 
     return {
       chartHeight,
-      chartWidth,
+      chartWidth
     }
   }
 })

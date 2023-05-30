@@ -1,7 +1,7 @@
 export function setProfile (state, profile) {
-    state.profile = profile
+  state.profile = profile
 }
 
 export function setAuthenticated (state, authenticated) {
-    state.authenticated = authenticated
+  state.authenticated = authenticated
 }

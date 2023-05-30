@@ -104,6 +104,7 @@ import PortfolioSummary from './PortfolioSummary.vue'
 import PortfolioTransactions from './PortfolioTransactions.vue'
 
 export default defineComponent({
+  // eslint-disable-next-line vue/multi-word-component-names
   name: 'Portfolio',
   props: {
     portfolioId: String
@@ -139,7 +140,7 @@ export default defineComponent({
       format,
       portfolio,
       portfolioLoaded,
-      tabModel,
+      tabModel
     }
   }
 })

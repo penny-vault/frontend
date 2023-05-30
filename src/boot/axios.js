@@ -1,6 +1,9 @@
+import { apiUrl } from '../../package.json'
+
 import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 
+/*
 import localforage from 'localforage'
 import { setupCache } from 'axios-cache-adapter'
 
@@ -28,6 +31,7 @@ const cache = setupCache({
     query: false
   }
 })
+*/
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -36,8 +40,8 @@ const cache = setupCache({
 // "export default () => {}" function below (which runs individually
 // for each client)
 const api = axios.create({
-  adapter: cache.adapter,
-  baseURL: require('../../package.json').apiUrl,
+  // adapter: cache.adapter,
+  baseURL: apiUrl
 })
 
 export default boot(({ app }) => {

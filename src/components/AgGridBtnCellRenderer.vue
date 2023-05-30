@@ -8,8 +8,8 @@
 // the template should be modified to use q-btn
 export default {
   methods: {
-    btnClickedHandler() {
-      this.params.clicked(this.params.value);
+    btnClickedHandler () {
+      this.params.clicked(this.params.value)
     }
   }
 }

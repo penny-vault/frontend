@@ -27,10 +27,11 @@ import { format } from 'date-fns'
 import { AgGridVue } from 'ag-grid-vue3'
 import PxCard from 'components/PxCard.vue'
 
-Date.prototype.addDays = function(days) {
-    var date = new Date(this.valueOf());
-    date.setDate(date.getDate() + days);
-    return date;
+// eslint-disable-next-line no-extend-native
+Date.prototype.addDays = function (days) {
+  const date = new Date(this.valueOf())
+  date.setDate(date.getDate() + days)
+  return date
 }
 
 export default defineComponent({
@@ -57,7 +58,8 @@ export default defineComponent({
     weightMap.set('BUY', 4)
 
     const columnDefs = ref([
-      { field: 'Date',
+      {
+        field: 'Date',
         cellClass: 'dateType',
         minWidth: 110,
         maxWidth: 150,
@@ -69,7 +71,7 @@ export default defineComponent({
         resizable: true,
         editable: false,
         valueFormatter: (params) => {
-          var d = params.value
+          const d = params.value
           const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d)
           const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d)
           const da = new Intl.DateTimeFormat('en', { day: 'numeric' }).format(d)
@@ -84,7 +86,7 @@ export default defineComponent({
         lockVisible: true,
         sortIndex: 2,
         valueGetter: (params) => {
-          var d = params.data.Kind
+          const d = params.data.Kind
           return weightMap.get(d)
         }
       },
@@ -116,12 +118,12 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           if (isNaN(params.value)) {
-            return "-"
+            return '-'
           }
           if (params.data.Kind === 'DIVIDEND' || params.data.Kind === 'DEPOSIT' || params.data.Kind === 'Withdraw') {
-            return ""
+            return ''
           }
-          return new Intl.NumberFormat('en-US', {maximumFractionDigits: 5}).format(params.value)
+          return new Intl.NumberFormat('en-US', { maximumFractionDigits: 5 }).format(params.value)
         }
       },
       {
@@ -134,10 +136,10 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           if (isNaN(params.value)) {
-            return "-"
+            return '-'
           }
           if (params.data.Kind === 'DIVIDEND' || params.data.Kind === 'DEPOSIT' || params.data.Kind === 'WITHDRAW' || params.data.Kind === 'INTEREST') {
-            return ""
+            return ''
           }
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
@@ -152,7 +154,7 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           if (isNaN(params.value)) {
-            return "-"
+            return '-'
           }
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
@@ -168,10 +170,10 @@ export default defineComponent({
         editable: false,
         valueFormatter: (params) => {
           if (isNaN(params.value)) {
-            return "-"
+            return '-'
           }
           if (params.data.Kind !== 'SELL') {
-            return ""
+            return ''
           }
           return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(params.value)
         }
@@ -191,46 +193,46 @@ export default defineComponent({
 
     const gridOptions = ref({
       rowClassRules: {
-        'predicted-asset': function(params) {
-          var dt = new Date()
-          var rowDt = new Date(params.data.time * 1000)
+        'predicted-asset': function (params) {
+          const dt = new Date()
+          const rowDt = new Date(params.data.time * 1000)
           return (rowDt.getFullYear() === dt.getFullYear()) && (rowDt.getMonth() === dt.getMonth())
         },
         excelStyles: [
-        {
+          {
             id: 'numberType',
             numberFormat: {
-                format: '0',
-            },
-        },
-        {
-          id: 'percentType',
-          numberFormat: {
-            format: '#,##0.00%'
-          }
-        },
-        {
+              format: '0'
+            }
+          },
+          {
+            id: 'percentType',
+            numberFormat: {
+              format: '#,##0.00%'
+            }
+          },
+          {
             id: 'currencyType',
             numberFormat: {
-                format: '$#,##0.00',
-            },
-        },
-        {
+              format: '$#,##0.00'
+            }
+          },
+          {
             id: 'booleanType',
-            dataType: 'boolean',
-        },
-        {
+            dataType: 'boolean'
+          },
+          {
             id: 'stringType',
-            dataType: 'String',
-        },
-        {
+            dataType: 'String'
+          },
+          {
             id: 'dateType',
             dataType: 'DateTime',
             numberFormat: {
               format: 'mm/dd/yyy'
             }
-        }
-      ]
+          }
+        ]
 
       }
     })
@@ -262,9 +264,9 @@ export default defineComponent({
     })
 
     // methods
-    function getDynamicColumns() {
+    function getDynamicColumns () {
       if (rowData.value.length > 1) {
-        let justificationTmpl = rowData.value[1].Justification
+        const justificationTmpl = rowData.value[1].Justification
         if (justificationTmpl !== undefined) {
           justificationTmpl.forEach((elem, idx) => {
             if (!dynamicColumns.has(elem.Key)) {
@@ -272,14 +274,14 @@ export default defineComponent({
               columnDefs.value.push({
                 headerName: elem.Key,
                 valueGetter: (params) => {
-                  let justMap = new Map()
+                  const justMap = new Map()
                   params.data.Justification.forEach((e, i) => {
                     justMap.set(e.Key, e.Value)
                   })
-                  return justMap.get(elem.Key) || ""
+                  return justMap.get(elem.Key) || ''
                 },
                 valueFormatter: (params) => {
-                  if (typeof params.value === "number") {
+                  if (typeof params.value === 'number') {
                     return params.value.toFixed(2)
                   }
                   return params.value
@@ -291,49 +293,49 @@ export default defineComponent({
               })
             }
           })
-          setTimeout(function() {
+          setTimeout(function () {
             gridApi.setColumnDefs(columnDefs.value)
           }, 0)
         }
       }
     }
 
-    function exportCsv(e) {
+    function exportCsv (e) {
       e.preventDefault()
       gridApi.exportDataAsCsv({
-        processCellCallback: ({column, value}) => {
+        processCellCallback: ({ column, value }) => {
           switch (column.colDef.cellClass) {
-            case "dateType":
-              return format(value, "yyyy-MM-dd")
-            case "numberType":
+            case 'dateType':
+              return format(value, 'yyyy-MM-dd')
+            case 'numberType':
               return value.toFixed(5)
-            case "currencyType":
+            case 'currencyType':
               return value.toFixed(5)
           }
           return value
-        },
+        }
       })
     }
 
-    function exportExcel(e) {
+    function exportExcel (e) {
       e.preventDefault()
       gridApi.exportDataAsExcel({
-        processCellCallback: ({column, value}) => {
+        processCellCallback: ({ column, value }) => {
           switch (column.colDef.cellClass) {
-            case "dateType":
-              return format(value, "yyyy-MM-dd")
+            case 'dateType':
+              return format(value, 'yyyy-MM-dd')
           }
           return value
-        },
+        }
       })
     }
 
-    function onGridReady(params) {
+    function onGridReady (params) {
       gridApi.closeToolPanel()
-      var defaultSortModel = [
+      const defaultSortModel = [
         { colId: 'date', sort: 'desc', sortIndex: 0 },
-        { colId: 'kind', sort: 'asc', sortIndex: 1 },
-      ];
+        { colId: 'kind', sort: 'asc', sortIndex: 1 }
+      ]
 
       columnApi.applyColumnState({ state: defaultSortModel })
     }

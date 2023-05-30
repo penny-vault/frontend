@@ -19,7 +19,7 @@ export default defineComponent({
     },
     seriesConfig: {
       type: Array,
-      default() {
+      default () {
         return [
           {
             title: 'Series 1',
@@ -33,7 +33,7 @@ export default defineComponent({
     },
     labels: {
       type: String,
-      default: ""
+      default: ''
     },
     xTitle: {
       type: String,
@@ -44,10 +44,10 @@ export default defineComponent({
       default: 'Y'
     }
   },
-  setup(props) {
+  setup (props) {
     const { data, labels, seriesConfig, xTitle, yTitle } = toRefs(props)
 
-    var chart = undefined
+    let chart
 
     // configure amcharts theme
     am4core.useTheme(animated)
@@ -59,25 +59,25 @@ export default defineComponent({
 
     // methods
 
-    async function createSeries() {
-      let series = new Array()
+    async function createSeries () {
+      const series = []
       seriesConfig.value.forEach((elem, idx) => {
-        let lineSeries = chart.series.push(new am4charts.LineSeries())
+        const lineSeries = chart.series.push(new am4charts.LineSeries())
         lineSeries.dataFields.valueX = elem.valueX || 'x'
         lineSeries.dataFields.valueY = elem.valueY || 'y'
         lineSeries.strokeOpacity = elem.strokeOpacity || 0
 
         // configure symbology
-        if (labels.value !== "") {
-          let labelBullet = lineSeries.bullets.push(new am4charts.LabelBullet());
+        if (labels.value !== '') {
+          const labelBullet = lineSeries.bullets.push(new am4charts.LabelBullet())
           labelBullet.label.text = labels.value
           labelBullet.label.dy = 20
         }
 
-        let bullet = lineSeries.bullets.push(new am4charts.Bullet())
-        var symbol
-        let symbolName = elem.symbol || 'circle'
-        switch(symbolName) {
+        const bullet = lineSeries.bullets.push(new am4charts.Bullet())
+        let symbol
+        const symbolName = elem.symbol || 'circle'
+        switch (symbolName) {
           case 'circle':
             symbol = bullet.createChild(am4core.Circle)
             break
@@ -115,27 +115,27 @@ export default defineComponent({
         symbol.width = elem.width || 12
         symbol.height = elem.height || 12
 
-        let symbolState = symbol.states.create("hover")
+        const symbolState = symbol.states.create('hover')
         symbolState.properties.scale = 1.7
 
         symbol.tooltipText = elem.tooltipText || 'X: {valueX} / Y: {valueY}'
         symbol.tooltipX = -10
         lineSeries.tooltip.background.cornerRadius = 5
         lineSeries.tooltip.background.strokeOpacity = 0
-        lineSeries.tooltip.pointerOrientation = "right"
+        lineSeries.tooltip.pointerOrientation = 'right'
         lineSeries.tooltip.label.minWidth = 40
         lineSeries.tooltip.label.minHeight = 40
-        lineSeries.tooltip.label.textAlign = "left"
-        lineSeries.tooltip.label.textValign = "middle"
+        lineSeries.tooltip.label.textAlign = 'left'
+        lineSeries.tooltip.label.textValign = 'middle'
         lineSeries.tooltip.getFillFromObject = false
-        lineSeries.tooltip.label.fill = am4core.color("black")
-        lineSeries.tooltip.background.fill = am4core.color("#FFFFFF")
+        lineSeries.tooltip.label.fill = am4core.color('black')
+        lineSeries.tooltip.background.fill = am4core.color('#FFFFFF')
 
         series.push(lineSeries)
       })
     }
 
-    async function renderChart() {
+    async function renderChart () {
       if (chart) {
         chart.dispose()
       }
@@ -147,12 +147,12 @@ export default defineComponent({
       chart.data = data.value
 
       // Create axes
-      var valueAxisX = chart.xAxes.push(new am4charts.ValueAxis())
+      const valueAxisX = chart.xAxes.push(new am4charts.ValueAxis())
       valueAxisX.title.text = xTitle.value
       valueAxisX.renderer.minGridDistance = 40
 
       // Create value axis
-      var valueAxisY = chart.yAxes.push(new am4charts.ValueAxis())
+      const valueAxisY = chart.yAxes.push(new am4charts.ValueAxis())
       valueAxisY.title.text = yTitle.value
 
       // Add cursor and series tooltip support
@@ -171,7 +171,8 @@ export default defineComponent({
       */
 
       // create the series
-      let series = createSeries()
+      // eslint-disable-next-line no-unused-vars
+      const series = createSeries()
     }
 
     // creation events
@@ -179,7 +180,7 @@ export default defineComponent({
       renderChart()
     })
 
-    onUnmounted( async () => {
+    onUnmounted(async () => {
       if (chart) {
         chart.dispose()
       }
