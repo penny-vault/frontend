@@ -52,6 +52,18 @@
               v-model="form[item.arg]"
               class="q-pb-md"></security-picker>
             <q-input
+              v-else-if="item.typecode === 'float'"
+              outlined
+              :key="item.id"
+              :name="item.inpid"
+              :label="item.name"
+              v-model="form[item.arg]"
+              step=".1"
+              type="number"
+              :disable="disabled"
+              :rules="[val => !!val || 'Field is required']"
+            />
+            <q-input
               v-else
               outlined
               :key="item.id"
@@ -224,7 +236,7 @@ export default defineComponent({
           required: true
         }
 
-        if (v.typecode == "number") {
+        if (v.typecode == "number" || v.typecode == "float") {
           item.inptype = "number"
           item.inpdefault = Number(item.inpdefault)
         }
@@ -285,6 +297,9 @@ export default defineComponent({
           case "number":
             options.args[k] = Number(options.args[k])
             break
+          case "float":
+          options.args[k] = Number(options.args[k])
+            break
         }
       })
 
@@ -307,6 +322,9 @@ export default defineComponent({
             options.userArgs[k] = options.userArgs[k].split(' ')
             break
           case "number":
+            options.userArgs[k] = Number(options.userArgs[k])
+            break
+          case "float":
             options.userArgs[k] = Number(options.userArgs[k])
             break
         }
@@ -361,6 +379,9 @@ export default defineComponent({
             form.value[elem.arg] = JSON.parse(val).join(" ")
             break
           case "number":
+            form.value[elem.arg] = Number(val)
+            break
+          case "float":
             form.value[elem.arg] = Number(val)
             break
           case "stock":
