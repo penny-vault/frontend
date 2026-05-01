@@ -71,7 +71,10 @@ export interface GetMetricsParams {
   metric?: string
 }
 
-export function getPortfolioMetrics(slug: string, params: GetMetricsParams = {}): Promise<PortfolioMetrics> {
+export function getPortfolioMetrics(
+  slug: string,
+  params: GetMetricsParams = {}
+): Promise<PortfolioMetrics> {
   return apiClient<PortfolioMetrics>(`/portfolios/${slug}/metrics`, { params })
 }
 
@@ -114,7 +117,9 @@ export function getPortfolioTransactions(
   if (params.from) queryParams.from = params.from
   if (params.to) queryParams.to = params.to
   if (params.types?.length) queryParams.type = params.types.join(',')
-  return apiClient<TransactionsResponse>(`/portfolios/${slug}/transactions`, { params: queryParams })
+  return apiClient<TransactionsResponse>(`/portfolios/${slug}/transactions`, {
+    params: queryParams
+  })
 }
 
 export type HoldingsImpactResponse = components['schemas']['HoldingsImpactResponse']
@@ -133,18 +138,14 @@ export function getPortfolioHoldingsImpact(
 ): Promise<HoldingsImpactResponse> {
   const queryParams: Record<string, string> = {}
   if (params.top !== undefined) queryParams.top = String(params.top)
-  return apiClient<HoldingsImpactResponse>(
-    `/portfolios/${slug}/holdings-impact`,
-    { params: queryParams }
-  )
+  return apiClient<HoldingsImpactResponse>(`/portfolios/${slug}/holdings-impact`, {
+    params: queryParams
+  })
 }
 
 export type EmailSummaryRequest = components['schemas']['EmailSummaryRequest']
 
-export function sendPortfolioEmailSummary(
-  slug: string,
-  body: EmailSummaryRequest
-): Promise<void> {
+export function sendPortfolioEmailSummary(slug: string, body: EmailSummaryRequest): Promise<void> {
   return apiClient<void>(`/portfolios/${slug}/email-summary`, {
     method: 'POST',
     body

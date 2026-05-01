@@ -48,9 +48,11 @@ const rows = computed<Row[]>(() =>
   props.strategies.map<Row>((s) => {
     const cagr = s.cagr ?? null
     const rowState =
-      s.shortCode === props.selectedShortCode ? 'selected'
-      : s.shortCode === props.hoveredShortCode ? 'hovered'
-      : ''
+      s.shortCode === props.selectedShortCode
+        ? 'selected'
+        : s.shortCode === props.hoveredShortCode
+          ? 'hovered'
+          : ''
     return {
       shortCode: s.shortCode,
       name: strategyName(s),
@@ -74,7 +76,7 @@ const rows = computed<Row[]>(() =>
 )
 
 const columns = computed(() => {
-  const rowClass = (row: Row) => row.rowState ? `st-row-${row.rowState}` : ''
+  const rowClass = (row: Row) => (row.rowState ? `st-row-${row.rowState}` : '')
 
   return [
     {
@@ -98,7 +100,10 @@ const columns = computed(() => {
       cellTemplate: (h: unknown, p: CellTemplateProp) => (p.model as Row).cagrLabel,
       cellProperties: ({ model }: CellTemplateProp) => {
         const m = model as Row
-        return { class: `st-num ${m.cagrClass} ${rowClass(m)}`.trim(), 'data-short-code': m.shortCode }
+        return {
+          class: `st-num ${m.cagrClass} ${rowClass(m)}`.trim(),
+          'data-short-code': m.shortCode
+        }
       }
     },
     {
@@ -122,7 +127,10 @@ const columns = computed(() => {
       cellTemplate: (h: unknown, p: CellTemplateProp) => (p.model as Row).maxDDLabel,
       cellProperties: ({ model }: CellTemplateProp) => {
         const m = model as Row
-        return { class: `st-num st-cell-warn ${rowClass(m)}`.trim(), 'data-short-code': m.shortCode }
+        return {
+          class: `st-num st-cell-warn ${rowClass(m)}`.trim(),
+          'data-short-code': m.shortCode
+        }
       }
     },
     {
@@ -134,7 +142,10 @@ const columns = computed(() => {
       cellTemplate: (h: unknown, p: CellTemplateProp) => (p.model as Row).starsLabel,
       cellProperties: ({ model }: CellTemplateProp) => {
         const m = model as Row
-        return { class: `st-num st-cell-muted ${rowClass(m)}`.trim(), 'data-short-code': m.shortCode }
+        return {
+          class: `st-num st-cell-muted ${rowClass(m)}`.trim(),
+          'data-short-code': m.shortCode
+        }
       }
     },
     {
@@ -170,7 +181,10 @@ const columns = computed(() => {
       sortable: true,
       cellProperties: ({ model }: CellTemplateProp) => {
         const m = model as Row
-        return { class: `st-state st-state-${m.state} ${rowClass(m)}`.trim(), 'data-short-code': m.shortCode }
+        return {
+          class: `st-state st-state-${m.state} ${rowClass(m)}`.trim(),
+          'data-short-code': m.shortCode
+        }
       }
     },
     {
@@ -187,22 +201,29 @@ const columns = computed(() => {
       cellTemplate: (h: unknown, p: CellTemplateProp) => {
         const hFn = h as typeof import('vue').h
         const shortCode = (p.model as Row).shortCode
-        return hFn('button', {
-          class: 'st-play-btn',
-          title: 'Create portfolio',
-          onClick: (e: MouseEvent) => {
-            e.stopPropagation()
-            router.push({ name: 'portfolio-create', query: { strategy: shortCode } })
-          }
-        }, [
-          hFn('svg', {
-            width: 11, height: 12,
-            viewBox: '0 0 11 12',
-            fill: 'currentColor'
-          }, [
-            hFn('path', { d: 'M0 0l11 6-11 6V0z' })
-          ])
-        ])
+        return hFn(
+          'button',
+          {
+            class: 'st-play-btn',
+            title: 'Create portfolio',
+            onClick: (e: MouseEvent) => {
+              e.stopPropagation()
+              router.push({ name: 'portfolio-create', query: { strategy: shortCode } })
+            }
+          },
+          [
+            hFn(
+              'svg',
+              {
+                width: 11,
+                height: 12,
+                viewBox: '0 0 11 12',
+                fill: 'currentColor'
+              },
+              [hFn('path', { d: 'M0 0l11 6-11 6V0z' })]
+            )
+          ]
+        )
       }
     }
   ]
@@ -224,7 +245,6 @@ function onGridMouseMove(e: MouseEvent) {
 function onGridMouseLeave() {
   emit('hover', null)
 }
-
 </script>
 
 <template>
@@ -358,7 +378,9 @@ function onGridMouseLeave() {
   border-radius: 3px;
   color: var(--gain);
   cursor: pointer;
-  transition: background 140ms ease, opacity 140ms ease;
+  transition:
+    background 140ms ease,
+    opacity 140ms ease;
 }
 .st-play-btn:hover {
   background: color-mix(in srgb, var(--gain) 15%, transparent);

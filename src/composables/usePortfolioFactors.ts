@@ -1,8 +1,5 @@
 import { useQuery } from '@tanstack/vue-query'
-import {
-  getPortfolioFactors,
-  type PortfolioFactorAnalysis
-} from '@/api/endpoints/portfolios'
+import { getPortfolioFactors, type PortfolioFactorAnalysis } from '@/api/endpoints/portfolios'
 import { computed, type Ref } from 'vue'
 
 export function usePortfolioFactors(portfolioId: Ref<string | null>) {

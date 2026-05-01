@@ -55,8 +55,7 @@ function optionFor(episode: CrisisEpisode): EChartsOption {
       backgroundColor: p.panel,
       borderColor: p.border,
       textStyle: { color: p.text1 },
-      valueFormatter: (v: unknown) =>
-        typeof v === 'number' ? `${v.toFixed(1)}%` : String(v)
+      valueFormatter: (v: unknown) => (typeof v === 'number' ? `${v.toFixed(1)}%` : String(v))
     },
     grid: { left: 44, right: 10, top: 10, bottom: 22 },
     xAxis: {
@@ -118,7 +117,9 @@ function optionFor(episode: CrisisEpisode): EChartsOption {
             <h3 class="csm-label">{{ ep.label }}</h3>
             <div class="csm-depths">
               <span class="csm-depth num csm-depth-port">{{ (ep.depth * 100).toFixed(1) }}%</span>
-              <span class="csm-depth num csm-depth-bench">{{ (ep.benchmarkDepth * 100).toFixed(1) }}%</span>
+              <span class="csm-depth num csm-depth-bench"
+                >{{ (ep.benchmarkDepth * 100).toFixed(1) }}%</span
+              >
             </div>
           </header>
           <VChart class="csm-chart" :option="optionFor(ep)" autoresize />

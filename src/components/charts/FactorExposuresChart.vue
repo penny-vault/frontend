@@ -12,7 +12,10 @@ const emit = defineEmits<{
   hover: [key: FactorKey | null]
 }>()
 
-const FACTOR_META: Record<FactorKey, { name: string; sub: string; tiltPos: string; tiltNeg: string }> = {
+const FACTOR_META: Record<
+  FactorKey,
+  { name: string; sub: string; tiltPos: string; tiltNeg: string }
+> = {
   market: { name: 'Market', sub: 'β', tiltPos: 'aggressive', tiltNeg: 'defensive' },
   size: { name: 'Size', sub: 'SMB', tiltPos: 'small-cap tilt', tiltNeg: 'large-cap tilt' },
   value: { name: 'Value', sub: 'HML', tiltPos: 'value tilt', tiltNeg: 'growth tilt' },
@@ -108,11 +111,7 @@ const rows = computed(() =>
           :class="row.factor.active >= 0 ? 'fec-up' : 'fec-down'"
           :style="{ left: row.barLeft + '%', width: row.barWidth + '%' }"
         />
-        <div
-          class="fec-bench"
-          :style="{ left: row.benchPos + '%' }"
-          aria-label="benchmark"
-        />
+        <div class="fec-bench" :style="{ left: row.benchPos + '%' }" aria-label="benchmark" />
         <div
           class="fec-port"
           :class="[row.factor.active >= 0 ? 'fec-up' : 'fec-down', `fec-sig-${row.sig}`]"
@@ -240,7 +239,9 @@ const rows = computed(() =>
   margin-left: -6px;
   border-radius: 50%;
   border: 2px solid var(--panel);
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
 }
 .fec-port.fec-up {
   background: var(--gain);

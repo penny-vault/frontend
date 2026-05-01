@@ -35,7 +35,9 @@ const filteredStrategies = computed<Strategy[]>(() => {
       s.repoOwner,
       s.repoName,
       ...(s.categories ?? [])
-    ].join(' ').toLowerCase()
+    ]
+      .join(' ')
+      .toLowerCase()
     return haystack.includes(q)
   })
 })
@@ -48,18 +50,36 @@ const highlightShortCode = computed(() => hovered.value ?? selected.value)
     <div class="sl-header">
       <div>
         <h1>Strategies</h1>
-        <p class="sl-sub">
-          A strategy is an algorithm — rules for picking and weighting assets.
-        </p>
+        <p class="sl-sub">A strategy is an algorithm — rules for picking and weighting assets.</p>
       </div>
       <div class="sl-search">
-        <svg class="sl-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          class="sl-search-icon"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-4.35-4.35" />
         </svg>
-        <input v-model="query" class="sl-search-input" type="text" placeholder="Filter by name, code, repo..." />
+        <input
+          v-model="query"
+          class="sl-search-input"
+          type="text"
+          placeholder="Filter by name, code, repo..."
+        />
         <button v-if="query" class="sl-search-clear" aria-label="Clear" @click="query = ''">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
         </button>
@@ -158,13 +178,17 @@ const highlightShortCode = computed(() => hovered.value ?? selected.value)
   font: inherit;
   font-size: 13px;
   outline: none;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 .sl-search-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 1px var(--primary);
 }
-.sl-search-input::placeholder { color: var(--text-5); }
+.sl-search-input::placeholder {
+  color: var(--text-5);
+}
 .sl-search-clear {
   position: absolute;
   right: 6px;
@@ -180,7 +204,9 @@ const highlightShortCode = computed(() => hovered.value ?? selected.value)
   border-radius: 2px;
   transition: color 140ms ease;
 }
-.sl-search-clear:hover { color: var(--text-1); }
+.sl-search-clear:hover {
+  color: var(--text-1);
+}
 
 .sl-empty {
   padding: 80px 24px;

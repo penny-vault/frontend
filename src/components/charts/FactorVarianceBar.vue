@@ -165,7 +165,9 @@ function pct(v: number): string {
   position: relative;
   min-width: 4px;
   cursor: pointer;
-  transition: filter 160ms ease, flex-grow 200ms ease;
+  transition:
+    filter 160ms ease,
+    flex-grow 200ms ease;
   display: flex;
   align-items: center;
   justify-content: center;

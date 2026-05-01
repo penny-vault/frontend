@@ -21,9 +21,7 @@ import { formatDate } from '@/util/format'
 
 const isMockMode = import.meta.env.VITE_USE_MOCKS === '1'
 const auth = isMockMode ? null : useAuth0()
-const defaultEmail = isMockMode
-  ? 'jeremy@fergason.me'
-  : (auth?.user?.value?.email ?? '')
+const defaultEmail = isMockMode ? 'jeremy@fergason.me' : (auth?.user?.value?.email ?? '')
 
 const route = useRoute()
 const router = useRouter()
@@ -38,7 +36,13 @@ const { data: portfolio } = usePortfolio(portfolioId)
 
 // --- Rename ---
 const nameInput = ref('')
-watch(portfolio, (p) => { if (p && !nameInput.value) nameInput.value = p.name }, { immediate: true })
+watch(
+  portfolio,
+  (p) => {
+    if (p && !nameInput.value) nameInput.value = p.name
+  },
+  { immediate: true }
+)
 
 const nameChanged = computed(() =>
   portfolio.value ? nameInput.value.trim() !== portfolio.value.name : false
@@ -57,7 +61,9 @@ async function onRename() {
     await queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId.value] })
     await queryClient.invalidateQueries({ queryKey: ['portfolios'] })
     renameSuccess.value = true
-    setTimeout(() => { renameSuccess.value = false }, 2500)
+    setTimeout(() => {
+      renameSuccess.value = false
+    }, 2500)
   } catch (e) {
     renameError.value = (e as Error).message
   } finally {
@@ -72,9 +78,7 @@ const deleteInput = ref('')
 const deleting = ref(false)
 const deleteError = ref<string | null>(null)
 
-const deleteEnabled = computed(
-  () => portfolio.value && deleteInput.value === portfolio.value.name
-)
+const deleteEnabled = computed(() => portfolio.value && deleteInput.value === portfolio.value.name)
 
 function startDelete() {
   deleteState.value = 'confirming'
@@ -111,9 +115,23 @@ const infoRows = computed(() => {
     { label: 'Benchmark', value: p.benchmark || '—', mono: true },
     { label: 'Preset', value: p.presetName || '—', mono: false },
     { label: 'Slug', value: p.slug, mono: true },
-    { label: 'Created', value: formatDate(p.createdAt, { month: 'short', day: 'numeric', year: 'numeric' }), mono: false },
-    { label: 'Updated', value: formatDate(p.lastUpdated, { month: 'short', day: 'numeric', year: 'numeric' }), mono: false },
-    { label: 'Last run', value: p.lastRunAt ? formatDate(p.lastRunAt, { month: 'short', day: 'numeric', year: 'numeric' }) : '—', mono: false },
+    {
+      label: 'Created',
+      value: formatDate(p.createdAt, { month: 'short', day: 'numeric', year: 'numeric' }),
+      mono: false
+    },
+    {
+      label: 'Updated',
+      value: formatDate(p.lastUpdated, { month: 'short', day: 'numeric', year: 'numeric' }),
+      mono: false
+    },
+    {
+      label: 'Last run',
+      value: p.lastRunAt
+        ? formatDate(p.lastRunAt, { month: 'short', day: 'numeric', year: 'numeric' })
+        : '—',
+      mono: false
+    }
   ]
 })
 
@@ -134,7 +152,7 @@ const FREQUENCY_OPTIONS: { value: AlertFrequency; label: string }[] = [
 ]
 
 function frequencyLabel(f: AlertFrequency): string {
-  return FREQUENCY_OPTIONS.find(o => o.value === f)?.label ?? f
+  return FREQUENCY_OPTIONS.find((o) => o.value === f)?.label ?? f
 }
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -180,7 +198,7 @@ function closeEditor() {
 function parseRecipients(text: string): string[] {
   return text
     .split(/[,\s;]+/)
-    .map(s => s.trim())
+    .map((s) => s.trim())
     .filter(Boolean)
 }
 
@@ -188,7 +206,7 @@ const editorRecipients = computed(() => parseRecipients(editorForm.recipientsTex
 
 const editorValid = computed(() => {
   const r = editorRecipients.value
-  return r.length > 0 && r.every(addr => emailRe.test(addr))
+  return r.length > 0 && r.every((addr) => emailRe.test(addr))
 })
 
 async function onSaveAlert() {
@@ -241,9 +259,7 @@ const emailRecipient = ref(defaultEmail)
 const emailState = ref<EmailState>('idle')
 const emailError = ref<string | null>(null)
 
-const emailValid = computed(() =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRecipient.value.trim())
-)
+const emailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRecipient.value.trim()))
 
 async function onSendEmail() {
   if (!portfolioId.value || !emailValid.value || emailState.value === 'sending') return
@@ -271,7 +287,6 @@ async function onSendEmail() {
 
 <template>
   <main v-if="portfolio" class="ps-main">
-
     <!-- Q1: Name + Parameters -->
     <section class="ps-card ps-q1">
       <div class="ps-subsection">
@@ -323,15 +338,23 @@ async function onSendEmail() {
       <div class="ps-section-label ps-section-label--danger">Danger zone</div>
 
       <template v-if="deleteState === 'idle'">
-        <p class="ps-danger-desc">Permanently removes all runs, holdings, and transaction history. This cannot be undone.</p>
+        <p class="ps-danger-desc">
+          Permanently removes all runs, holdings, and transaction history. This cannot be undone.
+        </p>
         <div>
-          <button type="button" class="ps-btn ps-btn--danger" @click="startDelete">Delete portfolio</button>
+          <button type="button" class="ps-btn ps-btn--danger" @click="startDelete">
+            Delete portfolio
+          </button>
         </div>
       </template>
 
       <template v-else>
-        <p class="ps-danger-desc">Permanently removes all runs, holdings, and transaction history. This cannot be undone.</p>
-        <p class="ps-confirm-prompt">Type <strong>{{ portfolio.name }}</strong> to confirm.</p>
+        <p class="ps-danger-desc">
+          Permanently removes all runs, holdings, and transaction history. This cannot be undone.
+        </p>
+        <p class="ps-confirm-prompt">
+          Type <strong>{{ portfolio.name }}</strong> to confirm.
+        </p>
         <input
           v-model="deleteInput"
           class="ps-input ps-input--danger ps-input--block"
@@ -404,7 +427,9 @@ async function onSendEmail() {
               <p class="ps-field-hint">Comma-separated. At least one required.</p>
 
               <div class="ps-editor-actions">
-                <button type="button" class="ps-btn ps-btn--ghost" @click="closeEditor">Cancel</button>
+                <button type="button" class="ps-btn ps-btn--ghost" @click="closeEditor">
+                  Cancel
+                </button>
                 <button
                   type="button"
                   class="ps-btn ps-btn--primary"
@@ -426,7 +451,13 @@ async function onSendEmail() {
               </div>
               <div v-if="confirmingDelete === a.id" class="ps-alert-actions">
                 <span class="ps-confirm-text">Delete?</span>
-                <button type="button" class="ps-btn ps-btn--ghost ps-btn--sm" @click="cancelDeleteAlert">Cancel</button>
+                <button
+                  type="button"
+                  class="ps-btn ps-btn--ghost ps-btn--sm"
+                  @click="cancelDeleteAlert"
+                >
+                  Cancel
+                </button>
                 <button
                   type="button"
                   class="ps-btn ps-btn--danger ps-btn--sm"
@@ -437,8 +468,24 @@ async function onSendEmail() {
                 </button>
               </div>
               <div v-else class="ps-alert-actions">
-                <button type="button" class="ps-icon-btn" :disabled="editing !== null" @click="openEditAlert(a)" aria-label="Edit alert">Edit</button>
-                <button type="button" class="ps-icon-btn ps-icon-btn--danger" :disabled="editing !== null" @click="startDeleteAlert(a.id)" aria-label="Delete alert">Delete</button>
+                <button
+                  type="button"
+                  class="ps-icon-btn"
+                  :disabled="editing !== null"
+                  @click="openEditAlert(a)"
+                  aria-label="Edit alert"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="ps-icon-btn ps-icon-btn--danger"
+                  :disabled="editing !== null"
+                  @click="startDeleteAlert(a.id)"
+                  aria-label="Delete alert"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           </template>
@@ -519,15 +566,12 @@ async function onSendEmail() {
             {{ emailState === 'sending' ? 'Sending…' : 'Send' }}
           </button>
         </form>
-        <p v-if="emailState === 'sent'" class="ps-ok">
-          Sent to {{ emailRecipient }}.
-        </p>
+        <p v-if="emailState === 'sent'" class="ps-ok">Sent to {{ emailRecipient }}.</p>
         <p v-if="emailState === 'error' && emailError" class="ps-err">
           {{ emailError }}
         </p>
       </div>
     </section>
-
   </main>
 </template>
 
@@ -733,7 +777,9 @@ async function onSendEmail() {
   cursor: pointer;
   padding: 4px 6px;
   border-radius: 2px;
-  transition: color 140ms ease, background 140ms ease;
+  transition:
+    color 140ms ease,
+    background 140ms ease;
 }
 .ps-icon-btn:hover:not(:disabled) {
   color: var(--text-1);
@@ -785,7 +831,10 @@ async function onSendEmail() {
   border-radius: 2px;
   padding: 5px 10px;
   cursor: pointer;
-  transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease,
+    background 140ms ease;
 }
 .ps-freq-chip:hover {
   color: var(--text-1);
@@ -865,7 +914,9 @@ async function onSendEmail() {
   font: inherit;
   font-size: 13px;
   outline: none;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
   box-sizing: border-box;
 }
 
@@ -899,28 +950,38 @@ async function onSendEmail() {
   transition: opacity 140ms ease;
 }
 
-.ps-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+.ps-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
 
 .ps-btn--primary {
   background: var(--primary);
   border: 1px solid var(--primary);
   color: #fff;
 }
-.ps-btn--primary:hover:not(:disabled) { opacity: 0.85; }
+.ps-btn--primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
 
 .ps-btn--ghost {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-2);
 }
-.ps-btn--ghost:hover:not(:disabled) { border-color: var(--text-3); color: var(--text-1); }
+.ps-btn--ghost:hover:not(:disabled) {
+  border-color: var(--text-3);
+  color: var(--text-1);
+}
 
 .ps-btn--danger {
   background: var(--loss);
   border: 1px solid var(--loss);
   color: #fff;
 }
-.ps-btn--danger:hover:not(:disabled) { opacity: 0.85; }
+.ps-btn--danger:hover:not(:disabled) {
+  opacity: 0.85;
+}
 
 /* ── Misc ──────────────────────────────────────────── */
 .ps-empty {
@@ -929,6 +990,14 @@ async function onSendEmail() {
   margin: 0;
 }
 
-.ps-ok  { font-size: 12px; color: var(--gain); margin: 0; }
-.ps-err { font-size: 12px; color: var(--loss); margin: 0; }
+.ps-ok {
+  font-size: 12px;
+  color: var(--gain);
+  margin: 0;
+}
+.ps-err {
+  font-size: 12px;
+  color: var(--loss);
+  margin: 0;
+}
 </style>

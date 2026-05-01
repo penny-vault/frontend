@@ -52,7 +52,9 @@ function handleLogin() {
   color: #1c1917 !important;
   text-shadow: 0 1px 4px rgba(255, 255, 255, 0.4);
   letter-spacing: 0.01em;
-  transition: transform 180ms ease, opacity 180ms ease;
+  transition:
+    transform 180ms ease,
+    opacity 180ms ease;
 }
 .splash-login:hover {
   transform: translateX(4px);

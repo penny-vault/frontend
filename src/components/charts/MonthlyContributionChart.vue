@@ -28,7 +28,20 @@ function monthKey(m: MonthlyReturn): string {
   return `${m.year}-${String(m.month).padStart(2, '0')}`
 }
 
-const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MONTHS_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec'
+]
 
 const allPeriods = computed<Period[]>(() => {
   if (props.monthly.length === 0) return []
@@ -88,9 +101,7 @@ const displayedPeriods = computed(() => {
   const shown = new Set([...top, ...bottom].map((p) => p.key))
   const restPeriods = sorted.filter((p) => !shown.has(p.key))
   const restReturn =
-    restPeriods.length === 0
-      ? 0
-      : restPeriods.reduce((c, p) => c * (1 + p.return), 1) - 1
+    restPeriods.length === 0 ? 0 : restPeriods.reduce((c, p) => c * (1 + p.return), 1) - 1
   const restMemberKeys = restPeriods.flatMap((p) => p.memberKeys)
   return {
     top,
@@ -198,7 +209,7 @@ function shareOfTotal(r: number): string {
     <div class="mcc-controls">
       <div class="mcc-granularity" role="tablist" aria-label="Period granularity">
         <button
-          v-for="g in (['month', 'quarter', 'year'] as Granularity[])"
+          v-for="g in ['month', 'quarter', 'year'] as Granularity[]"
           :key="g"
           type="button"
           role="tab"
@@ -275,7 +286,8 @@ function shareOfTotal(r: number): string {
 
       <li v-if="displayedPeriods.rest.count > 0" class="mcc-row mcc-row-rest">
         <div class="mcc-label mcc-label-rest">
-          {{ displayedPeriods.rest.count }} other {{ unit }}{{ displayedPeriods.rest.count === 1 ? '' : 's' }}
+          {{ displayedPeriods.rest.count }} other {{ unit
+          }}{{ displayedPeriods.rest.count === 1 ? '' : 's' }}
         </div>
         <div class="mcc-bar-track">
           <div class="mcc-bar-mid" aria-hidden="true" />
@@ -294,7 +306,9 @@ function shareOfTotal(r: number): string {
       </li>
     </ul>
 
-    <p class="mcc-help">Click a row to remove that {{ unit }} and see the impact on annualized return.</p>
+    <p class="mcc-help">
+      Click a row to remove that {{ unit }} and see the impact on annualized return.
+    </p>
   </div>
 </template>
 
@@ -328,7 +342,9 @@ function shareOfTotal(r: number): string {
   color: var(--text-3);
   cursor: pointer;
   border-radius: 2px;
-  transition: background 160ms ease, color 160ms ease;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
 }
 .mcc-gran-tab:hover {
   color: var(--text-1);
@@ -419,7 +435,9 @@ function shareOfTotal(r: number): string {
   border-radius: 2px;
   cursor: pointer;
   user-select: none;
-  transition: background 140ms ease, opacity 160ms ease;
+  transition:
+    background 140ms ease,
+    opacity 160ms ease;
 }
 .mcc-row:hover {
   background: var(--primary-soft-07, rgba(127, 127, 127, 0.05));

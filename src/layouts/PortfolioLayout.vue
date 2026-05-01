@@ -58,7 +58,13 @@ const tabs = computed(() => {
         </span>
         <span class="meta">
           Last updated:
-          {{ formatDate(portfolio.lastRunAt ?? portfolio.lastUpdated, { month: 'long', day: 'numeric', year: 'numeric' }) }}
+          {{
+            formatDate(portfolio.lastRunAt ?? portfolio.lastUpdated, {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric'
+            })
+          }}
         </span>
       </div>
     </div>

@@ -66,11 +66,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', updateIndicator))
 <template>
   <nav ref="navRef" class="tab-bar">
     <template v-for="tab in normalizedTabs" :key="tab.label">
-      <span
-        v-if="tab.disabled"
-        class="tab-bar-item is-disabled"
-        :aria-disabled="true"
-      >
+      <span v-if="tab.disabled" class="tab-bar-item is-disabled" :aria-disabled="true">
         {{ tab.label }}
       </span>
       <router-link

@@ -77,7 +77,12 @@ const rows = computed(() => {
     _price: t.price ?? 0,
     _amount: t.amount ?? 0,
     date: t.date,
-    dateLabel: formatDate(t.date + 'T12:00:00Z', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric' }),
+    dateLabel: formatDate(t.date + 'T12:00:00Z', {
+      timeZone: 'America/New_York',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }),
     type: t.type,
     typeLabel: TYPE_LABELS[t.type],
     ticker: t.ticker ?? '',
@@ -97,7 +102,11 @@ const rows = computed(() => {
             : 'tx-cell-muted',
     qualifiedLabel:
       t.type === 'dividend' || t.type === 'interest'
-        ? t.qualified === true ? 'Yes' : t.qualified === false ? 'No' : '—'
+        ? t.qualified === true
+          ? 'Yes'
+          : t.qualified === false
+            ? 'No'
+            : '—'
         : '—',
     justification: t.justification ?? ''
   }))
@@ -231,7 +240,6 @@ function downloadCsv() {
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
-
 </script>
 
 <template>

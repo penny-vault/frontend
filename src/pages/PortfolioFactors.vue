@@ -94,8 +94,8 @@ const periodOptions: { key: FactorPeriodKey; label: string }[] = [
         <div class="pf-intro">
           <h2 class="pf-kicker">Factor analysis</h2>
           <p class="pf-lede">
-            Where returns and risk actually come from — six systematic tilts, and the
-            unexplained residual (alpha) that's down to stock picking.
+            Where returns and risk actually come from — six systematic tilts, and the unexplained
+            residual (alpha) that's down to stock picking.
           </p>
         </div>
         <div class="pf-period" role="tablist" aria-label="Factor analysis period">
@@ -119,8 +119,8 @@ const periodOptions: { key: FactorPeriodKey; label: string }[] = [
           <div>
             <h2>Exposures</h2>
             <p class="panel-sub">
-              Each factor loading vs the benchmark. Circle = your portfolio; tick =
-              benchmark. Dim circles are statistically weak (|t| &lt; 2).
+              Each factor loading vs the benchmark. Circle = your portfolio; tick = benchmark. Dim
+              circles are statistically weak (|t| &lt; 2).
             </p>
           </div>
         </template>
@@ -143,8 +143,8 @@ const periodOptions: { key: FactorPeriodKey; label: string }[] = [
             <div>
               <h2>What earned the return</h2>
               <p class="panel-sub">
-                Each factor's contribution to total return (β × factor return). The
-                residual is alpha — what isn't explained by these tilts.
+                Each factor's contribution to total return (β × factor return). The residual is
+                alpha — what isn't explained by these tilts.
               </p>
             </div>
           </template>
@@ -162,8 +162,8 @@ const periodOptions: { key: FactorPeriodKey; label: string }[] = [
             <div>
               <h2>What moves the portfolio</h2>
               <p class="panel-sub">
-                Share of return variance explained by each factor. Idiosyncratic is
-                the unexplained slice — specific to individual holdings.
+                Share of return variance explained by each factor. Idiosyncratic is the unexplained
+                slice — specific to individual holdings.
               </p>
             </div>
           </template>
@@ -178,10 +178,9 @@ const periodOptions: { key: FactorPeriodKey; label: string }[] = [
       </div>
 
       <p class="pf-methodology">
-        Exposures estimated via rolling OLS regression of monthly excess returns on
-        six-factor returns over the selected period. Benchmark loadings are the
-        benchmark's own factor fit; "active" is portfolio − benchmark. Treat factor
-        loadings with |t|&lt;2 as noise.
+        Exposures estimated via rolling OLS regression of monthly excess returns on six-factor
+        returns over the selected period. Benchmark loadings are the benchmark's own factor fit;
+        "active" is portfolio − benchmark. Treat factor loadings with |t|&lt;2 as noise.
       </p>
     </template>
   </main>
@@ -238,7 +237,9 @@ const periodOptions: { key: FactorPeriodKey; label: string }[] = [
   color: var(--text-3);
   cursor: pointer;
   border-radius: 2px;
-  transition: background 160ms ease, color 160ms ease;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
 }
 .pf-period-btn:hover {
   color: var(--text-1);

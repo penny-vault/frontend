@@ -303,9 +303,7 @@ const GROUP_LABELS: Record<QuickRangeKey['group'], string> = {
               class="drp-datepicker"
             />
           </label>
-          <button type="button" class="drp-apply" @click="applyAbsolute">
-            Apply time range
-          </button>
+          <button type="button" class="drp-apply" @click="applyAbsolute">Apply time range</button>
         </div>
 
         <div class="drp-col drp-col-quick">
@@ -322,7 +320,7 @@ const GROUP_LABELS: Record<QuickRangeKey['group'], string> = {
           </div>
 
           <div class="drp-groups">
-            <template v-for="group in (['calendar', 'trailing', 'history'] as const)" :key="group">
+            <template v-for="group in ['calendar', 'trailing', 'history'] as const" :key="group">
               <div v-if="groupedRanges[group].length" class="drp-group">
                 <div class="drp-group-label">{{ GROUP_LABELS[group] }}</div>
                 <button

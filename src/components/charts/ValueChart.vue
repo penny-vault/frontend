@@ -46,18 +46,25 @@ const anchor = ref<{ date: number; portfolio: number; benchmark: number } | null
 function nearestPoint(ts: number) {
   const { dates, portfolio, benchmark } = props.series
   if (!dates.length) return null
-  let best = 0, bestDiff = Infinity
+  let best = 0,
+    bestDiff = Infinity
   for (let i = 0; i < dates.length; i++) {
     const d = Math.abs(dates[i]! - ts)
-    if (d < bestDiff) { bestDiff = d; best = i }
+    if (d < bestDiff) {
+      bestDiff = d
+      best = i
+    }
   }
   return { date: dates[best]!, portfolio: portfolio[best]!, benchmark: benchmark[best]! }
 }
 
 function onZrClick(e: { offsetX: number; offsetY: number }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const r = (chartRef.value as any)?.convertFromPixel({ seriesIndex: 1 }, [e.offsetX, e.offsetY]) as [number, number] | null
-  if (!r) return  // clicked outside the plot area
+  const r = (chartRef.value as any)?.convertFromPixel({ seriesIndex: 1 }, [
+    e.offsetX,
+    e.offsetY
+  ]) as [number, number] | null
+  if (!r) return // clicked outside the plot area
   anchor.value = anchor.value ? null : nearestPoint(r[0])
 }
 
@@ -70,7 +77,7 @@ function drawdownSpan(d: DrawdownRange, padDays = 90) {
 
 const chartOption = computed(() => {
   const t = props.theme
-  const anchorSnap = anchor.value  // reactive dep — used in formatter + markLine
+  const anchorSnap = anchor.value // reactive dep — used in formatter + markLine
   // We mutate the option after construction to layer in animation, focus zoom,
   // and drawdown highlights. The cast narrows the EChartsOption shape to the
   // tuple of two series we actually emit, so series[1] is guaranteed defined
@@ -203,7 +210,10 @@ const chartOption = computed(() => {
       ]
     } else {
       opt.series[1].markLine = {
-        silent: true, symbol: 'none', label: { show: false }, animation: false,
+        silent: true,
+        symbol: 'none',
+        label: { show: false },
+        animation: false,
         data: [anchorItem]
       } as MutableMarkLine
     }
@@ -213,7 +223,9 @@ const chartOption = computed(() => {
   // We do our own nearest-point lookup instead of relying on params because
   // LTTB sampling can cause ECharts to omit one series from params at certain
   // cursor positions, which would silently drop a row.
-  ;(opt as EChartsOption & { tooltip: { formatter: unknown } }).tooltip.formatter = (raw: unknown) => {
+  ;(opt as EChartsOption & { tooltip: { formatter: unknown } }).tooltip.formatter = (
+    raw: unknown
+  ) => {
     type Param = { axisValue: number; color: string; seriesName: string; value: [number, number] }
     const params = raw as Param[]
     const first = params[0]
@@ -263,7 +275,11 @@ const chartOption = computed(() => {
         mkDeltaRow('Portfolio', snap.portfolio, anchorSnap.portfolio)
       ].join('')
 
-      const anchorDateStr = formatDate(anchorSnap.date, { month: 'short', day: 'numeric', year: 'numeric' })
+      const anchorDateStr = formatDate(anchorSnap.date, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
       deltaHtml = `<div style="border-top:1px solid ${t.tooltipBorder};margin-top:8px;padding-top:6px;">
         <div style="color:${t.tooltipMuted};font-size:10px;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:2px;">from ${anchorDateStr}</div>
         ${deltaRows}

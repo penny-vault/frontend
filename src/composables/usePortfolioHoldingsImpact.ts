@@ -1,8 +1,5 @@
 import { useQuery } from '@tanstack/vue-query'
-import {
-  getPortfolioHoldingsImpact,
-  type HoldingsImpactResponse
-} from '@/api/endpoints/portfolios'
+import { getPortfolioHoldingsImpact, type HoldingsImpactResponse } from '@/api/endpoints/portfolios'
 import { computed, type Ref } from 'vue'
 
 export function usePortfolioHoldingsImpact(portfolioId: Ref<string | null>) {

@@ -26,7 +26,14 @@ const portfolioId = computed(() => {
 
 const { data: portfolio } = usePortfolio(portfolioId)
 const { data: summary } = usePortfolioSummary(portfolioId)
-const { data: measurements, isLoading, error } = usePortfolioMeasurements(portfolioId, computed(() => ({})))
+const {
+  data: measurements,
+  isLoading,
+  error
+} = usePortfolioMeasurements(
+  portfolioId,
+  computed(() => ({}))
+)
 const { data: holdingsImpact } = usePortfolioHoldingsImpact(portfolioId)
 const { data: drawdowns } = usePortfolioDrawdowns(portfolioId)
 const { data: captureMetrics } = usePortfolioMetrics(portfolioId, {
@@ -61,7 +68,6 @@ const monthlyReturns = computed(() => {
   }))
   return toMonthly(days)
 })
-
 </script>
 
 <template>
@@ -88,9 +94,7 @@ const monthlyReturns = computed(() => {
           </div>
         </FlippableKpi>
         <FlippableKpi label="Volatility (ann.)">
-          <div class="kpi-value small">
-            {{ (derived.verdict.portfolioVol * 100).toFixed(1) }}%
-          </div>
+          <div class="kpi-value small">{{ (derived.verdict.portfolioVol * 100).toFixed(1) }}%</div>
           <div class="kpi-sub muted">
             bench {{ (derived.verdict.benchmarkVol * 100).toFixed(1) }}%
           </div>
@@ -102,7 +106,10 @@ const monthlyReturns = computed(() => {
           <template #back>
             <div class="prr-back">
               <p class="prr-back-main">
-                <strong>{{ capture.up != null ? (capture.up * 100).toFixed(0) + '%' : '—' }}</strong> of benchmark gains
+                <strong>{{
+                  capture.up != null ? (capture.up * 100).toFixed(0) + '%' : '—'
+                }}</strong>
+                of benchmark gains
               </p>
               <p v-if="capture.up != null" class="prr-back-example">
                 bench +10% → you +{{ (10 * capture.up).toFixed(1) }}%
@@ -118,7 +125,10 @@ const monthlyReturns = computed(() => {
           <template #back>
             <div class="prr-back">
               <p class="prr-back-main">
-                <strong>{{ capture.down != null ? (capture.down * 100).toFixed(0) + '%' : '—' }}</strong> of benchmark losses
+                <strong>{{
+                  capture.down != null ? (capture.down * 100).toFixed(0) + '%' : '—'
+                }}</strong>
+                of benchmark losses
               </p>
               <p v-if="capture.down != null" class="prr-back-example">
                 bench −10% → you −{{ (10 * capture.down).toFixed(1) }}%
@@ -141,15 +151,12 @@ const monthlyReturns = computed(() => {
             <div>
               <h2>Concentration by holding</h2>
               <p class="panel-sub">
-                Each holding's contribution to the period's return. Click a row
-                to see how the annualized return changes without it.
+                Each holding's contribution to the period's return. Click a row to see how the
+                annualized return changes without it.
               </p>
             </div>
           </template>
-          <HoldingsImpactChart
-            v-if="holdingsImpact"
-            :impact="holdingsImpact"
-          />
+          <HoldingsImpactChart v-if="holdingsImpact" :impact="holdingsImpact" />
           <div v-else class="prr-placeholder">Holdings impact not available.</div>
         </Panel>
 
@@ -158,8 +165,8 @@ const monthlyReturns = computed(() => {
             <div>
               <h2>Concentration by period</h2>
               <p class="panel-sub">
-                The best and worst periods by return. Click a row to remove
-                that period and see the impact on annualized return.
+                The best and worst periods by return. Click a row to remove that period and see the
+                impact on annualized return.
               </p>
             </div>
           </template>

@@ -22,10 +22,11 @@ const portfolioId = computed(() => {
 
 const measurementsParams = ref({})
 const { data: portfolio } = usePortfolio(portfolioId)
-const { data: measurements, isLoading, error } = usePortfolioMeasurements(
-  portfolioId,
-  measurementsParams
-)
+const {
+  data: measurements,
+  isLoading,
+  error
+} = usePortfolioMeasurements(portfolioId, measurementsParams)
 const { data: captureMetrics } = usePortfolioMetrics(portfolioId, {
   metric: 'UpsideCaptureRatio,DownsideCaptureRatio',
   window: 'since_inception'
@@ -124,22 +125,19 @@ const distHelpOpen = ref(false)
         <ul class="help-body">
           <li>
             <strong>Each line is a rolling window.</strong> On any date, the value is the
-            portfolio's compounded return over the prior 12 / 36 / 60 months, minus the
-            benchmark's compounded return over the same period.
+            portfolio's compounded return over the prior 12 / 36 / 60 months, minus the benchmark's
+            compounded return over the same period.
           </li>
           <li>
-            <strong>Above zero = you beat the benchmark over that window.</strong> Below zero =
-            the benchmark beat you. The further from zero, the larger the gap.
+            <strong>Above zero = you beat the benchmark over that window.</strong> Below zero = the
+            benchmark beat you. The further from zero, the larger the gap.
           </li>
           <li>
             <strong>Shorter windows (1Y) swing more; longer windows (5Y) are smoother.</strong>
             When the 5Y line stays above zero while the 1Y oscillates, you have durable
-            outperformance. When only the 1Y line is up, it's a short-term streak that may not
-            last.
+            outperformance. When only the 1Y line is up, it's a short-term streak that may not last.
           </li>
-          <li>
-            Toggle windows on and off to isolate a single horizon when the overlap gets busy.
-          </li>
+          <li>Toggle windows on and off to isolate a single horizon when the overlap gets busy.</li>
         </ul>
       </Dialog>
 
@@ -172,9 +170,8 @@ const distHelpOpen = ref(false)
         >
           <ul class="help-body">
             <li>
-              <strong>Each bar counts months</strong> whose return fell into that bucket.
-              Monthly returns are grouped into 24 equal-width bins spanning the full range of
-              both series.
+              <strong>Each bar counts months</strong> whose return fell into that bucket. Monthly
+              returns are grouped into 24 equal-width bins spanning the full range of both series.
             </li>
             <li>
               <strong>Two series overlay the same bins</strong> — portfolio (primary color) and
@@ -182,16 +179,14 @@ const distHelpOpen = ref(false)
               directly.
             </li>
             <li>
-              <strong>Shift</strong> (whose distribution is centered further right) tells you
-              who delivered higher average monthly returns.
-              <strong>Width</strong> tells you who was more volatile — a narrower distribution
-              means more months clustered around the mean.
+              <strong>Shift</strong> (whose distribution is centered further right) tells you who
+              delivered higher average monthly returns. <strong>Width</strong> tells you who was
+              more volatile — a narrower distribution means more months clustered around the mean.
             </li>
             <li>
-              <strong>Tails</strong> are where the story of risk lives. A taller right tail =
-              more unusually-good months; a taller left tail = more unusually-bad months. A
-              portfolio with a thinner left tail than the benchmark is absorbing downside
-              better.
+              <strong>Tails</strong> are where the story of risk lives. A taller right tail = more
+              unusually-good months; a taller left tail = more unusually-bad months. A portfolio
+              with a thinner left tail than the benchmark is absorbing downside better.
             </li>
           </ul>
         </Dialog>
@@ -231,9 +226,9 @@ const distHelpOpen = ref(false)
               <em>above</em> it are months you outperformed; <em>below</em>, you underperformed.
             </li>
             <li>
-              <strong>Orange line = regression fit.</strong> Its slope is
-              <strong>β (beta)</strong>: β &gt; 1 means you amplified benchmark moves, β &lt; 1
-              means you dampened them, β &lt; 0 means you moved against the benchmark.
+              <strong>Orange line = regression fit.</strong> Its slope is <strong>β (beta)</strong>:
+              β &gt; 1 means you amplified benchmark moves, β &lt; 1 means you dampened them, β &lt;
+              0 means you moved against the benchmark.
             </li>
             <li>
               <strong>α (alpha)</strong> is the portfolio's average monthly return at a
@@ -241,8 +236,7 @@ const distHelpOpen = ref(false)
             </li>
             <li>
               <strong>r²</strong> is how much of the portfolio's variance is explained by the
-              benchmark. Close to 1 = tracks the index tightly; close to 0 = moves
-              independently.
+              benchmark. Close to 1 = tracks the index tightly; close to 0 = moves independently.
             </li>
           </ul>
         </Dialog>

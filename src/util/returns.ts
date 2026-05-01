@@ -144,7 +144,10 @@ export function rollingExcess(
     const end = monthly[i]!
     const yyyy = String(end.year).padStart(4, '0')
     const mm = String(end.month).padStart(2, '0')
-    result.push({ date: `${yyyy}-${mm}-01`, value: p ** (12 / windowMonths) - b ** (12 / windowMonths) })
+    result.push({
+      date: `${yyyy}-${mm}-01`,
+      value: p ** (12 / windowMonths) - b ** (12 / windowMonths)
+    })
   }
   return result
 }

@@ -15,9 +15,7 @@ const TOP_N = 10
 const expanded = ref(false)
 
 const freq = computed(() => computeTickerFrequency(props.entries))
-const visible = computed(() =>
-  expanded.value ? freq.value : freq.value.slice(0, TOP_N)
-)
+const visible = computed(() => (expanded.value ? freq.value : freq.value.slice(0, TOP_N)))
 const remaining = computed(() => Math.max(0, freq.value.length - TOP_N))
 
 function onEnter(ticker: string) {
@@ -46,23 +44,13 @@ function onLeave() {
         <span class="freq-rank">{{ idx + 1 }}</span>
         <span class="freq-ticker">{{ item.ticker }}</span>
         <span class="freq-bar" aria-hidden="true">
-          <span
-            class="freq-fill"
-            :style="{ width: item.percentOfMonths * 100 + '%' }"
-          />
+          <span class="freq-fill" :style="{ width: item.percentOfMonths * 100 + '%' }" />
         </span>
-        <span class="freq-pct num">
-          {{ Math.round(item.percentOfMonths * 100) }}%
-        </span>
+        <span class="freq-pct num"> {{ Math.round(item.percentOfMonths * 100) }}% </span>
       </li>
     </ol>
 
-    <button
-      v-if="remaining > 0"
-      type="button"
-      class="freq-toggle"
-      @click="expanded = !expanded"
-    >
+    <button v-if="remaining > 0" type="button" class="freq-toggle" @click="expanded = !expanded">
       {{ expanded ? `Show top ${TOP_N}` : `Show all (${freq.length})` }}
     </button>
   </section>

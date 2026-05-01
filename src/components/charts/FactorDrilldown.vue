@@ -10,7 +10,7 @@ const FACTOR_META: Record<FactorKey, { name: string; blurb: string }> = {
   market: {
     name: 'Market',
     blurb:
-      "Overall sensitivity to broad equity. β=1.0 moves one-for-one with the benchmark; below 1.0 means less swing in both directions."
+      'Overall sensitivity to broad equity. β=1.0 moves one-for-one with the benchmark; below 1.0 means less swing in both directions.'
   },
   size: {
     name: 'Size (SMB)',
@@ -29,8 +29,7 @@ const FACTOR_META: Record<FactorKey, { name: string; blurb: string }> = {
   },
   quality: {
     name: 'Quality (QMJ)',
-    blurb:
-      'Profitable, stable, well-run companies vs the rest. Positive = defensive growth tilt.'
+    blurb: 'Profitable, stable, well-run companies vs the rest. Positive = defensive growth tilt.'
   },
   lowvol: {
     name: 'Low Volatility (BAB)',
@@ -47,7 +46,16 @@ const SPARK_H = 64
 
 const sparkline = computed(() => {
   const pts = props.loading.timeSeries
-  if (pts.length === 0) return { path: '', area: '', points: [] as { x: number; y: number; date: string; exposure: number }[], yZero: SPARK_H, min: 0, max: 0, benchmark: 0 }
+  if (pts.length === 0)
+    return {
+      path: '',
+      area: '',
+      points: [] as { x: number; y: number; date: string; exposure: number }[],
+      yZero: SPARK_H,
+      min: 0,
+      max: 0,
+      benchmark: 0
+    }
   const exposures = pts.map((p) => p.exposure)
   const raw = [...exposures, props.loading.benchmark, 0]
   const min = Math.min(...raw)
@@ -63,7 +71,9 @@ const sparkline = computed(() => {
     date: p.date,
     exposure: p.exposure
   }))
-  const path = nodes.map((n, i) => `${i === 0 ? 'M' : 'L'} ${n.x.toFixed(1)} ${n.y.toFixed(1)}`).join(' ')
+  const path = nodes
+    .map((n, i) => `${i === 0 ? 'M' : 'L'} ${n.x.toFixed(1)} ${n.y.toFixed(1)}`)
+    .join(' ')
   const area = `${path} L ${SPARK_W} ${SPARK_H} L 0 ${SPARK_H} Z`
   return {
     path,
@@ -111,16 +121,11 @@ const negMax = computed(() => maxContribAbs(props.loading.negativeDrivers))
         <div class="fd-stat">
           <span class="fd-stat-label">Exposure</span>
           <span class="fd-stat-value num">{{ fmtExposure(loading.portfolio) }}</span>
-          <span class="fd-stat-sub num">
-            bench {{ fmtExposure(loading.benchmark) }}
-          </span>
+          <span class="fd-stat-sub num"> bench {{ fmtExposure(loading.benchmark) }} </span>
         </div>
         <div class="fd-stat">
           <span class="fd-stat-label">Contribution</span>
-          <span
-            class="fd-stat-value num"
-            :class="loading.returnContribution >= 0 ? 'up' : 'down'"
-          >
+          <span class="fd-stat-value num" :class="loading.returnContribution >= 0 ? 'up' : 'down'">
             {{ fmtContribution(loading.returnContribution) }}
           </span>
           <span class="fd-stat-sub">to total return</span>
@@ -168,13 +173,7 @@ const negMax = computed(() => maxContribAbs(props.loading.negativeDrivers))
           />
           <path class="fd-spark-area" :d="sparkline.area" />
           <path class="fd-spark-line" :d="sparkline.path" />
-          <circle
-            v-if="lastPoint"
-            class="fd-spark-dot"
-            :cx="lastPoint.x"
-            :cy="lastPoint.y"
-            r="3"
-          />
+          <circle v-if="lastPoint" class="fd-spark-dot" :cx="lastPoint.x" :cy="lastPoint.y" r="3" />
         </svg>
         <div class="fd-spark-legend">
           <span class="fd-spark-legend-item">
@@ -192,11 +191,7 @@ const negMax = computed(() => maxContribAbs(props.loading.negativeDrivers))
         <div class="fd-drivers-col">
           <div class="fd-section-label">Top contributors</div>
           <ul class="fd-driver-list">
-            <li
-              v-for="d in loading.positiveDrivers"
-              :key="'p-' + d.ticker"
-              class="fd-driver"
-            >
+            <li v-for="d in loading.positiveDrivers" :key="'p-' + d.ticker" class="fd-driver">
               <span class="fd-ticker">{{ d.ticker }}</span>
               <span class="fd-driver-bar-track">
                 <span
@@ -212,11 +207,7 @@ const negMax = computed(() => maxContribAbs(props.loading.negativeDrivers))
         <div class="fd-drivers-col">
           <div class="fd-section-label">Top detractors</div>
           <ul class="fd-driver-list">
-            <li
-              v-for="d in loading.negativeDrivers"
-              :key="'n-' + d.ticker"
-              class="fd-driver"
-            >
+            <li v-for="d in loading.negativeDrivers" :key="'n-' + d.ticker" class="fd-driver">
               <span class="fd-ticker">{{ d.ticker }}</span>
               <span class="fd-driver-bar-track">
                 <span

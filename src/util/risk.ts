@@ -193,11 +193,7 @@ export function percentileOf(value: number, population: number[]): number {
  * caller supplies it from `portfolio.summary.cagrSinceInception` or a
  * locally-computed fallback.
  */
-export function riskStats(
-  days: DailyPoint[],
-  monthly: MonthlyReturn[],
-  cagr: number
-): RiskStats {
+export function riskStats(days: DailyPoint[], monthly: MonthlyReturn[], cagr: number): RiskStats {
   if (monthly.length === 0) {
     return {
       maxDd: 0,

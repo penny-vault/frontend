@@ -95,17 +95,11 @@ function downloadCsv() {
           :hovered-ticker="hoveredTicker"
           @open-calculator="calculatorOpen = true"
         />
-        <HoldingsFrequencyChart
-          :entries="history.items"
-          @hover-ticker="onHoverTicker"
-        />
+        <HoldingsFrequencyChart :entries="history.items" @hover-ticker="onHoverTicker" />
       </div>
     </div>
 
-    <HoldingsCalculatorDialog
-      v-model:open="calculatorOpen"
-      :entry="selectedEntry"
-    />
+    <HoldingsCalculatorDialog v-model:open="calculatorOpen" :entry="selectedEntry" />
   </main>
 </template>
 

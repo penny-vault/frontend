@@ -21,10 +21,11 @@ const portfolioId = computed(() => {
 
 const measurementsParams = ref({})
 const { data: portfolio } = usePortfolio(portfolioId)
-const { data: measurements, isLoading, error } = usePortfolioMeasurements(
-  portfolioId,
-  measurementsParams
-)
+const {
+  data: measurements,
+  isLoading,
+  error
+} = usePortfolioMeasurements(portfolioId, measurementsParams)
 const derived = usePortfolioReturns(measurements)
 
 const highlightedYear = ref<number | null>(null)
@@ -163,21 +164,21 @@ function fmtMonth(year: number, month: number): string {
       >
         <ul class="help-body">
           <li>
-            <strong>Each cell is one month's return.</strong> Rows are months Jan–Dec, columns
-            are years left to right.
+            <strong>Each cell is one month's return.</strong> Rows are months Jan–Dec, columns are
+            years left to right.
           </li>
           <li>
-            <strong>Green = positive, red = negative.</strong> The color always matches the
-            sign, so a bad month stays clearly red no matter its magnitude.
+            <strong>Green = positive, red = negative.</strong> The color always matches the sign, so
+            a bad month stays clearly red no matter its magnitude.
           </li>
           <li>
-            <strong>Color intensity scales with magnitude.</strong> A big gain is vibrant
-            green; a small gain is faint green. Near-zero months are faintly tinted (not
-            invisible) so the grid always reads as a full checkerboard.
+            <strong>Color intensity scales with magnitude.</strong> A big gain is vibrant green; a
+            small gain is faint green. Near-zero months are faintly tinted (not invisible) so the
+            grid always reads as a full checkerboard.
           </li>
           <li>
-            <strong>Hover any cell</strong> for the exact month, year, and percentage. Hover a
-            row in the Annual returns rail to highlight that year's column.
+            <strong>Hover any cell</strong> for the exact month, year, and percentage. Hover a row
+            in the Annual returns rail to highlight that year's column.
           </li>
         </ul>
       </Dialog>
@@ -191,9 +192,8 @@ function fmtMonth(year: number, month: number): string {
       >
         <ul class="help-body">
           <li>
-            <strong>Drawdown</strong> is how far a series sits below its running peak. Always
-            zero or negative. A −20% drawdown means the portfolio is 20% below its highest
-            value to date.
+            <strong>Drawdown</strong> is how far a series sits below its running peak. Always zero
+            or negative. A −20% drawdown means the portfolio is 20% below its highest value to date.
           </li>
           <li>
             This chart plots the <strong>delta</strong>: portfolio drawdown minus
@@ -201,13 +201,12 @@ function fmtMonth(year: number, month: number): string {
           </li>
           <li>
             <strong>Above zero (green fill) = portfolio held up better</strong> — it was either
-            drawn down less than the benchmark, or it was at a peak while the benchmark was
-            falling.
+            drawn down less than the benchmark, or it was at a peak while the benchmark was falling.
           </li>
           <li>
-            <strong>Below zero (red fill) = portfolio fell harder</strong> than the benchmark
-            at that moment. Big red stretches are exactly the episodes where holding the index
-            would have hurt you less.
+            <strong>Below zero (red fill) = portfolio fell harder</strong> than the benchmark at
+            that moment. Big red stretches are exactly the episodes where holding the index would
+            have hurt you less.
           </li>
         </ul>
       </Dialog>

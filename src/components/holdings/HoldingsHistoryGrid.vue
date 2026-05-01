@@ -43,7 +43,12 @@ const rows = computed<Row[]>(() =>
     const totalValue = e.items.reduce((sum, i) => sum + i.lastTradeValue, 0)
     const row: Row = {
       timestamp: e.timestamp,
-      dateLabel: formatDate(e.timestamp, { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric' }),
+      dateLabel: formatDate(e.timestamp, {
+        timeZone: 'America/New_York',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      }),
       tickers,
       valueLabel: totalValue > 0 ? formatCurrency(totalValue) : '—',
       _totalValue: totalValue
@@ -63,7 +68,8 @@ const compareByTotalValue: CellCompareFunc = (_prop, a, b) =>
   (a as Row)._totalValue - (b as Row)._totalValue
 
 function compareByAnnotation(key: string): CellCompareFunc {
-  return (_prop, a, b) => ((a as Row)[`_raw_${key}`] as number) - ((b as Row)[`_raw_${key}`] as number)
+  return (_prop, a, b) =>
+    ((a as Row)[`_raw_${key}`] as number) - ((b as Row)[`_raw_${key}`] as number)
 }
 
 const columns = computed(() => {

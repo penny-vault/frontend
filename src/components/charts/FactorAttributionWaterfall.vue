@@ -128,8 +128,7 @@ function fmtTotal(v: number): string {
               class="faw-bar"
               :style="{
                 top: topPct(Math.max(seg.runStart, seg.runEnd)) + '%',
-                height:
-                  Math.abs(topPct(seg.runStart) - topPct(seg.runEnd)) + '%'
+                height: Math.abs(topPct(seg.runStart) - topPct(seg.runEnd)) + '%'
               }"
             />
           </div>
@@ -152,7 +151,10 @@ function fmtTotal(v: number): string {
       </div>
       <div class="faw-summary-item">
         <span class="faw-summary-label">Total return</span>
-        <span class="faw-summary-value faw-summary-total num" :class="totalReturn >= 0 ? 'up' : 'down'">
+        <span
+          class="faw-summary-value faw-summary-total num"
+          :class="totalReturn >= 0 ? 'up' : 'down'"
+        >
           {{ fmtTotal(totalReturn) }}
         </span>
       </div>
@@ -230,7 +232,9 @@ function fmtTotal(v: number): string {
   left: 10%;
   right: 10%;
   border-radius: 1px;
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
 }
 .faw-col-up .faw-bar {
   background: var(--gain);

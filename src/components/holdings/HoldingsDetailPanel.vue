@@ -15,7 +15,12 @@ const emit = defineEmits<{
 
 const dateLabel = computed(() =>
   props.entry
-    ? formatDate(props.entry.timestamp, { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric' })
+    ? formatDate(props.entry.timestamp, {
+        timeZone: 'America/New_York',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
     : '—'
 )
 

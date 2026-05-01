@@ -150,7 +150,7 @@ const maxDdBack = computed(() => {
   if (!dd) return []
   const rows: { label: string; value: string }[] = [
     { label: 'start', value: fmt(dd.start) },
-    { label: 'trough', value: fmt(dd.trough) },
+    { label: 'trough', value: fmt(dd.trough) }
   ]
   if (dd.recovery) rows.push({ label: 'recovered', value: fmt(dd.recovery) })
   return rows
@@ -168,12 +168,12 @@ const displayHoldings = computed<DisplayHolding[]>(() => {
   const items = holdingsData.value?.items ?? []
   const total = holdingsData.value?.totalMarketValue ?? 0
   if (items.length > 0 && total > 0) {
-    return items.map(h => ({
+    return items.map((h) => ({
       ticker: h.ticker,
       name: '',
       weight: h.marketValue / total,
       chg: h.dayChange ?? 0,
-      value: h.marketValue,
+      value: h.marketValue
     }))
   }
   const cashValue = heroValue.value
@@ -187,7 +187,6 @@ function metricValue(m: PortfolioStatistic): string {
   if (m.format === 'percent') return formatPercent(m.value)
   return formatNumber(m.value)
 }
-
 </script>
 
 <template>
@@ -213,7 +212,11 @@ function metricValue(m: PortfolioStatistic): string {
           </span>
           <span class="muted"
             >YTD · vs. bench
-            <strong v-if="heroBenchmarkYtd !== null" :class="heroBenchmarkYtd >= 0 ? 'up' : 'down'">{{ formatSignedPercent(heroBenchmarkYtd) }}</strong></span
+            <strong
+              v-if="heroBenchmarkYtd !== null"
+              :class="heroBenchmarkYtd >= 0 ? 'up' : 'down'"
+              >{{ formatSignedPercent(heroBenchmarkYtd) }}</strong
+            ></span
           >
         </div>
       </KpiCard>
@@ -277,7 +280,10 @@ function metricValue(m: PortfolioStatistic): string {
             <h2>Holdings</h2>
             <p class="panel-sub">
               {{ displayHoldings.length }} position{{ displayHoldings.length === 1 ? '' : 's' }}
-              <template v-if="holdingsData?.date"> · as of {{ formatDate(holdingsData.date, { month: 'short', day: 'numeric' }) }}</template>
+              <template v-if="holdingsData?.date">
+                · as of
+                {{ formatDate(holdingsData.date, { month: 'short', day: 'numeric' }) }}</template
+              >
             </p>
           </div>
           <button class="icon-btn sm" title="View all">
@@ -400,7 +406,7 @@ function metricValue(m: PortfolioStatistic): string {
       >
         <div class="d-metrics-grid">
           <div
-            v-for="(m, i) in (statisticsData ?? [])"
+            v-for="(m, i) in statisticsData ?? []"
             :key="m.label"
             class="dm"
             :style="{ '--i': i }"
@@ -420,7 +426,10 @@ function metricValue(m: PortfolioStatistic): string {
         </div>
         <div class="chip-row">
           <Tag :value="portfolioData.benchmark" severity="warn" />
-          <Tag :value="'Tax ratio · ' + formatPercent(summaryData?.taxCostRatio ?? 0)" severity="secondary" />
+          <Tag
+            :value="'Tax ratio · ' + formatPercent(summaryData?.taxCostRatio ?? 0)"
+            severity="secondary"
+          />
         </div>
       </template>
       <div class="ret-table-wrap">
@@ -438,7 +447,7 @@ function metricValue(m: PortfolioStatistic): string {
           </thead>
           <tbody>
             <tr
-              v-for="(r, i) in (trailingReturnsData ?? [])"
+              v-for="(r, i) in trailingReturnsData ?? []"
               :key="r.title"
               :class="`v-${r.kind}`"
               :style="{ '--i': i }"

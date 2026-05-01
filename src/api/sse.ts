@@ -20,7 +20,7 @@ export interface ProgressStreamHandlers {
 export async function openProgressStream(
   url: string,
   handlers: ProgressStreamHandlers,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<void> {
   const response = await fetchWithAuth(url, { signal: signal ?? null })
   if (!response.ok || !response.body) {

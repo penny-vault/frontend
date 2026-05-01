@@ -68,7 +68,10 @@ const xRange = computed(() => {
     if (p.x > hi) hi = p.x
   }
   const pad = Math.max(0.1, (hi - lo) * 0.15)
-  return { min: Math.max(0, Math.floor((lo - pad) * 10) / 10), max: Math.ceil((hi + pad) * 10) / 10 }
+  return {
+    min: Math.max(0, Math.floor((lo - pad) * 10) / 10),
+    max: Math.ceil((hi + pad) * 10) / 10
+  }
 })
 
 const yRange = computed(() => {

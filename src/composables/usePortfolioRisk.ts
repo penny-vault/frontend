@@ -226,10 +226,18 @@ export function usePortfolioRisk(
     const winLoss: WinLoss = { positive, total: monthly.length }
 
     // Capture: computed from monthly returns
-    let upPortSum = 0, upBenchSum = 0, downPortSum = 0, downBenchSum = 0
+    let upPortSum = 0,
+      upBenchSum = 0,
+      downPortSum = 0,
+      downBenchSum = 0
     for (const mr of monthly) {
-      if (mr.benchmark > 0) { upPortSum += mr.portfolio; upBenchSum += mr.benchmark }
-      else if (mr.benchmark < 0) { downPortSum += mr.portfolio; downBenchSum += mr.benchmark }
+      if (mr.benchmark > 0) {
+        upPortSum += mr.portfolio
+        upBenchSum += mr.benchmark
+      } else if (mr.benchmark < 0) {
+        downPortSum += mr.portfolio
+        downBenchSum += mr.benchmark
+      }
     }
     const capture: CaptureData = {
       up: upBenchSum !== 0 ? upPortSum / upBenchSum : null,
@@ -291,9 +299,7 @@ export function usePortfolioRisk(
     const dd = toDrawdownSeries(days)
     const maxDd = dd.reduce((lo, pt) => (pt.portfolio < lo ? pt.portfolio : lo), 0)
     const longestRecoveryMonths =
-      episodes.length === 0
-        ? 0
-        : Math.max(...episodes.map((e) => e.recoveryDays)) / 30
+      episodes.length === 0 ? 0 : Math.max(...episodes.map((e) => e.recoveryDays)) / 30
     const portfolioVol = annualizedVol(monthly.map((mr) => mr.portfolio))
     const benchmarkVol = annualizedVol(monthly.map((mr) => mr.benchmark))
     const pctLosingMonths = monthly.length === 0 ? 0 : 1 - positive / monthly.length

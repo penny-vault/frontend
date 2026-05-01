@@ -16,7 +16,11 @@ export function buildAuth0() {
   return plugin
 }
 
-const REDIRECT_TO_LOGIN_ERRORS = new Set(['login_required', 'consent_required', 'interaction_required'])
+const REDIRECT_TO_LOGIN_ERRORS = new Set([
+  'login_required',
+  'consent_required',
+  'interaction_required'
+])
 
 export function wireAuthTokenProvider(auth: ReturnType<typeof createAuth0>): void {
   // In mock mode, skip Auth0 token acquisition entirely — MSW handles auth-free

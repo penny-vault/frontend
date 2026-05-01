@@ -80,9 +80,7 @@ const adjustedCumulative = computed(() => {
   return p.cumulativeReturn - removedSum
 })
 
-const adjustedAnnualized = computed(() =>
-  annualize(adjustedCumulative.value, period.value.years)
-)
+const adjustedAnnualized = computed(() => annualize(adjustedCumulative.value, period.value.years))
 
 const removedCount = computed(() => removed.value.size)
 const deltaPp = computed(() => (adjustedAnnualized.value - originalAnnualized.value) * 100)
@@ -185,7 +183,9 @@ function fmtDelta(pctValue: number): string {
       </li>
     </ul>
 
-    <p class="hac-help">Click a row to remove that holding and see the impact on annualized return.</p>
+    <p class="hac-help">
+      Click a row to remove that holding and see the impact on annualized return.
+    </p>
   </div>
 </template>
 
@@ -219,7 +219,9 @@ function fmtDelta(pctValue: number): string {
   color: var(--text-3);
   cursor: pointer;
   border-radius: 2px;
-  transition: background 160ms ease, color 160ms ease;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
 }
 .hac-period-tab:hover {
   color: var(--text-1);
@@ -299,7 +301,9 @@ function fmtDelta(pctValue: number): string {
   border-radius: 2px;
   cursor: pointer;
   user-select: none;
-  transition: background 140ms ease, opacity 160ms ease;
+  transition:
+    background 140ms ease,
+    opacity 160ms ease;
 }
 .hac-row:hover {
   background: var(--primary-soft-07, rgba(127, 127, 127, 0.05));

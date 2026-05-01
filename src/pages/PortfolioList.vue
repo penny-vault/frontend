@@ -26,7 +26,16 @@ function createPortfolio() {
       </div>
       <RouterLink :to="{ name: 'strategy-list' }" class="pl-strategies-link">
         Browse strategies
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M5 12h14M12 5l7 7-7 7" />
         </svg>
       </RouterLink>
@@ -69,13 +78,30 @@ function createPortfolio() {
           </div>
         </div>
         <div class="card-footer">
-          <span class="card-date">Since {{ p.inceptionDate ? formatDate(p.inceptionDate, { month: 'short', year: 'numeric' }) : '—' }}</span>
-          <span class="card-updated">Updated {{ p.lastUpdated ? formatDate(p.lastUpdated) : '—' }}</span>
+          <span class="card-date"
+            >Since
+            {{
+              p.inceptionDate
+                ? formatDate(p.inceptionDate, { month: 'short', year: 'numeric' })
+                : '—'
+            }}</span
+          >
+          <span class="card-updated"
+            >Updated {{ p.lastUpdated ? formatDate(p.lastUpdated) : '—' }}</span
+          >
         </div>
       </Panel>
 
       <button class="portfolio-card-new" @click="createPortfolio">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        >
           <line x1="12" y1="5" x2="12" y2="19" />
           <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
@@ -175,9 +201,15 @@ function createPortfolio() {
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
-.card-kpi-value.up { color: var(--gain); }
-.card-kpi-value.down { color: var(--loss); }
-.card-kpi-value.warn { color: var(--secondary); }
+.card-kpi-value.up {
+  color: var(--gain);
+}
+.card-kpi-value.down {
+  color: var(--loss);
+}
+.card-kpi-value.warn {
+  color: var(--secondary);
+}
 .card-footer {
   display: flex;
   justify-content: space-between;
