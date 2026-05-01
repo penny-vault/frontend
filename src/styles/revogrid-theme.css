@@ -1,0 +1,54 @@
+/*
+ * RevoGrid theming for Penny Vault.
+ * RevoGrid is a web component — CSS custom properties inherit through Shadow DOM,
+ * so we set the library's `--revo-grid-*` vars on the `<revo-grid>` element with
+ * higher specificity than the library's own dark-theme defaults.
+ */
+
+.revo-wrap revo-grid[theme] {
+  --revo-grid-background: var(--panel);
+  --revo-grid-foreground: var(--text-1);
+  --revo-grid-text: var(--text-1);
+  --revo-grid-divider: var(--border);
+  --revo-grid-border: var(--border);
+  --revo-grid-header-bg: var(--panel);
+  --revo-grid-header-color: var(--text-3);
+  --revo-grid-header-border: var(--border);
+  --revo-grid-cell-border: var(--border);
+  --revo-grid-focused-bg: var(--primary-soft-15);
+  --revo-grid-row-hover: var(--row-hover);
+  --revo-grid-row-headers-bg: var(--panel);
+  --revo-grid-row-headers-color: var(--text-3);
+  --revo-grid-primary: var(--primary);
+  --revo-grid-primary-transparent: var(--primary-soft-25);
+  --revo-grid-shadow: var(--shadow-panel);
+
+  height: 100%;
+  width: 100%;
+}
+
+.revo-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  min-height: 400px;
+}
+
+.revo-wrap .holdings-row-predicted {
+  opacity: 0.6;
+}
+.revo-wrap .holdings-cell-up {
+  color: var(--gain);
+}
+.revo-wrap .holdings-cell-down {
+  color: var(--loss);
+}
+.revo-wrap .holdings-cell-muted {
+  color: var(--text-4);
+}
+.revo-wrap .holdings-row-selected {
+  background: var(--primary-soft-15);
+}
