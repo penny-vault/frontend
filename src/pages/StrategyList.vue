@@ -50,7 +50,6 @@ const highlightShortCode = computed(() => hovered.value ?? selected.value)
     <div class="sl-header">
       <div>
         <h1>Strategies</h1>
-        <p class="sl-sub">A strategy is an algorithm — rules for picking and weighting assets.</p>
       </div>
       <div class="sl-search">
         <svg
@@ -143,10 +142,6 @@ const highlightShortCode = computed(() => hovered.value ?? selected.value)
   font-weight: 400;
   letter-spacing: -0.01em;
   margin-bottom: 6px;
-}
-.sl-sub {
-  font-size: 13px;
-  color: var(--text-3);
 }
 
 .sl-loading {
