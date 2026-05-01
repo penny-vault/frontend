@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth0 } from '@auth0/auth0-vue'
 import Button from 'primevue/button'
@@ -9,13 +9,11 @@ const isMockMode = import.meta.env.VITE_USE_MOCKS === '1'
 const auth = isMockMode ? null : useAuth0()
 
 if (!isMockMode && auth) {
-  watch(
-    auth.isAuthenticated,
-    (authenticated) => {
-      if (authenticated) router.replace('/portfolios')
-    },
-    { immediate: true }
-  )
+  watchEffect(() => {
+    if (!auth.isLoading.value && auth.isAuthenticated.value) {
+      router.replace('/portfolios')
+    }
+  })
 }
 
 function handleLogin() {
