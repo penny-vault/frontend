@@ -115,7 +115,7 @@ const benchmark = ref<SecurityResult | null>({ ticker: 'SPY', name: 'SPDR S&P 50
 const initialValue = ref<number | null>(null)
 
 const alertsEnabled = ref(true)
-const alertFrequency = ref('run')
+const alertFrequency = ref('monthly')
 
 const alertFrequencyOptions = [
   { key: 'run', label: 'Every run' },
