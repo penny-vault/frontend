@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const DEMO_ID = '00000000-0000-4000-a000-000000000001'
+const DEMO_ID = 'adm-growth-mk01'
 
 test.describe('Portfolio Holdings', () => {
   test('tab navigation from summary to holdings', async ({ page }) => {
@@ -19,7 +19,8 @@ test.describe('Portfolio Holdings', () => {
     // RevoGrid renders a <revo-grid> custom element
     await expect(page.locator('.revo-wrap revo-grid')).toBeVisible({ timeout: 10_000 })
     await expect(page.locator('.hdp-title')).toContainText('Holdings detail for')
-    await expect(page.locator('.freq-chart canvas')).toBeVisible({ timeout: 10_000 })
+    // Frequency chart is now a list, not a canvas
+    await expect(page.locator('.freq .freq-row').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('calculator dialog opens with snapshot rows', async ({ page }) => {

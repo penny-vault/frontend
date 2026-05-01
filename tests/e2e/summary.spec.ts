@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const DEMO_ID = '00000000-0000-4000-a000-000000000001'
+const DEMO_ID = 'adm-growth-mk01'
 
 test.describe('Portfolio Summary', () => {
   test('renders the page shell with KPIs and chart', async ({ page }) => {
@@ -11,8 +11,8 @@ test.describe('Portfolio Summary', () => {
       { timeout: 10_000 }
     )
 
-    const kpis = page.locator('.kpi')
-    await expect(kpis).toHaveCount(6, { timeout: 5_000 })
+    // 5 KpiCard (.kpi) + 1 FlippableKpi (.fk-scene)
+    await expect(page.locator('.d-kpis > *')).toHaveCount(6, { timeout: 5_000 })
 
     await expect(page.locator('.chart canvas')).toBeVisible({ timeout: 5_000 })
   })

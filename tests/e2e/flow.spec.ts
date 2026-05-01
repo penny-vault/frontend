@@ -28,9 +28,9 @@ test.describe('Login → List → Summary flow', () => {
 
     // Click the first card
     await cards.first().click()
-    await expect(page).toHaveURL(/\/portfolios\/00000000/, { timeout: 5_000 })
+    await expect(page).toHaveURL(/\/portfolios\/adm-growth-mk01/, { timeout: 5_000 })
 
-    // Summary page loads with KPIs
-    await expect(page.locator('.kpi')).toHaveCount(6, { timeout: 10_000 })
+    // Summary page loads with KPIs (5 KpiCards + 1 FlippableKpi)
+    await expect(page.locator('.d-kpis > *')).toHaveCount(6, { timeout: 10_000 })
   })
 })

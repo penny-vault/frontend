@@ -8,6 +8,7 @@ import {
   portfolioListFixture,
   performanceFixture,
   holdingsMap,
+  holdingsHistoryMap,
   transactionsMap,
   holdingsImpactMap,
   factorMap,
@@ -33,9 +34,9 @@ export const handlers = [
   http.get(`${base}/security`, ({ request }) => {
     const q = new URL(request.url).searchParams.get('q')?.toLowerCase() ?? ''
     const results = q
-      ? securityFixtures.filter(
-          s => s.ticker.toLowerCase().startsWith(q) || s.name.toLowerCase().includes(q)
-        ).slice(0, 10)
+      ? securityFixtures
+          .filter((s) => s.ticker.toLowerCase().startsWith(q) || s.name.toLowerCase().includes(q))
+          .slice(0, 10)
       : []
     return HttpResponse.json(results)
   }),
@@ -43,8 +44,9 @@ export const handlers = [
   http.get(`${base}/strategies`, () => HttpResponse.json(strategyListFixture)),
 
   http.get(`${base}/strategies/:shortCode`, ({ params }) => {
-    const shortCode = typeof params.shortCode === 'string' ? params.shortCode : String(params.shortCode)
-    const strategy = strategyListFixture.find(s => s.shortCode === shortCode)
+    const shortCode =
+      typeof params.shortCode === 'string' ? params.shortCode : String(params.shortCode)
+    const strategy = strategyListFixture.find((s) => s.shortCode === shortCode)
     if (!strategy) return HttpResponse.json({ error: 'not found' }, { status: 404 })
     return HttpResponse.json(strategy)
   }),
@@ -52,7 +54,7 @@ export const handlers = [
   http.get(`${base}/portfolios`, () => HttpResponse.json(portfolioListFixture)),
 
   http.post(`${base}/portfolios`, async ({ request }) => {
-    const body = await request.json() as Record<string, unknown>
+    const body = (await request.json()) as Record<string, unknown>
     const created: PortfolioCreated = {
       slug: `new-portfolio-${Date.now()}`,
       name: String(body.name ?? 'New Portfolio'),
@@ -63,7 +65,7 @@ export const handlers = [
       status: 'pending',
       createdAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
-      runId: crypto.randomUUID(),
+      runId: crypto.randomUUID()
     }
     return HttpResponse.json(created, { status: 201 })
   }),
@@ -89,8 +91,9 @@ export const handlers = [
         { status: 404, headers: { 'content-type': 'application/problem+json' } }
       )
     }
-    const body = await request.json() as { name?: string }
-    if (body.name) portfolioMap[slug] = { ...portfolio, name: body.name, lastUpdated: new Date().toISOString() }
+    const body = (await request.json()) as { name?: string }
+    if (body.name)
+      portfolioMap[slug] = { ...portfolio, name: body.name, lastUpdated: new Date().toISOString() }
     return HttpResponse.json(portfolioMap[slug])
   }),
 
@@ -119,7 +122,7 @@ export const handlers = [
         const startYear = 2010
         const endYear = 2026
         for (let step = 1; step <= totalSteps; step++) {
-          await new Promise(r => setTimeout(r, stepMs))
+          await new Promise((r) => setTimeout(r, stepMs))
           const yearOffset = Math.floor(((step - 1) / totalSteps) * (endYear - startYear))
           send('progress', {
             step,
@@ -129,7 +132,7 @@ export const handlers = [
             pct: Math.round((step / totalSteps) * 100),
             elapsed_ms: step * stepMs,
             eta_ms: (totalSteps - step) * stepMs,
-            measurements: step * 21,
+            measurements: step * 21
           })
         }
         send('done', { status: 'success' })
@@ -141,8 +144,8 @@ export const handlers = [
       status: 200,
       headers: {
         'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-      },
+        'Cache-Control': 'no-cache'
+      }
     })
   }),
 
@@ -240,6 +243,18 @@ export const handlers = [
     return HttpResponse.json(holdings)
   }),
 
+  http.get(`${base}/portfolios/:slug/holdings/history`, ({ params }) => {
+    const slug = typeof params.slug === 'string' ? params.slug : String(params.slug)
+    const history = holdingsHistoryMap[slug]
+    if (!history) {
+      return HttpResponse.json(
+        { title: 'Not Found', status: 404 },
+        { status: 404, headers: { 'content-type': 'application/problem+json' } }
+      )
+    }
+    return HttpResponse.json(history)
+  }),
+
   http.get(`${base}/portfolios/:slug/holdings-impact`, ({ params }) => {
     const slug = typeof params.slug === 'string' ? params.slug : String(params.slug)
     const impact = holdingsImpactMap[slug]
@@ -272,12 +287,13 @@ export const handlers = [
         { status: 404, headers: { 'content-type': 'application/problem+json' } }
       )
     }
-    const body = (await request.json().catch(() => null)) as
-      | { frequency?: unknown; recipients?: unknown }
-      | null
+    const body = (await request.json().catch(() => null)) as {
+      frequency?: unknown
+      recipients?: unknown
+    } | null
     const frequency = body?.frequency as AlertFrequency | undefined
     const recipients = Array.isArray(body?.recipients)
-      ? (body!.recipients as unknown[]).map(r => String(r).trim()).filter(Boolean)
+      ? (body!.recipients as unknown[]).map((r) => String(r).trim()).filter(Boolean)
       : []
     const validFreq: AlertFrequency[] = ['scheduled_run', 'daily', 'weekly', 'monthly']
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -287,9 +303,13 @@ export const handlers = [
         { status: 422, headers: { 'content-type': 'application/problem+json' } }
       )
     }
-    if (recipients.length === 0 || !recipients.every(r => emailRe.test(r))) {
+    if (recipients.length === 0 || !recipients.every((r) => emailRe.test(r))) {
       return HttpResponse.json(
-        { title: 'Unprocessable Entity', status: 422, detail: 'at least one valid recipient required' },
+        {
+          title: 'Unprocessable Entity',
+          status: 422,
+          detail: 'at least one valid recipient required'
+        },
         { status: 422, headers: { 'content-type': 'application/problem+json' } }
       )
     }
@@ -315,16 +335,17 @@ export const handlers = [
         { status: 404, headers: { 'content-type': 'application/problem+json' } }
       )
     }
-    const idx = list.findIndex(a => a.id === alertId)
+    const idx = list.findIndex((a) => a.id === alertId)
     if (idx === -1) {
       return HttpResponse.json(
         { title: 'Not Found', status: 404 },
         { status: 404, headers: { 'content-type': 'application/problem+json' } }
       )
     }
-    const body = (await request.json().catch(() => null)) as
-      | { frequency?: unknown; recipients?: unknown }
-      | null
+    const body = (await request.json().catch(() => null)) as {
+      frequency?: unknown
+      recipients?: unknown
+    } | null
     const validFreq: AlertFrequency[] = ['scheduled_run', 'daily', 'weekly', 'monthly']
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     const next: Alert = { ...list[idx]! }
@@ -339,11 +360,15 @@ export const handlers = [
     }
     if (body?.recipients !== undefined) {
       const recipients = Array.isArray(body.recipients)
-        ? (body.recipients as unknown[]).map(r => String(r).trim()).filter(Boolean)
+        ? (body.recipients as unknown[]).map((r) => String(r).trim()).filter(Boolean)
         : []
-      if (recipients.length === 0 || !recipients.every(r => emailRe.test(r))) {
+      if (recipients.length === 0 || !recipients.every((r) => emailRe.test(r))) {
         return HttpResponse.json(
-          { title: 'Unprocessable Entity', status: 422, detail: 'at least one valid recipient required' },
+          {
+            title: 'Unprocessable Entity',
+            status: 422,
+            detail: 'at least one valid recipient required'
+          },
           { status: 422, headers: { 'content-type': 'application/problem+json' } }
         )
       }
@@ -363,7 +388,7 @@ export const handlers = [
         { status: 404, headers: { 'content-type': 'application/problem+json' } }
       )
     }
-    const idx = list.findIndex(a => a.id === alertId)
+    const idx = list.findIndex((a) => a.id === alertId)
     if (idx === -1) {
       return HttpResponse.json(
         { title: 'Not Found', status: 404 },
@@ -418,7 +443,14 @@ export const handlers = [
     const from = url.searchParams.get('from')
     const to = url.searchParams.get('to')
     const type = url.searchParams.get('type')
-    const typeSet = type ? new Set(type.split(',').map((t) => t.trim()).filter(Boolean)) : null
+    const typeSet = type
+      ? new Set(
+          type
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean)
+        )
+      : null
     const fromT = from ? new Date(from).getTime() : -Infinity
     const toT = to ? new Date(to).getTime() : Infinity
     const filtered = source.items.filter((t) => {

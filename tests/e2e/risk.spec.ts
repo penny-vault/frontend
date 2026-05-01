@@ -1,7 +1,7 @@
 // tests/e2e/risk.spec.ts
 import { test, expect } from '@playwright/test'
 
-const DEMO_ID = '00000000-0000-4000-a000-000000000001'
+const DEMO_ID = 'adm-growth-mk01'
 
 test.describe('Portfolio Risk', () => {
   test('tab navigation from summary to risk', async ({ page }) => {
@@ -23,8 +23,8 @@ test.describe('Portfolio Risk', () => {
     await expect(page.locator('.sg-chart canvas')).toBeVisible({ timeout: 10_000 })
     // Holdings attribution — rows rendered
     await expect(page.locator('.hac-row').first()).toBeVisible({ timeout: 10_000 })
-    // Monthly contribution — bar chart canvas
-    await expect(page.locator('.mcc-chart canvas')).toBeVisible({ timeout: 10_000 })
+    // Monthly contribution — list-based chart with rows
+    await expect(page.locator('.mcc .mcc-rows')).toBeVisible({ timeout: 10_000 })
     // Crisis small-multiples — at least one item
     await expect(page.locator('.csm-item').first()).toBeVisible({ timeout: 10_000 })
   })

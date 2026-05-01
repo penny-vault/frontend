@@ -81,12 +81,20 @@ const userName = computed(() =>
 const userEmail = computed(() =>
   isMockMode ? 'jeremy@fergason.me' : (auth?.user?.value?.email ?? '')
 )
-const userPicture = computed(() =>
-  isMockMode ? null : (auth?.user?.value?.picture ?? null)
-)
+const userPicture = computed(() => (isMockMode ? null : (auth?.user?.value?.picture ?? null)))
 
 function openAccountDialog() {
   accountDialogOpen.value = true
+}
+
+function openAccountFromSidebar() {
+  sidebarOpen.value = false
+  openAccountDialog()
+}
+
+function logoutFromSidebar() {
+  sidebarOpen.value = false
+  handleLogout()
 }
 
 // User menu (PrimeVue Menu popup)
@@ -130,69 +138,74 @@ function handleLogout() {
   >
     <header class="d-top" :class="{ scrolled }">
       <div class="d-top-inner">
-      <div class="d-top-l">
-        <button class="icon-btn" title="Menu" aria-label="Toggle sidebar" @click="toggleSidebar">
+        <div class="d-top-l">
+          <button class="icon-btn" title="Menu" aria-label="Toggle sidebar" @click="toggleSidebar">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+            >
+              <path d="M3 6h18M3 12h18M3 18h18" />
+            </svg>
+          </button>
+          <router-link to="/portfolios" class="brand" aria-label="Go to portfolios">
+            <span class="logo">
+              <img src="/pv-icon-blue.jpg" alt="Penny Vault" width="22" height="22" />
+            </span>
+            <span class="brand-text">Penny Vault <span class="thin">Studio</span></span>
+          </router-link>
+        </div>
+
+        <div class="d-top-search">
           <svg
-            width="16"
-            height="16"
+            class="search-icon"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="1.6"
+            stroke-width="2"
           >
-            <path d="M3 6h18M3 12h18M3 18h18" />
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-4.35-4.35" />
           </svg>
-        </button>
-        <router-link to="/portfolios" class="brand" aria-label="Go to portfolios">
-          <span class="logo">
-            <img src="/pv-icon-blue.jpg" alt="Penny Vault" width="22" height="22" />
-          </span>
-          <span class="brand-text">Penny Vault <span class="thin">Studio</span></span>
-        </router-link>
-      </div>
-
-      <div class="d-top-search">
-        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-4.35-4.35" />
-        </svg>
-        <input
-          v-model="searchQuery"
-          class="search-input"
-          type="text"
-          placeholder="Search portfolios..."
-          @focus="searchFocused = true"
-          @blur="onSearchBlur"
-        />
-        <div
-          v-if="searchFocused && searchQuery.trim()"
-          class="search-dropdown"
-        >
-          <div
-            v-for="r in searchResults"
-            :key="r.slug"
-            class="search-result"
-            @mousedown.prevent="selectSearchResult(r.slug)"
-          >
-            <div class="search-result-name">{{ r.name }}</div>
-            <div class="search-result-meta">{{ r.benchmark }}</div>
+          <input
+            v-model="searchQuery"
+            class="search-input"
+            type="text"
+            placeholder="Search portfolios..."
+            @focus="searchFocused = true"
+            @blur="onSearchBlur"
+          />
+          <div v-if="searchFocused && searchQuery.trim()" class="search-dropdown">
+            <div
+              v-for="r in searchResults"
+              :key="r.slug"
+              class="search-result"
+              @mousedown.prevent="selectSearchResult(r.slug)"
+            >
+              <div class="search-result-name">{{ r.name }}</div>
+              <div class="search-result-meta">{{ r.benchmark }}</div>
+            </div>
+            <div v-if="!searchResults.length" class="search-empty">No results</div>
           </div>
-          <div v-if="!searchResults.length" class="search-empty">No results</div>
         </div>
-      </div>
 
-      <div class="d-top-r">
-        <button
-          class="icon-btn"
-          :title="isLight ? 'Switch to dark mode' : 'Switch to light mode'"
-          :aria-label="isLight ? 'Switch to dark mode' : 'Switch to light mode'"
-          @click="toggleTheme"
-        >
-          <i :class="isLight ? 'pi pi-sun' : 'pi pi-moon'" />
-        </button>
-        <button class="av" aria-label="User menu" @click="toggleUserMenu">J</button>
-        <Menu ref="userMenuRef" :model="userMenuItems" :popup="true" />
-      </div>
+        <div class="d-top-r">
+          <button
+            class="icon-btn"
+            :title="isLight ? 'Switch to dark mode' : 'Switch to light mode'"
+            :aria-label="isLight ? 'Switch to dark mode' : 'Switch to light mode'"
+            @click="toggleTheme"
+          >
+            <i :class="isLight ? 'pi pi-sun' : 'pi pi-moon'" />
+          </button>
+          <button class="av" aria-label="User menu" @click="toggleUserMenu">J</button>
+          <Menu ref="userMenuRef" :model="userMenuItems" :popup="true" />
+        </div>
       </div>
     </header>
 
@@ -201,29 +214,73 @@ function handleLogout() {
       <div class="sidebar-section">
         <div class="sidebar-label">Navigate</div>
         <button class="sidebar-item" @click="sidebarNav('/portfolios')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3h7v7H3zM14 3h7v4h-7zM14 10h7v11h-7zM3 13h7v8H3z"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+          >
+            <path d="M3 3h7v7H3zM14 3h7v4h-7zM14 10h7v11h-7zM3 13h7v8H3z" />
+          </svg>
           Portfolios
         </button>
         <button class="sidebar-item" @click="sidebarNav('/strategies')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+          >
+            <path d="M3 12h4l3-9 4 18 3-9h4" />
+          </svg>
           Strategies
         </button>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Account</div>
-        <button class="sidebar-item" @click="sidebarOpen = false; openAccountDialog()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <button class="sidebar-item" @click="openAccountFromSidebar">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
           Account details
         </button>
-        <button class="sidebar-item danger" @click="sidebarOpen = false; handleLogout()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <button class="sidebar-item danger" @click="logoutFromSidebar">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
           Sign out
         </button>
       </div>
     </Drawer>
 
     <!-- Account details dialog -->
-    <Dialog v-model:visible="accountDialogOpen" header="Account details" modal :style="{ width: '400px' }">
+    <Dialog
+      v-model:visible="accountDialogOpen"
+      header="Account details"
+      modal
+      :style="{ width: '400px' }"
+    >
       <div class="dialog-body">
         <div class="account-avatar">
           <img v-if="userPicture" :src="userPicture" :alt="userName" />
@@ -614,7 +671,9 @@ html:not(.pv-dark) {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: box-shadow 200ms ease, transform 180ms ease;
+  transition:
+    box-shadow 200ms ease,
+    transform 180ms ease;
   margin-left: 8px;
   transition: box-shadow 200ms ease;
 }
@@ -648,7 +707,9 @@ html:not(.pv-dark) {
   border-radius: 6px;
   cursor: pointer;
   text-align: left;
-  transition: background 120ms ease, color 120ms ease;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
 }
 .sidebar-item:hover {
   background: var(--hover-surface);
@@ -662,8 +723,12 @@ html:not(.pv-dark) {
   background: transparent;
   color: var(--text-2);
 }
-.sidebar-item.danger { color: var(--loss); }
-.sidebar-item.danger:hover { background: var(--loss-soft-15); }
+.sidebar-item.danger {
+  color: var(--loss);
+}
+.sidebar-item.danger:hover {
+  background: var(--loss-soft-15);
+}
 .sidebar-tag {
   margin-left: auto;
 }

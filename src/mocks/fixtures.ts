@@ -8,9 +8,9 @@ import type {
   TrailingReturnRow,
   PortfolioPerformance,
   HoldingsResponse,
-  Transaction,
+  HoldingsHistoryEntry,
+  HoldingsHistoryResponse,
   TransactionsResponse,
-  TransactionType,
   HoldingsImpactResponse,
   PortfolioFactorAnalysis,
   FactorPeriod,
@@ -235,22 +235,112 @@ export const statisticsFixture3: PortfolioStatistic[] = [
 ]
 
 export const trailingReturnsFixture1: TrailingReturnRow[] = [
-  { title: 'Portfolio — Time-Weighted', kind: 'portfolio', ytd: 0.0714, oneYear: 0.1832, threeYear: 0.1083, fiveYear: 0.1274, tenYear: 0.1119, sinceInception: 0.1147 },
-  { title: 'Benchmark — Time-Weighted', kind: 'benchmark', ytd: 0.0538, oneYear: 0.1471, threeYear: 0.0912, fiveYear: 0.1129, tenYear: 0.1047, sinceInception: 0.1081 },
-  { title: 'Portfolio — TWRR (tax-adjusted)', kind: 'portfolio-tax', ytd: 0.0652, oneYear: 0.1673, threeYear: 0.0989, fiveYear: 0.1163, tenYear: 0.1022, sinceInception: 0.1047 },
-  { title: 'Benchmark — TWRR (tax-adjusted)', kind: 'benchmark-tax', ytd: 0.0457, oneYear: 0.125, threeYear: 0.0775, fiveYear: 0.096, tenYear: 0.0889, sinceInception: 0.0919 }
+  {
+    title: 'Portfolio — Time-Weighted',
+    kind: 'portfolio',
+    ytd: 0.0714,
+    oneYear: 0.1832,
+    threeYear: 0.1083,
+    fiveYear: 0.1274,
+    tenYear: 0.1119,
+    sinceInception: 0.1147
+  },
+  {
+    title: 'Benchmark — Time-Weighted',
+    kind: 'benchmark',
+    ytd: 0.0538,
+    oneYear: 0.1471,
+    threeYear: 0.0912,
+    fiveYear: 0.1129,
+    tenYear: 0.1047,
+    sinceInception: 0.1081
+  },
+  {
+    title: 'Portfolio — TWRR (tax-adjusted)',
+    kind: 'portfolio-tax',
+    ytd: 0.0652,
+    oneYear: 0.1673,
+    threeYear: 0.0989,
+    fiveYear: 0.1163,
+    tenYear: 0.1022,
+    sinceInception: 0.1047
+  },
+  {
+    title: 'Benchmark — TWRR (tax-adjusted)',
+    kind: 'benchmark-tax',
+    ytd: 0.0457,
+    oneYear: 0.125,
+    threeYear: 0.0775,
+    fiveYear: 0.096,
+    tenYear: 0.0889,
+    sinceInception: 0.0919
+  }
 ]
 
 export const trailingReturnsFixture2: TrailingReturnRow[] = [
-  { title: 'Portfolio — Time-Weighted', kind: 'portfolio', ytd: 0.0198, oneYear: 0.0412, threeYear: 0.0289, fiveYear: 0.0318, tenYear: 0.0318, sinceInception: 0.0318 },
-  { title: 'Benchmark — Time-Weighted', kind: 'benchmark', ytd: 0.0142, oneYear: 0.0318, threeYear: 0.0201, fiveYear: 0.0241, tenYear: 0.0241, sinceInception: 0.0241 },
-  { title: 'Portfolio — TWRR (tax-adjusted)', kind: 'portfolio-tax', ytd: 0.0182, oneYear: 0.0378, threeYear: 0.0265, fiveYear: 0.0291, tenYear: 0.0291, sinceInception: 0.0291 }
+  {
+    title: 'Portfolio — Time-Weighted',
+    kind: 'portfolio',
+    ytd: 0.0198,
+    oneYear: 0.0412,
+    threeYear: 0.0289,
+    fiveYear: 0.0318,
+    tenYear: 0.0318,
+    sinceInception: 0.0318
+  },
+  {
+    title: 'Benchmark — Time-Weighted',
+    kind: 'benchmark',
+    ytd: 0.0142,
+    oneYear: 0.0318,
+    threeYear: 0.0201,
+    fiveYear: 0.0241,
+    tenYear: 0.0241,
+    sinceInception: 0.0241
+  },
+  {
+    title: 'Portfolio — TWRR (tax-adjusted)',
+    kind: 'portfolio-tax',
+    ytd: 0.0182,
+    oneYear: 0.0378,
+    threeYear: 0.0265,
+    fiveYear: 0.0291,
+    tenYear: 0.0291,
+    sinceInception: 0.0291
+  }
 ]
 
 export const trailingReturnsFixture3: TrailingReturnRow[] = [
-  { title: 'Portfolio — Time-Weighted', kind: 'portfolio', ytd: 0.0532, oneYear: 0.1214, threeYear: 0.0782, fiveYear: 0.0891, tenYear: 0.0891, sinceInception: 0.0891 },
-  { title: 'Benchmark — Time-Weighted', kind: 'benchmark', ytd: 0.0389, oneYear: 0.0982, threeYear: 0.0612, fiveYear: 0.0721, tenYear: 0.0721, sinceInception: 0.0721 },
-  { title: 'Portfolio — TWRR (tax-adjusted)', kind: 'portfolio-tax', ytd: 0.0481, oneYear: 0.1102, threeYear: 0.0711, fiveYear: 0.0812, tenYear: 0.0812, sinceInception: 0.0812 }
+  {
+    title: 'Portfolio — Time-Weighted',
+    kind: 'portfolio',
+    ytd: 0.0532,
+    oneYear: 0.1214,
+    threeYear: 0.0782,
+    fiveYear: 0.0891,
+    tenYear: 0.0891,
+    sinceInception: 0.0891
+  },
+  {
+    title: 'Benchmark — Time-Weighted',
+    kind: 'benchmark',
+    ytd: 0.0389,
+    oneYear: 0.0982,
+    threeYear: 0.0612,
+    fiveYear: 0.0721,
+    tenYear: 0.0721,
+    sinceInception: 0.0721
+  },
+  {
+    title: 'Portfolio — TWRR (tax-adjusted)',
+    kind: 'portfolio-tax',
+    ytd: 0.0481,
+    oneYear: 0.1102,
+    threeYear: 0.0711,
+    fiveYear: 0.0812,
+    tenYear: 0.0812,
+    sinceInception: 0.0812
+  }
 ]
 
 export const portfolioListFixture: PortfolioListItem[] = [
@@ -319,41 +409,253 @@ export const holdingsMap: Record<string, HoldingsResponse> = {
 }
 
 // -----------------------------------------------------------------------------
+// Holdings history — month-end snapshots used by the holdings page grid,
+// frequency chart, and calculator dialog.
+// -----------------------------------------------------------------------------
+
+interface HistoryConfig {
+  tickers: { ticker: string; weight: number; pricePerShare: number }[]
+  totalValue: number
+  months: { date: string; annotations?: Record<string, string> }[]
+}
+
+function buildHoldingsHistory(cfg: HistoryConfig): HoldingsHistoryResponse {
+  const items: HoldingsHistoryEntry[] = cfg.months.map((m, idx) => {
+    const holdings = cfg.tickers.map((t) => {
+      const lastTradeValue = Math.round(cfg.totalValue * t.weight * 100) / 100
+      const quantity = Math.round((lastTradeValue / t.pricePerShare) * 100) / 100
+      return {
+        ticker: t.ticker,
+        quantity,
+        avgCost: t.pricePerShare,
+        lastTradeValue
+      }
+    })
+    const entry: HoldingsHistoryEntry = {
+      batchId: idx + 1,
+      timestamp: `${m.date}T00:00:00Z`,
+      items: holdings,
+      portfolioValue: cfg.totalValue
+    }
+    if (m.annotations) entry.annotations = m.annotations
+    return entry
+  })
+  return { items }
+}
+
+const HISTORY_MONTHS_1: HistoryConfig['months'] = [
+  { date: '2026-01-30', annotations: { momentum: '0.18', vol: '0.12' } },
+  { date: '2026-02-27', annotations: { momentum: '0.21', vol: '0.13' } },
+  { date: '2026-03-31', annotations: { momentum: '0.19', vol: '0.11' } },
+  { date: '2026-04-30', annotations: { momentum: '0.22', vol: '0.10' } }
+]
+
+export const holdingsHistoryFixture1: HoldingsHistoryResponse = buildHoldingsHistory({
+  tickers: [
+    { ticker: 'VTI', weight: 0.58, pricePerShare: 230 },
+    { ticker: 'VEA', weight: 0.22, pricePerShare: 50 },
+    { ticker: 'BND', weight: 0.2, pricePerShare: 72 }
+  ],
+  totalValue: summaryFixture1.currentValue,
+  months: HISTORY_MONTHS_1
+})
+
+export const holdingsHistoryFixture2: HoldingsHistoryResponse = buildHoldingsHistory({
+  tickers: [
+    { ticker: 'BND', weight: 0.5, pricePerShare: 72 },
+    { ticker: 'VTIP', weight: 0.3, pricePerShare: 49 },
+    { ticker: 'SHY', weight: 0.2, pricePerShare: 85 }
+  ],
+  totalValue: summaryFixture2.currentValue,
+  months: HISTORY_MONTHS_1
+})
+
+export const holdingsHistoryFixture3: HoldingsHistoryResponse = buildHoldingsHistory({
+  tickers: [
+    { ticker: 'VT', weight: 0.55, pricePerShare: 110 },
+    { ticker: 'GLD', weight: 0.25, pricePerShare: 195 },
+    { ticker: 'TLT', weight: 0.2, pricePerShare: 88 }
+  ],
+  totalValue: summaryFixture3.currentValue,
+  months: HISTORY_MONTHS_1
+})
+
+export const holdingsHistoryMap: Record<string, HoldingsHistoryResponse> = {
+  [PORTFOLIO_SLUG_1]: holdingsHistoryFixture1,
+  [PORTFOLIO_SLUG_2]: holdingsHistoryFixture2,
+  [PORTFOLIO_SLUG_3]: holdingsHistoryFixture3
+}
+
+// -----------------------------------------------------------------------------
 // Transactions — static mock data
 // -----------------------------------------------------------------------------
 
 const transactionsFixture1: TransactionsResponse = {
   items: [
-    { batchId: 1, date: '2015-01-02', type: 'deposit', amount: 250000, justification: 'Initial funding' },
-    { batchId: 2, date: '2015-01-02', type: 'buy', ticker: 'VTI', quantity: 631.5, price: 229.8, amount: -145080 },
-    { batchId: 2, date: '2015-01-02', type: 'buy', ticker: 'VEA', quantity: 1098, price: 50.02, amount: -54922 },
-    { batchId: 2, date: '2015-01-02', type: 'buy', ticker: 'BND', quantity: 693, price: 72.1, amount: -49965 },
-    { batchId: 3, date: '2026-01-15', type: 'dividend', ticker: 'VTI', amount: 1021.5, qualified: true },
-    { batchId: 3, date: '2026-01-15', type: 'dividend', ticker: 'BND', amount: 803.2, qualified: false },
-    { batchId: 4, date: '2026-03-31', type: 'sell', ticker: 'VEA', quantity: 100, price: 51.4, amount: 5140 },
-    { batchId: 4, date: '2026-03-31', type: 'buy', ticker: 'VTI', quantity: 22.3, price: 231, amount: -5151.3 },
+    {
+      batchId: 1,
+      date: '2015-01-02',
+      type: 'deposit',
+      amount: 250000,
+      justification: 'Initial funding'
+    },
+    {
+      batchId: 2,
+      date: '2015-01-02',
+      type: 'buy',
+      ticker: 'VTI',
+      quantity: 631.5,
+      price: 229.8,
+      amount: -145080
+    },
+    {
+      batchId: 2,
+      date: '2015-01-02',
+      type: 'buy',
+      ticker: 'VEA',
+      quantity: 1098,
+      price: 50.02,
+      amount: -54922
+    },
+    {
+      batchId: 2,
+      date: '2015-01-02',
+      type: 'buy',
+      ticker: 'BND',
+      quantity: 693,
+      price: 72.1,
+      amount: -49965
+    },
+    {
+      batchId: 3,
+      date: '2026-01-15',
+      type: 'dividend',
+      ticker: 'VTI',
+      amount: 1021.5,
+      qualified: true
+    },
+    {
+      batchId: 3,
+      date: '2026-01-15',
+      type: 'dividend',
+      ticker: 'BND',
+      amount: 803.2,
+      qualified: false
+    },
+    {
+      batchId: 4,
+      date: '2026-03-31',
+      type: 'sell',
+      ticker: 'VEA',
+      quantity: 100,
+      price: 51.4,
+      amount: 5140
+    },
+    {
+      batchId: 4,
+      date: '2026-03-31',
+      type: 'buy',
+      ticker: 'VTI',
+      quantity: 22.3,
+      price: 231,
+      amount: -5151.3
+    },
     { batchId: 5, date: '2026-04-14', type: 'fee', amount: -25.88, justification: 'Platform fee' }
   ]
 }
 
 const transactionsFixture2: TransactionsResponse = {
   items: [
-    { batchId: 1, date: '2019-06-15', type: 'deposit', amount: 135000, justification: 'Initial funding' },
-    { batchId: 2, date: '2019-06-15', type: 'buy', ticker: 'BND', quantity: 936, price: 72.0, amount: -67392 },
-    { batchId: 2, date: '2019-06-15', type: 'buy', ticker: 'VTIP', quantity: 849, price: 49.1, amount: -41676 },
-    { batchId: 2, date: '2019-06-15', type: 'buy', ticker: 'SHY', quantity: 308, price: 85.0, amount: -26180 },
-    { batchId: 3, date: '2026-01-15', type: 'dividend', ticker: 'BND', amount: 548.9, qualified: false },
+    {
+      batchId: 1,
+      date: '2019-06-15',
+      type: 'deposit',
+      amount: 135000,
+      justification: 'Initial funding'
+    },
+    {
+      batchId: 2,
+      date: '2019-06-15',
+      type: 'buy',
+      ticker: 'BND',
+      quantity: 936,
+      price: 72.0,
+      amount: -67392
+    },
+    {
+      batchId: 2,
+      date: '2019-06-15',
+      type: 'buy',
+      ticker: 'VTIP',
+      quantity: 849,
+      price: 49.1,
+      amount: -41676
+    },
+    {
+      batchId: 2,
+      date: '2019-06-15',
+      type: 'buy',
+      ticker: 'SHY',
+      quantity: 308,
+      price: 85.0,
+      amount: -26180
+    },
+    {
+      batchId: 3,
+      date: '2026-01-15',
+      type: 'dividend',
+      ticker: 'BND',
+      amount: 548.9,
+      qualified: false
+    },
     { batchId: 4, date: '2026-04-14', type: 'fee', amount: -11.87, justification: 'Platform fee' }
   ]
 }
 
 const transactionsFixture3: TransactionsResponse = {
   items: [
-    { batchId: 1, date: '2021-01-04', type: 'deposit', amount: 80000, justification: 'Initial funding' },
-    { batchId: 2, date: '2021-01-04', type: 'buy', ticker: 'VT', quantity: 436, price: 101.0, amount: -44036 },
-    { batchId: 2, date: '2021-01-04', type: 'buy', ticker: 'GLD', quantity: 103, price: 194.0, amount: -19982 },
-    { batchId: 2, date: '2021-01-04', type: 'buy', ticker: 'TLT', quantity: 182, price: 88.0, amount: -16016 },
-    { batchId: 3, date: '2026-01-15', type: 'dividend', ticker: 'VT', amount: 415.3, qualified: true },
+    {
+      batchId: 1,
+      date: '2021-01-04',
+      type: 'deposit',
+      amount: 80000,
+      justification: 'Initial funding'
+    },
+    {
+      batchId: 2,
+      date: '2021-01-04',
+      type: 'buy',
+      ticker: 'VT',
+      quantity: 436,
+      price: 101.0,
+      amount: -44036
+    },
+    {
+      batchId: 2,
+      date: '2021-01-04',
+      type: 'buy',
+      ticker: 'GLD',
+      quantity: 103,
+      price: 194.0,
+      amount: -19982
+    },
+    {
+      batchId: 2,
+      date: '2021-01-04',
+      type: 'buy',
+      ticker: 'TLT',
+      quantity: 182,
+      price: 88.0,
+      amount: -16016
+    },
+    {
+      batchId: 3,
+      date: '2026-01-15',
+      type: 'dividend',
+      ticker: 'VT',
+      amount: 415.3,
+      qualified: true
+    },
     { batchId: 4, date: '2026-04-14', type: 'fee', amount: -7.29, justification: 'Platform fee' }
   ]
 }
@@ -497,11 +799,7 @@ interface FactorBuilder {
   negative: { ticker: string; contribution: number }[]
 }
 
-function factorTimeSeries(
-  drift: number[],
-  startISO: string,
-  endISO: string
-): FactorTimePoint[] {
+function factorTimeSeries(drift: number[], startISO: string, endISO: string): FactorTimePoint[] {
   const start = new Date(startISO).getTime()
   const end = new Date(endISO).getTime()
   const n = drift.length
@@ -552,318 +850,280 @@ function buildFactorPeriod(
 
 const factorFixture1: PortfolioFactorAnalysis = {
   periods: [
-    buildFactorPeriod(
-      '1y',
-      'Last 12 months',
-      '2025-04-14',
-      '2026-04-14',
-      1,
-      0.1832,
-      0.041,
-      0.22,
-      [
-        {
-          factor: 'market',
-          portfolio: 0.92,
-          benchmark: 1.0,
-          returnContribution: 0.095,
-          varianceShare: 0.48,
-          tStat: 18.2,
-          drift: [0.86, 0.88, 0.87, 0.9, 0.91, 0.89, 0.9, 0.92, 0.93, 0.92, 0.91, 0.92],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'VTI', contribution: 0.041 },
-            { ticker: 'QQQ', contribution: 0.032 },
-            { ticker: 'MSFT', contribution: 0.014 }
-          ],
-          negative: [
-            { ticker: 'BND', contribution: -0.004 },
-            { ticker: 'CASH', contribution: -0.001 }
-          ]
-        },
-        {
-          factor: 'size',
-          portfolio: 0.08,
-          benchmark: -0.1,
-          returnContribution: 0.004,
-          varianceShare: 0.06,
-          tStat: 1.1,
-          drift: [0.04, 0.03, 0.06, 0.07, 0.05, 0.06, 0.09, 0.1, 0.08, 0.08, 0.07, 0.08],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'VEA', contribution: 0.003 },
-            { ticker: 'VTI', contribution: 0.002 }
-          ],
-          negative: [
-            { ticker: 'AAPL', contribution: -0.001 }
-          ]
-        },
-        {
-          factor: 'value',
-          portfolio: -0.41,
-          benchmark: -0.1,
-          returnContribution: -0.018,
-          varianceShare: 0.08,
-          tStat: -3.7,
-          drift: [-0.28, -0.31, -0.33, -0.35, -0.38, -0.39, -0.4, -0.42, -0.43, -0.42, -0.41, -0.41],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'JPM', contribution: 0.002 },
-            { ticker: 'UNH', contribution: 0.001 }
-          ],
-          negative: [
-            { ticker: 'NVDA', contribution: -0.011 },
-            { ticker: 'TSLA', contribution: -0.006 },
-            { ticker: 'META', contribution: -0.004 }
-          ]
-        },
-        {
-          factor: 'momentum',
-          portfolio: 0.42,
-          benchmark: 0.05,
-          returnContribution: 0.048,
-          varianceShare: 0.14,
-          tStat: 4.8,
-          drift: [0.18, 0.22, 0.27, 0.3, 0.33, 0.35, 0.38, 0.4, 0.42, 0.43, 0.42, 0.42],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'NVDA', contribution: 0.024 },
-            { ticker: 'META', contribution: 0.012 },
-            { ticker: 'MSFT', contribution: 0.008 }
-          ],
-          negative: [
-            { ticker: 'TSLA', contribution: -0.003 }
-          ]
-        },
-        {
-          factor: 'quality',
-          portfolio: 0.28,
-          benchmark: 0.08,
-          returnContribution: 0.015,
-          varianceShare: 0.09,
-          tStat: 3.2,
-          drift: [0.22, 0.21, 0.24, 0.26, 0.27, 0.27, 0.28, 0.29, 0.29, 0.28, 0.28, 0.28],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'MSFT', contribution: 0.006 },
-            { ticker: 'AAPL', contribution: 0.004 },
-            { ticker: 'COST', contribution: 0.003 }
-          ],
-          negative: [
-            { ticker: 'TSLA', contribution: -0.002 }
-          ]
-        },
-        {
-          factor: 'lowvol',
-          portfolio: -0.22,
-          benchmark: 0.0,
-          returnContribution: -0.003,
-          varianceShare: 0.15,
-          tStat: -2.4,
-          drift: [-0.15, -0.16, -0.18, -0.2, -0.21, -0.2, -0.21, -0.23, -0.22, -0.22, -0.22, -0.22],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'BND', contribution: 0.002 }
-          ],
-          negative: [
-            { ticker: 'NVDA', contribution: -0.003 },
-            { ticker: 'TSLA', contribution: -0.002 }
-          ]
-        }
-      ]
-    ),
-    buildFactorPeriod(
-      '3y',
-      'Last 3 years',
-      '2023-04-14',
-      '2026-04-14',
-      3,
-      0.362,
-      0.062,
-      0.25,
-      [
-        {
-          factor: 'market',
-          portfolio: 0.9,
-          benchmark: 1.0,
-          returnContribution: 0.18,
-          varianceShare: 0.5,
-          tStat: 24.1,
-          drift: [0.82, 0.84, 0.85, 0.86, 0.88, 0.9, 0.89, 0.9, 0.91, 0.9, 0.9, 0.9],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'VTI', contribution: 0.08 },
-            { ticker: 'QQQ', contribution: 0.055 }
-          ],
-          negative: [{ ticker: 'BND', contribution: -0.008 }]
-        },
-        {
-          factor: 'size',
-          portfolio: 0.1,
-          benchmark: -0.1,
-          returnContribution: 0.009,
-          varianceShare: 0.05,
-          tStat: 1.6,
-          drift: [0.04, 0.06, 0.07, 0.08, 0.08, 0.09, 0.1, 0.11, 0.1, 0.1, 0.1, 0.1],
-          driftOffset: 0,
-          positive: [{ ticker: 'VEA', contribution: 0.006 }],
-          negative: []
-        },
-        {
-          factor: 'value',
-          portfolio: -0.35,
-          benchmark: -0.1,
-          returnContribution: -0.032,
-          varianceShare: 0.09,
-          tStat: -5.1,
-          drift: [-0.22, -0.25, -0.28, -0.3, -0.32, -0.33, -0.34, -0.35, -0.36, -0.35, -0.35, -0.35],
-          driftOffset: 0,
-          positive: [{ ticker: 'UNH', contribution: 0.004 }],
-          negative: [
-            { ticker: 'NVDA', contribution: -0.02 },
-            { ticker: 'TSLA', contribution: -0.01 }
-          ]
-        },
-        {
-          factor: 'momentum',
-          portfolio: 0.38,
-          benchmark: 0.04,
-          returnContribution: 0.08,
-          varianceShare: 0.15,
-          tStat: 6.2,
-          drift: [0.2, 0.24, 0.28, 0.3, 0.32, 0.34, 0.36, 0.37, 0.38, 0.39, 0.38, 0.38],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'NVDA', contribution: 0.042 },
-            { ticker: 'META', contribution: 0.02 }
-          ],
-          negative: []
-        },
-        {
-          factor: 'quality',
-          portfolio: 0.3,
-          benchmark: 0.08,
-          returnContribution: 0.028,
-          varianceShare: 0.09,
-          tStat: 4.1,
-          drift: [0.22, 0.24, 0.25, 0.27, 0.28, 0.29, 0.29, 0.3, 0.3, 0.3, 0.3, 0.3],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'MSFT', contribution: 0.011 },
-            { ticker: 'AAPL', contribution: 0.008 }
-          ],
-          negative: []
-        },
-        {
-          factor: 'lowvol',
-          portfolio: -0.2,
-          benchmark: 0.0,
-          returnContribution: -0.006,
-          varianceShare: 0.12,
-          tStat: -3.1,
-          drift: [-0.12, -0.14, -0.16, -0.18, -0.19, -0.2, -0.2, -0.21, -0.2, -0.2, -0.2, -0.2],
-          driftOffset: 0,
-          positive: [],
-          negative: [{ ticker: 'NVDA', contribution: -0.005 }]
-        }
-      ]
-    ),
-    buildFactorPeriod(
-      '5y',
-      'Last 5 years',
-      '2021-04-14',
-      '2026-04-14',
-      5,
-      0.82,
-      0.095,
-      0.28,
-      [
-        {
-          factor: 'market',
-          portfolio: 0.88,
-          benchmark: 1.0,
-          returnContribution: 0.42,
-          varianceShare: 0.52,
-          tStat: 28.5,
-          drift: [0.85, 0.86, 0.87, 0.87, 0.88, 0.89, 0.88, 0.88, 0.89, 0.88, 0.88, 0.88],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'VTI', contribution: 0.18 },
-            { ticker: 'QQQ', contribution: 0.14 }
-          ],
-          negative: [{ ticker: 'BND', contribution: -0.015 }]
-        },
-        {
-          factor: 'size',
-          portfolio: 0.12,
-          benchmark: -0.1,
-          returnContribution: 0.02,
-          varianceShare: 0.05,
-          tStat: 2.0,
-          drift: [0.08, 0.09, 0.1, 0.11, 0.12, 0.12, 0.12, 0.13, 0.12, 0.12, 0.12, 0.12],
-          driftOffset: 0,
-          positive: [{ ticker: 'VEA', contribution: 0.012 }],
-          negative: []
-        },
-        {
-          factor: 'value',
-          portfolio: -0.3,
-          benchmark: -0.1,
-          returnContribution: -0.045,
-          varianceShare: 0.08,
-          tStat: -5.8,
-          drift: [-0.2, -0.22, -0.25, -0.27, -0.28, -0.29, -0.3, -0.3, -0.31, -0.3, -0.3, -0.3],
-          driftOffset: 0,
-          positive: [{ ticker: 'JPM', contribution: 0.006 }],
-          negative: [
-            { ticker: 'NVDA', contribution: -0.03 },
-            { ticker: 'TSLA', contribution: -0.015 }
-          ]
-        },
-        {
-          factor: 'momentum',
-          portfolio: 0.34,
-          benchmark: 0.04,
-          returnContribution: 0.16,
-          varianceShare: 0.15,
-          tStat: 7.4,
-          drift: [0.22, 0.25, 0.28, 0.3, 0.31, 0.32, 0.33, 0.34, 0.35, 0.34, 0.34, 0.34],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'NVDA', contribution: 0.082 },
-            { ticker: 'META', contribution: 0.04 }
-          ],
-          negative: []
-        },
-        {
-          factor: 'quality',
-          portfolio: 0.32,
-          benchmark: 0.08,
-          returnContribution: 0.055,
-          varianceShare: 0.08,
-          tStat: 4.6,
-          drift: [0.24, 0.26, 0.27, 0.29, 0.3, 0.31, 0.32, 0.32, 0.32, 0.32, 0.32, 0.32],
-          driftOffset: 0,
-          positive: [
-            { ticker: 'MSFT', contribution: 0.022 },
-            { ticker: 'AAPL', contribution: 0.018 }
-          ],
-          negative: []
-        },
-        {
-          factor: 'lowvol',
-          portfolio: -0.18,
-          benchmark: 0.0,
-          returnContribution: -0.01,
-          varianceShare: 0.12,
-          tStat: -3.6,
-          drift: [-0.1, -0.12, -0.14, -0.16, -0.17, -0.18, -0.18, -0.19, -0.18, -0.18, -0.18, -0.18],
-          driftOffset: 0,
-          positive: [],
-          negative: [{ ticker: 'NVDA', contribution: -0.008 }]
-        }
-      ]
-    ),
+    buildFactorPeriod('1y', 'Last 12 months', '2025-04-14', '2026-04-14', 1, 0.1832, 0.041, 0.22, [
+      {
+        factor: 'market',
+        portfolio: 0.92,
+        benchmark: 1.0,
+        returnContribution: 0.095,
+        varianceShare: 0.48,
+        tStat: 18.2,
+        drift: [0.86, 0.88, 0.87, 0.9, 0.91, 0.89, 0.9, 0.92, 0.93, 0.92, 0.91, 0.92],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'VTI', contribution: 0.041 },
+          { ticker: 'QQQ', contribution: 0.032 },
+          { ticker: 'MSFT', contribution: 0.014 }
+        ],
+        negative: [
+          { ticker: 'BND', contribution: -0.004 },
+          { ticker: 'CASH', contribution: -0.001 }
+        ]
+      },
+      {
+        factor: 'size',
+        portfolio: 0.08,
+        benchmark: -0.1,
+        returnContribution: 0.004,
+        varianceShare: 0.06,
+        tStat: 1.1,
+        drift: [0.04, 0.03, 0.06, 0.07, 0.05, 0.06, 0.09, 0.1, 0.08, 0.08, 0.07, 0.08],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'VEA', contribution: 0.003 },
+          { ticker: 'VTI', contribution: 0.002 }
+        ],
+        negative: [{ ticker: 'AAPL', contribution: -0.001 }]
+      },
+      {
+        factor: 'value',
+        portfolio: -0.41,
+        benchmark: -0.1,
+        returnContribution: -0.018,
+        varianceShare: 0.08,
+        tStat: -3.7,
+        drift: [-0.28, -0.31, -0.33, -0.35, -0.38, -0.39, -0.4, -0.42, -0.43, -0.42, -0.41, -0.41],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'JPM', contribution: 0.002 },
+          { ticker: 'UNH', contribution: 0.001 }
+        ],
+        negative: [
+          { ticker: 'NVDA', contribution: -0.011 },
+          { ticker: 'TSLA', contribution: -0.006 },
+          { ticker: 'META', contribution: -0.004 }
+        ]
+      },
+      {
+        factor: 'momentum',
+        portfolio: 0.42,
+        benchmark: 0.05,
+        returnContribution: 0.048,
+        varianceShare: 0.14,
+        tStat: 4.8,
+        drift: [0.18, 0.22, 0.27, 0.3, 0.33, 0.35, 0.38, 0.4, 0.42, 0.43, 0.42, 0.42],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'NVDA', contribution: 0.024 },
+          { ticker: 'META', contribution: 0.012 },
+          { ticker: 'MSFT', contribution: 0.008 }
+        ],
+        negative: [{ ticker: 'TSLA', contribution: -0.003 }]
+      },
+      {
+        factor: 'quality',
+        portfolio: 0.28,
+        benchmark: 0.08,
+        returnContribution: 0.015,
+        varianceShare: 0.09,
+        tStat: 3.2,
+        drift: [0.22, 0.21, 0.24, 0.26, 0.27, 0.27, 0.28, 0.29, 0.29, 0.28, 0.28, 0.28],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'MSFT', contribution: 0.006 },
+          { ticker: 'AAPL', contribution: 0.004 },
+          { ticker: 'COST', contribution: 0.003 }
+        ],
+        negative: [{ ticker: 'TSLA', contribution: -0.002 }]
+      },
+      {
+        factor: 'lowvol',
+        portfolio: -0.22,
+        benchmark: 0.0,
+        returnContribution: -0.003,
+        varianceShare: 0.15,
+        tStat: -2.4,
+        drift: [-0.15, -0.16, -0.18, -0.2, -0.21, -0.2, -0.21, -0.23, -0.22, -0.22, -0.22, -0.22],
+        driftOffset: 0,
+        positive: [{ ticker: 'BND', contribution: 0.002 }],
+        negative: [
+          { ticker: 'NVDA', contribution: -0.003 },
+          { ticker: 'TSLA', contribution: -0.002 }
+        ]
+      }
+    ]),
+    buildFactorPeriod('3y', 'Last 3 years', '2023-04-14', '2026-04-14', 3, 0.362, 0.062, 0.25, [
+      {
+        factor: 'market',
+        portfolio: 0.9,
+        benchmark: 1.0,
+        returnContribution: 0.18,
+        varianceShare: 0.5,
+        tStat: 24.1,
+        drift: [0.82, 0.84, 0.85, 0.86, 0.88, 0.9, 0.89, 0.9, 0.91, 0.9, 0.9, 0.9],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'VTI', contribution: 0.08 },
+          { ticker: 'QQQ', contribution: 0.055 }
+        ],
+        negative: [{ ticker: 'BND', contribution: -0.008 }]
+      },
+      {
+        factor: 'size',
+        portfolio: 0.1,
+        benchmark: -0.1,
+        returnContribution: 0.009,
+        varianceShare: 0.05,
+        tStat: 1.6,
+        drift: [0.04, 0.06, 0.07, 0.08, 0.08, 0.09, 0.1, 0.11, 0.1, 0.1, 0.1, 0.1],
+        driftOffset: 0,
+        positive: [{ ticker: 'VEA', contribution: 0.006 }],
+        negative: []
+      },
+      {
+        factor: 'value',
+        portfolio: -0.35,
+        benchmark: -0.1,
+        returnContribution: -0.032,
+        varianceShare: 0.09,
+        tStat: -5.1,
+        drift: [-0.22, -0.25, -0.28, -0.3, -0.32, -0.33, -0.34, -0.35, -0.36, -0.35, -0.35, -0.35],
+        driftOffset: 0,
+        positive: [{ ticker: 'UNH', contribution: 0.004 }],
+        negative: [
+          { ticker: 'NVDA', contribution: -0.02 },
+          { ticker: 'TSLA', contribution: -0.01 }
+        ]
+      },
+      {
+        factor: 'momentum',
+        portfolio: 0.38,
+        benchmark: 0.04,
+        returnContribution: 0.08,
+        varianceShare: 0.15,
+        tStat: 6.2,
+        drift: [0.2, 0.24, 0.28, 0.3, 0.32, 0.34, 0.36, 0.37, 0.38, 0.39, 0.38, 0.38],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'NVDA', contribution: 0.042 },
+          { ticker: 'META', contribution: 0.02 }
+        ],
+        negative: []
+      },
+      {
+        factor: 'quality',
+        portfolio: 0.3,
+        benchmark: 0.08,
+        returnContribution: 0.028,
+        varianceShare: 0.09,
+        tStat: 4.1,
+        drift: [0.22, 0.24, 0.25, 0.27, 0.28, 0.29, 0.29, 0.3, 0.3, 0.3, 0.3, 0.3],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'MSFT', contribution: 0.011 },
+          { ticker: 'AAPL', contribution: 0.008 }
+        ],
+        negative: []
+      },
+      {
+        factor: 'lowvol',
+        portfolio: -0.2,
+        benchmark: 0.0,
+        returnContribution: -0.006,
+        varianceShare: 0.12,
+        tStat: -3.1,
+        drift: [-0.12, -0.14, -0.16, -0.18, -0.19, -0.2, -0.2, -0.21, -0.2, -0.2, -0.2, -0.2],
+        driftOffset: 0,
+        positive: [],
+        negative: [{ ticker: 'NVDA', contribution: -0.005 }]
+      }
+    ]),
+    buildFactorPeriod('5y', 'Last 5 years', '2021-04-14', '2026-04-14', 5, 0.82, 0.095, 0.28, [
+      {
+        factor: 'market',
+        portfolio: 0.88,
+        benchmark: 1.0,
+        returnContribution: 0.42,
+        varianceShare: 0.52,
+        tStat: 28.5,
+        drift: [0.85, 0.86, 0.87, 0.87, 0.88, 0.89, 0.88, 0.88, 0.89, 0.88, 0.88, 0.88],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'VTI', contribution: 0.18 },
+          { ticker: 'QQQ', contribution: 0.14 }
+        ],
+        negative: [{ ticker: 'BND', contribution: -0.015 }]
+      },
+      {
+        factor: 'size',
+        portfolio: 0.12,
+        benchmark: -0.1,
+        returnContribution: 0.02,
+        varianceShare: 0.05,
+        tStat: 2.0,
+        drift: [0.08, 0.09, 0.1, 0.11, 0.12, 0.12, 0.12, 0.13, 0.12, 0.12, 0.12, 0.12],
+        driftOffset: 0,
+        positive: [{ ticker: 'VEA', contribution: 0.012 }],
+        negative: []
+      },
+      {
+        factor: 'value',
+        portfolio: -0.3,
+        benchmark: -0.1,
+        returnContribution: -0.045,
+        varianceShare: 0.08,
+        tStat: -5.8,
+        drift: [-0.2, -0.22, -0.25, -0.27, -0.28, -0.29, -0.3, -0.3, -0.31, -0.3, -0.3, -0.3],
+        driftOffset: 0,
+        positive: [{ ticker: 'JPM', contribution: 0.006 }],
+        negative: [
+          { ticker: 'NVDA', contribution: -0.03 },
+          { ticker: 'TSLA', contribution: -0.015 }
+        ]
+      },
+      {
+        factor: 'momentum',
+        portfolio: 0.34,
+        benchmark: 0.04,
+        returnContribution: 0.16,
+        varianceShare: 0.15,
+        tStat: 7.4,
+        drift: [0.22, 0.25, 0.28, 0.3, 0.31, 0.32, 0.33, 0.34, 0.35, 0.34, 0.34, 0.34],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'NVDA', contribution: 0.082 },
+          { ticker: 'META', contribution: 0.04 }
+        ],
+        negative: []
+      },
+      {
+        factor: 'quality',
+        portfolio: 0.32,
+        benchmark: 0.08,
+        returnContribution: 0.055,
+        varianceShare: 0.08,
+        tStat: 4.6,
+        drift: [0.24, 0.26, 0.27, 0.29, 0.3, 0.31, 0.32, 0.32, 0.32, 0.32, 0.32, 0.32],
+        driftOffset: 0,
+        positive: [
+          { ticker: 'MSFT', contribution: 0.022 },
+          { ticker: 'AAPL', contribution: 0.018 }
+        ],
+        negative: []
+      },
+      {
+        factor: 'lowvol',
+        portfolio: -0.18,
+        benchmark: 0.0,
+        returnContribution: -0.01,
+        varianceShare: 0.12,
+        tStat: -3.6,
+        drift: [-0.1, -0.12, -0.14, -0.16, -0.17, -0.18, -0.18, -0.19, -0.18, -0.18, -0.18, -0.18],
+        driftOffset: 0,
+        positive: [],
+        negative: [{ ticker: 'NVDA', contribution: -0.008 }]
+      }
+    ]),
     buildFactorPeriod(
       'inception',
       'Since inception',
@@ -908,7 +1168,9 @@ const factorFixture1: PortfolioFactorAnalysis = {
           returnContribution: -0.08,
           varianceShare: 0.07,
           tStat: -6.5,
-          drift: [-0.15, -0.17, -0.19, -0.21, -0.22, -0.23, -0.24, -0.25, -0.26, -0.25, -0.25, -0.25],
+          drift: [
+            -0.15, -0.17, -0.19, -0.21, -0.22, -0.23, -0.24, -0.25, -0.26, -0.25, -0.25, -0.25
+          ],
           driftOffset: 0,
           positive: [{ ticker: 'JPM', contribution: 0.012 }],
           negative: [
@@ -953,7 +1215,9 @@ const factorFixture1: PortfolioFactorAnalysis = {
           returnContribution: -0.04,
           varianceShare: 0.12,
           tStat: -4.2,
-          drift: [-0.08, -0.1, -0.12, -0.13, -0.14, -0.14, -0.15, -0.15, -0.16, -0.15, -0.15, -0.15],
+          drift: [
+            -0.08, -0.1, -0.12, -0.13, -0.14, -0.14, -0.15, -0.15, -0.16, -0.15, -0.15, -0.15
+          ],
           driftOffset: 0,
           positive: [],
           negative: [{ ticker: 'NVDA', contribution: -0.03 }]
@@ -1035,7 +1299,12 @@ export const strategyListFixture: Strategy[] = [
       parameters: [
         { name: 'lookback', type: 'int', default: 12, description: 'Lookback period in months' },
         { name: 'top_n', type: 'int', default: 3, description: 'Number of top assets to hold' },
-        { name: 'rebalance_threshold', type: 'float', default: 0.05, description: 'Minimum drift before rebalancing' }
+        {
+          name: 'rebalance_threshold',
+          type: 'float',
+          default: 0.05,
+          description: 'Minimum drift before rebalancing'
+        }
       ],
       presets: [
         { name: 'default', parameters: { lookback: 12, top_n: 3, rebalance_threshold: 0.05 } },
@@ -1108,7 +1377,7 @@ export const strategyListFixture: Strategy[] = [
     installedAt: '2026-03-08T14:30:00Z',
     cagr: 0.1284,
     sharpe: 1.41,
-    maxDrawDown: -0.2710
+    maxDrawDown: -0.271
   },
   {
     shortCode: 'cgr',
@@ -1194,29 +1463,27 @@ export const strategyListFixture: Strategy[] = [
   }
 ]
 
-
-
 export const securityFixtures: SecurityResult[] = [
-  { ticker: 'SPY',  name: 'SPDR S&P 500 ETF Trust' },
-  { ticker: 'QQQ',  name: 'Invesco QQQ Trust' },
-  { ticker: 'IWM',  name: 'iShares Russell 2000 ETF' },
-  { ticker: 'VTI',  name: 'Vanguard Total Stock Market ETF' },
-  { ticker: 'VEA',  name: 'Vanguard FTSE Developed Markets ETF' },
-  { ticker: 'VWO',  name: 'Vanguard FTSE Emerging Markets ETF' },
-  { ticker: 'BND',  name: 'Vanguard Total Bond Market ETF' },
-  { ticker: 'GLD',  name: 'SPDR Gold Shares' },
-  { ticker: 'TLT',  name: 'iShares 20+ Year Treasury Bond ETF' },
-  { ticker: 'AGG',  name: 'iShares Core U.S. Aggregate Bond ETF' },
-  { ticker: 'EEM',  name: 'iShares MSCI Emerging Markets ETF' },
-  { ticker: 'EFA',  name: 'iShares MSCI EAFE ETF' },
+  { ticker: 'SPY', name: 'SPDR S&P 500 ETF Trust' },
+  { ticker: 'QQQ', name: 'Invesco QQQ Trust' },
+  { ticker: 'IWM', name: 'iShares Russell 2000 ETF' },
+  { ticker: 'VTI', name: 'Vanguard Total Stock Market ETF' },
+  { ticker: 'VEA', name: 'Vanguard FTSE Developed Markets ETF' },
+  { ticker: 'VWO', name: 'Vanguard FTSE Emerging Markets ETF' },
+  { ticker: 'BND', name: 'Vanguard Total Bond Market ETF' },
+  { ticker: 'GLD', name: 'SPDR Gold Shares' },
+  { ticker: 'TLT', name: 'iShares 20+ Year Treasury Bond ETF' },
+  { ticker: 'AGG', name: 'iShares Core U.S. Aggregate Bond ETF' },
+  { ticker: 'EEM', name: 'iShares MSCI Emerging Markets ETF' },
+  { ticker: 'EFA', name: 'iShares MSCI EAFE ETF' },
   { ticker: 'ACWI', name: 'iShares MSCI ACWI ETF' },
   { ticker: 'AAPL', name: 'Apple Inc.' },
   { ticker: 'MSFT', name: 'Microsoft Corporation' },
   { ticker: 'AMZN', name: 'Amazon.com Inc.' },
-  { ticker: 'GOOGL',name: 'Alphabet Inc. Class A' },
+  { ticker: 'GOOGL', name: 'Alphabet Inc. Class A' },
   { ticker: 'TSLA', name: 'Tesla Inc.' },
   { ticker: 'NVDA', name: 'NVIDIA Corporation' },
-  { ticker: 'META', name: 'Meta Platforms Inc.' },
+  { ticker: 'META', name: 'Meta Platforms Inc.' }
 ]
 
 export const alertsMap: Record<string, Alert[]> = {

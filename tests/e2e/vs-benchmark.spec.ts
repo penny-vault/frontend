@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const DEMO_ID = '00000000-0000-4000-a000-000000000001'
+const DEMO_ID = 'adm-growth-mk01'
 
 test.describe('Portfolio vs. Benchmark', () => {
   test('tab navigation from summary to vs. Benchmark', async ({ page }) => {

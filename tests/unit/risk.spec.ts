@@ -208,7 +208,7 @@ describe('util/risk', () => {
         { x: 0.01, y: 0.02 },
         { x: 0.02, y: 0.03 }
       ]
-      const { up, down, upFit, downFit } = regimeRegression(pairs)
+      const { up, down, downFit } = regimeRegression(pairs)
       expect(up).toHaveLength(2)
       expect(down).toHaveLength(0)
       expect(downFit.beta).toBe(0)

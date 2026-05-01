@@ -31,10 +31,17 @@ const descriptionHtml = computed(() => {
 async function loadAvailableStrategies() {
   try {
     const all = await listStrategies()
-    availableStrategies.value = all.filter(s => s.installState === 'ready')
+    availableStrategies.value = all.filter((s) => s.installState === 'ready')
   } catch {
     // non-fatal — picker just stays empty
   }
+}
+
+function changeStrategy() {
+  strategyShortCode.value = ''
+  strategy.value = null
+  name.value = ''
+  loadAvailableStrategies()
 }
 
 if (pickingStrategy.value) {
@@ -55,7 +62,8 @@ async function loadStrategy() {
   try {
     strategy.value = await getStrategy(strategyShortCode.value)
     if (!name.value) {
-      name.value = strategy.value.describe?.name ?? strategy.value.repoName ?? strategyShortCode.value
+      name.value =
+        strategy.value.describe?.name ?? strategy.value.repoName ?? strategyShortCode.value
     }
     if (strategy.value.describe?.benchmark) {
       benchmark.value = { ticker: strategy.value.describe.benchmark, name: '' }
@@ -92,7 +100,7 @@ function initParamValues() {
 
 function onPresetChange(e: Event) {
   const name = (e.target as HTMLSelectElement).value
-  const preset = presets.value.find(p => p.name === name)
+  const preset = presets.value.find((p) => p.name === name)
   if (!preset) return
   for (const [k, v] of Object.entries(preset.parameters)) {
     paramValues.value[k] = String(v)
@@ -116,10 +124,9 @@ const alertFrequencyOptions = [
   { key: 'monthly', label: 'Monthly' }
 ] as const
 
-const isValid = computed(() =>
-  strategyShortCode.value.trim() !== '' &&
-  name.value.trim() !== '' &&
-  inceptionDate.value !== ''
+const isValid = computed(
+  () =>
+    strategyShortCode.value.trim() !== '' && name.value.trim() !== '' && inceptionDate.value !== ''
 )
 
 const submitting = ref(false)
@@ -137,18 +144,24 @@ async function startProgressStream(slug: string, runId: string) {
   abortController = new AbortController()
   const url = `${baseUrl}/portfolios/${slug}/runs/${runId}/progress`
   try {
-    await openProgressStream(url, {
-      onProgress(data) { progressPct.value = data.pct },
-      onDone() {
-        progressPct.value = 100
-        router.push({ name: 'portfolio-summary', params: { id: slug } })
+    await openProgressStream(
+      url,
+      {
+        onProgress(data) {
+          progressPct.value = data.pct
+        },
+        onDone() {
+          progressPct.value = 100
+          router.push({ name: 'portfolio-summary', params: { id: slug } })
+        },
+        onError(_status, error) {
+          waitingForRun.value = false
+          submitError.value = error ?? 'Backtest failed. Please try again.'
+          submitting.value = false
+        }
       },
-      onError(_status, error) {
-        waitingForRun.value = false
-        submitError.value = error ?? 'Backtest failed. Please try again.'
-        submitting.value = false
-      },
-    }, abortController.signal)
+      abortController.signal
+    )
   } catch (e) {
     if ((e as Error).name !== 'AbortError') {
       waitingForRun.value = false
@@ -188,14 +201,18 @@ async function onSubmit() {
       strategyCode: strategyShortCode.value,
       parameters: coercedParams(),
       benchmark: benchmark.value?.ticker ?? 'SPY',
-      ...(inceptionDate.value ? { startDate: inceptionDate.value } : {}),
+      ...(inceptionDate.value ? { startDate: inceptionDate.value } : {})
     })
     waitingPortfolioName.value = created.name
     if (!created.runId) throw new Error('Server did not return a runId')
     startProgressStream(created.slug, created.runId)
   } catch (e: unknown) {
-    const fe = e as { data?: { title?: string; detail?: string; errors?: unknown }; message?: string }
-    submitError.value = fe.data?.detail ?? fe.data?.title ?? JSON.stringify(fe.data) ?? fe.message ?? 'Unknown error'
+    const fe = e as {
+      data?: { title?: string; detail?: string; errors?: unknown }
+      message?: string
+    }
+    submitError.value =
+      fe.data?.detail ?? fe.data?.title ?? JSON.stringify(fe.data) ?? fe.message ?? 'Unknown error'
     submitting.value = false
   }
 }
@@ -212,7 +229,14 @@ function inputStep(p: StrategyParameter): string {
   <div class="pc-page">
     <div class="pc-header">
       <button class="pc-back" @click="router.back()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <path d="M19 12H5M12 5l-7 7 7 7" />
         </svg>
         {{ backLabel }}
@@ -244,7 +268,10 @@ function inputStep(p: StrategyParameter): string {
             <div class="pc-card-header"><div class="pc-card-title">Strategy</div></div>
 
             <div v-if="pickingStrategy" class="pc-strategy-pick">
-              <select class="pc-input pc-strategy-select" @change="e => selectStrategy((e.target as HTMLSelectElement).value)">
+              <select
+                class="pc-input pc-strategy-select"
+                @change="(e) => selectStrategy((e.target as HTMLSelectElement).value)"
+              >
                 <option value="" disabled selected>Select a strategy...</option>
                 <option v-for="s in availableStrategies" :key="s.shortCode" :value="s.shortCode">
                   {{ strategyDisplayName(s) }}
@@ -254,10 +281,12 @@ function inputStep(p: StrategyParameter): string {
 
             <div v-else class="pc-strategy-row">
               <div class="pc-strategy-names">
-                <span class="pc-strategy-name">{{ strategy?.describe?.name ?? strategy?.repoName ?? strategyShortCode }}</span>
+                <span class="pc-strategy-name">{{
+                  strategy?.describe?.name ?? strategy?.repoName ?? strategyShortCode
+                }}</span>
                 <span class="pc-strategy-code">{{ strategyShortCode }}</span>
               </div>
-              <button type="button" class="pc-strategy-change" @click="strategyShortCode = ''; strategy = null; name = ''; loadAvailableStrategies()">
+              <button type="button" class="pc-strategy-change" @click="changeStrategy">
                 Change
               </button>
             </div>
@@ -269,7 +298,14 @@ function inputStep(p: StrategyParameter): string {
             <div class="pc-fields">
               <div class="pc-field pc-field--full">
                 <label class="pc-label" for="pc-name">Name</label>
-                <input id="pc-name" v-model="name" class="pc-input" type="text" placeholder="My portfolio" required />
+                <input
+                  id="pc-name"
+                  v-model="name"
+                  class="pc-input"
+                  type="text"
+                  placeholder="My portfolio"
+                  required
+                />
               </div>
               <div class="pc-field">
                 <label class="pc-label" for="pc-date">Inception date</label>
@@ -283,7 +319,15 @@ function inputStep(p: StrategyParameter): string {
                 <label class="pc-label" for="pc-value">Initial value</label>
                 <div class="pc-prefix-wrap">
                   <span class="pc-prefix">$</span>
-                  <input id="pc-value" v-model.number="initialValue" class="pc-input pc-input--prefix" type="number" min="0" step="1" placeholder="100,000" />
+                  <input
+                    id="pc-value"
+                    v-model.number="initialValue"
+                    class="pc-input pc-input--prefix"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="100,000"
+                  />
                 </div>
               </div>
             </div>
@@ -340,7 +384,9 @@ function inputStep(p: StrategyParameter): string {
           <div v-if="submitError" class="pc-error" role="alert">{{ submitError }}</div>
 
           <div class="pc-actions">
-            <button type="button" class="pc-btn pc-btn--ghost" @click="router.back()">Cancel</button>
+            <button type="button" class="pc-btn pc-btn--ghost" @click="router.back()">
+              Cancel
+            </button>
             <button type="submit" class="pc-btn pc-btn--primary" :disabled="!isValid || submitting">
               {{ submitting ? 'Creating...' : 'Create portfolio' }}
             </button>
@@ -358,7 +404,6 @@ function inputStep(p: StrategyParameter): string {
       </aside>
     </div>
   </div>
-
 </template>
 
 <style scoped>
@@ -415,7 +460,9 @@ function inputStep(p: StrategyParameter): string {
   margin-bottom: 14px;
   transition: color 140ms ease;
 }
-.pc-back:hover { color: var(--text-1); }
+.pc-back:hover {
+  color: var(--text-1);
+}
 
 h1 {
   font-size: 28px;
@@ -594,7 +641,9 @@ h1 {
   font: inherit;
   font-size: 13px;
   outline: none;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
   width: 100%;
   box-sizing: border-box;
 }
@@ -602,7 +651,9 @@ h1 {
   border-color: var(--primary);
   box-shadow: 0 0 0 1px var(--primary);
 }
-.pc-input::placeholder { color: var(--text-5); }
+.pc-input::placeholder {
+  color: var(--text-5);
+}
 
 .pc-prefix-wrap {
   position: relative;
@@ -645,9 +696,14 @@ h1 {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: opacity 140ms ease, background 140ms ease;
+  transition:
+    opacity 140ms ease,
+    background 140ms ease;
 }
-.pc-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.pc-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 .pc-btn--ghost {
   background: transparent;
@@ -664,7 +720,9 @@ h1 {
   border: 1px solid var(--primary);
   color: #fff;
 }
-.pc-btn--primary:hover:not(:disabled) { opacity: 0.88; }
+.pc-btn--primary:hover:not(:disabled) {
+  opacity: 0.88;
+}
 
 /* Prose styles for rendered markdown */
 .pc-prose {
@@ -686,14 +744,26 @@ h1 {
 .pc-prose :deep(h3:first-child) {
   margin-top: 0;
 }
-.pc-prose :deep(h1) { font-size: 15px; }
-.pc-prose :deep(h2) { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); }
-.pc-prose :deep(h3) { font-size: 13px; }
+.pc-prose :deep(h1) {
+  font-size: 15px;
+}
+.pc-prose :deep(h2) {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.pc-prose :deep(h3) {
+  font-size: 13px;
+}
 
 .pc-prose :deep(p) {
   margin: 0 0 0.9em;
 }
-.pc-prose :deep(p:last-child) { margin-bottom: 0; }
+.pc-prose :deep(p:last-child) {
+  margin-bottom: 0;
+}
 
 .pc-prose :deep(ul),
 .pc-prose :deep(ol) {

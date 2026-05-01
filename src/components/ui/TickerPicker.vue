@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { searchSecurities } from '@/api/endpoints/securities'
 import type { SecurityResult } from '@/api/endpoints/securities'
 
@@ -29,14 +29,18 @@ function selected(): SecurityResult[] {
 }
 
 function isSelected(s: SecurityResult) {
-  return selected().some(x => x.ticker === s.ticker)
+  return selected().some((x) => x.ticker === s.ticker)
 }
 
 function onInput() {
   activeIdx.value = -1
   if (debounceTimer) clearTimeout(debounceTimer)
   const q = query.value.trim()
-  if (!q) { results.value = []; open.value = false; return }
+  if (!q) {
+    results.value = []
+    open.value = false
+    return
+  }
   debounceTimer = setTimeout(async () => {
     loading.value = true
     try {
@@ -51,9 +55,7 @@ function onInput() {
 function pick(s: SecurityResult) {
   if (props.multiple) {
     const cur = selected()
-    const next = isSelected(s)
-      ? cur.filter(x => x.ticker !== s.ticker)
-      : [...cur, s]
+    const next = isSelected(s) ? cur.filter((x) => x.ticker !== s.ticker) : [...cur, s]
     emit('update:modelValue', next)
   } else {
     emit('update:modelValue', s)
@@ -65,7 +67,7 @@ function pick(s: SecurityResult) {
 
 function remove(ticker: string) {
   if (props.multiple) {
-    const next = selected().filter(x => x.ticker !== ticker)
+    const next = selected().filter((x) => x.ticker !== ticker)
     emit('update:modelValue', next.length ? next : null)
   } else {
     emit('update:modelValue', null)
@@ -102,14 +104,17 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
   <div ref="root" class="tp">
     <div class="tp-input-wrap" @click="inputEl?.focus()">
       <!-- chips for multi mode -->
-      <span
-        v-for="s in selected()"
-        :key="s.ticker"
-        class="tp-chip"
-      >
+      <span v-for="s in selected()" :key="s.ticker" class="tp-chip">
         {{ s.ticker }}
         <button type="button" class="tp-chip-x" @click.stop="remove(s.ticker)" aria-label="Remove">
-          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <svg
+            width="8"
+            height="8"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+          >
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
         </button>
@@ -119,8 +124,20 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
       <span v-if="!multiple && selected().length" class="tp-single-value">
         <span class="tp-single-ticker">{{ selected()[0]!.ticker }}</span>
         <span class="tp-single-name">{{ selected()[0]!.name }}</span>
-        <button type="button" class="tp-chip-x tp-clear" @click.stop="remove(selected()[0]!.ticker)" aria-label="Clear">
-          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <button
+          type="button"
+          class="tp-chip-x tp-clear"
+          @click.stop="remove(selected()[0]!.ticker)"
+          aria-label="Clear"
+        >
+          <svg
+            width="8"
+            height="8"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+          >
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
         </button>
@@ -154,7 +171,16 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
       >
         <span class="tp-option-ticker">{{ s.ticker }}</span>
         <span class="tp-option-name">{{ s.name }}</span>
-        <svg v-if="isSelected(s)" class="tp-option-check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg
+          v-if="isSelected(s)"
+          class="tp-option-check"
+          width="11"
+          height="11"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
           <path d="M20 6L9 17l-5-5" />
         </svg>
       </div>
@@ -179,7 +205,9 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
   border: 1px solid var(--border);
   border-radius: 2px;
   cursor: text;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 .tp-input-wrap:focus-within {
   border-color: var(--primary);
@@ -198,7 +226,9 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
   font-size: 13px;
   padding: 0;
 }
-.tp-input::placeholder { color: var(--text-5); }
+.tp-input::placeholder {
+  color: var(--text-5);
+}
 
 /* chip (multi mode) */
 .tp-chip {
@@ -229,7 +259,9 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
   cursor: pointer;
   line-height: 1;
 }
-.tp-chip-x:hover { opacity: 1; }
+.tp-chip-x:hover {
+  opacity: 1;
+}
 
 /* single-mode selected */
 .tp-single-value {
@@ -256,7 +288,9 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
   margin-left: auto;
   color: var(--text-4);
 }
-.tp-clear:hover { color: var(--text-1); }
+.tp-clear:hover {
+  color: var(--text-1);
+}
 
 /* dropdown */
 .tp-dropdown {
