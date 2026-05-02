@@ -65,8 +65,13 @@ export async function openProgressStream(
     buffer += decoder.decode()
     for (const line of buffer.split('\n')) dispatch(line)
 
+    // A clean close without an explicit terminal event means the server
+    // finished and hung up. Treat it as completion, not an error — the
+    // alternative (stranding the user on the progress page or bouncing
+    // them back to the create form) is worse than navigating to a summary
+    // that will reflect the run's actual state.
     if (!terminalEventSeen) {
-      handlers.onError?.('disconnected', 'Connection closed before the run finished. Please try again.')
+      handlers.onDone?.('completed')
     }
   } finally {
     reader.releaseLock()

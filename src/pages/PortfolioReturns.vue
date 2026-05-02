@@ -12,6 +12,8 @@ import { formatSignedPercent, formatPercent } from '@/util/format'
 import { usePortfolio } from '@/composables/usePortfolio'
 import { usePortfolioMeasurements } from '@/composables/usePortfolioMeasurements'
 import { usePortfolioReturns } from '@/composables/usePortfolioReturns'
+import { usePortfolioSummary } from '@/composables/usePortfolioSummary'
+import type { AnnualReturn } from '@/util/returns'
 
 const route = useRoute()
 const portfolioId = computed(() => {
@@ -21,12 +23,29 @@ const portfolioId = computed(() => {
 
 const measurementsParams = ref({})
 const { data: portfolio } = usePortfolio(portfolioId)
+const { data: summary } = usePortfolioSummary(portfolioId)
 const {
   data: measurements,
   isLoading,
   error
 } = usePortfolioMeasurements(portfolioId, measurementsParams)
 const derived = usePortfolioReturns(measurements)
+
+// Replace the current-year row's portfolio/benchmark with the server's
+// authoritative YTD values so this page agrees with the overview's YTD KPI.
+// Anything older comes from the daily-series-derived calculation.
+const annualReconciled = computed<AnnualReturn[]>(() => {
+  const annual = derived.value?.annual ?? []
+  const s = summary.value
+  if (!s || annual.length === 0) return annual
+  const currentYear = new Date().getUTCFullYear()
+  return annual.map((a) => {
+    if (a.year !== currentYear) return a
+    const portfolio = s.ytdReturn ?? a.portfolio
+    const benchmark = s.benchmarkYtdReturn ?? a.benchmark
+    return { ...a, portfolio, benchmark, delta: portfolio - benchmark }
+  })
+})
 
 const highlightedYear = ref<number | null>(null)
 const heatmapHelpOpen = ref(false)
@@ -147,7 +166,7 @@ function fmtMonth(year: number, month: number): string {
         <div class="pr-right">
           <Panel title="Annual returns" subtitle="Portfolio vs. benchmark">
             <AnnualReturnsList
-              :annual="derived.annual"
+              :annual="annualReconciled"
               :highlighted-year="highlightedYear"
               @year-hover="(y) => (highlightedYear = y)"
             />

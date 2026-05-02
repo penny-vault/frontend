@@ -66,17 +66,24 @@ export interface ReturnStats {
 
 export function toMonthly(days: DailyPoint[]): MonthlyReturn[] {
   if (days.length < 2) return []
-  // Group by (year, month) — keep the last point seen for each group
+  // Inception baseline = first daily point, so the inception month gets a
+  // return measured from inception value to end-of-month value.
+  const inception = days[0]!
+  // Group by (year, month) — keep the last point seen for each group.
   const eom = new Map<string, DailyPoint>()
   for (const d of days) {
     const key = d.date.slice(0, 7) // 'yyyy-mm'
-    eom.set(key, d) // later days overwrite earlier ones
+    eom.set(key, d)
   }
   const keys = Array.from(eom.keys()).sort()
   const result: MonthlyReturn[] = []
-  for (let i = 1; i < keys.length; i++) {
-    const prior = eom.get(keys[i - 1]!)!
+  for (let i = 0; i < keys.length; i++) {
     const curr = eom.get(keys[i]!)!
+    // For the inception month, only emit a return if the month-end value
+    // actually came from a later day than the inception sample — otherwise
+    // the "return" would just be 0 / 0 against itself.
+    const prior = i === 0 ? inception : eom.get(keys[i - 1]!)!
+    if (i === 0 && curr.date === inception.date) continue
     const [y, m] = keys[i]!.split('-').map(Number) as [number, number]
     result.push({
       year: y,
@@ -88,22 +95,35 @@ export function toMonthly(days: DailyPoint[]): MonthlyReturn[] {
   return result
 }
 
-export function toAnnual(monthly: MonthlyReturn[]): AnnualReturn[] {
-  const byYear = new Map<number, { p: number; b: number }>()
-  for (const m of monthly) {
-    const prev = byYear.get(m.year) ?? { p: 1, b: 1 }
-    byYear.set(m.year, {
-      p: prev.p * (1 + m.portfolio),
-      b: prev.b * (1 + m.benchmark)
-    })
+// Compute annual returns directly from the daily series rather than chaining
+// monthly returns. Each year's return is end-of-year value over the prior
+// year-end (or inception value for the first year), which avoids both the
+// inception-month gap and floating-point drift from monthly compounding.
+export function toAnnual(days: DailyPoint[]): AnnualReturn[] {
+  if (days.length < 2) return []
+  const inception = days[0]!
+  const lastByYear = new Map<number, DailyPoint>()
+  for (const d of days) {
+    const year = parseInt(d.date.slice(0, 4), 10)
+    lastByYear.set(year, d)
   }
-  const years = Array.from(byYear.keys()).sort((a, b) => a - b)
-  return years.map((year) => {
-    const v = byYear.get(year)!
-    const portfolio = v.p - 1
-    const benchmark = v.b - 1
-    return { year, portfolio, benchmark, delta: portfolio - benchmark }
-  })
+  const years = Array.from(lastByYear.keys()).sort((a, b) => a - b)
+  const result: AnnualReturn[] = []
+  let priorPortfolio = inception.portfolioValue
+  let priorBenchmark = inception.benchmarkValue
+  for (let i = 0; i < years.length; i++) {
+    const year = years[i]!
+    const last = lastByYear.get(year)!
+    // Skip a year that contains only the inception sample itself — there's
+    // no measurable return yet.
+    if (i === 0 && last.date === inception.date) continue
+    const portfolio = last.portfolioValue / priorPortfolio - 1
+    const benchmark = last.benchmarkValue / priorBenchmark - 1
+    result.push({ year, portfolio, benchmark, delta: portfolio - benchmark })
+    priorPortfolio = last.portfolioValue
+    priorBenchmark = last.benchmarkValue
+  }
+  return result
 }
 
 export function rollingCAGR(monthly: MonthlyReturn[], windowMonths: number): RollingPoint[] {

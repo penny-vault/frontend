@@ -48,7 +48,7 @@ export function usePortfolioReturns(
       benchmarkValue: p.benchmarkValue
     }))
     const monthly = toMonthly(days)
-    const annual = toAnnual(monthly)
+    const annual = toAnnual(days)
     const scatter: ScatterPoint[] = monthly.map((mr) => ({ x: mr.benchmark, y: mr.portfolio }))
     return {
       monthly,
