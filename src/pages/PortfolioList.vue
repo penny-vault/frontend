@@ -2,11 +2,27 @@
 import { useRouter } from 'vue-router'
 import Skeleton from 'primevue/skeleton'
 import Panel from '@/components/ui/Panel.vue'
+import type { PortfolioListItem } from '@/api/endpoints/portfolios'
 import { usePortfolioList } from '@/composables/usePortfolioList'
 import { formatCurrency, formatPercent, formatDate } from '@/util/format'
 
 const router = useRouter()
 const { data: portfolios, isLoading, error } = usePortfolioList()
+
+// The OpenAPI schema and the actual server payload disagree on a couple of
+// fields on the portfolio list response. Read both spellings.
+type ListItemActual = PortfolioListItem & {
+  maxDrawDown?: number | null
+  updatedAt?: string | null
+}
+
+function maxDrawdownOf(p: ListItemActual): number | null {
+  return p.maxDrawdown ?? p.maxDrawDown ?? null
+}
+
+function lastRefreshOf(p: ListItemActual): string | null {
+  return p.lastRunAt ?? p.updatedAt ?? p.lastUpdated ?? null
+}
 
 function openPortfolio(id: string) {
   router.push(`/portfolios/${id}`)
@@ -74,7 +90,7 @@ function createPortfolio() {
           </div>
           <div class="card-kpi">
             <div class="card-kpi-label">Max DD</div>
-            <div class="card-kpi-value num warn">{{ formatPercent(p.maxDrawdown) }}</div>
+            <div class="card-kpi-value num warn">{{ formatPercent(maxDrawdownOf(p)) }}</div>
           </div>
         </div>
         <div class="card-footer">
@@ -86,9 +102,10 @@ function createPortfolio() {
                 : '—'
             }}</span
           >
-          <span class="card-updated"
-            >Updated {{ p.lastUpdated ? formatDate(p.lastUpdated) : '—' }}</span
-          >
+          <span class="card-updated">
+            Updated
+            {{ lastRefreshOf(p) ? formatDate(lastRefreshOf(p)!) : '—' }}
+          </span>
         </div>
       </Panel>
 
