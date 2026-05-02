@@ -219,10 +219,6 @@ function onMouseOut() {
       @mouseover="onMouseOver"
       @mouseout="onMouseOut"
     />
-    <p class="ss-foot">
-      Sharpe is the registry's risk-adjusted metric (Sortino isn't returned by
-      <code>/strategies</code>).
-    </p>
   </div>
 </template>
 
@@ -288,16 +284,5 @@ function onMouseOut() {
   flex: 1;
   width: 100%;
   min-height: 280px;
-}
-.ss-foot {
-  font-size: 11px;
-  color: var(--text-4);
-  margin: 0;
-  line-height: 1.4;
-}
-.ss-foot code {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10.5px;
-  color: var(--text-3);
 }
 </style>

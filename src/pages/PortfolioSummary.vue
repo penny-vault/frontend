@@ -197,7 +197,7 @@ function metricValue(m: PortfolioStatistic): string {
           <span class="ccy">$</span><span class="num">{{ fmtInt(heroValue) }}</span>
         </div>
         <div class="kpi-sub">
-          <span class="chip up">
+          <span class="chip" :class="heroYtd >= 0 ? 'up' : 'down'">
             <svg
               width="10"
               height="10"
@@ -206,7 +206,7 @@ function metricValue(m: PortfolioStatistic): string {
               stroke="currentColor"
               stroke-width="3"
             >
-              <path d="m5 15 7-7 7 7" />
+              <path :d="heroYtd >= 0 ? 'm5 15 7-7 7 7' : 'm5 9 7 7 7-7'" />
             </svg>
             {{ formatSignedPercent(heroYtd) }}
           </span>
@@ -222,12 +222,16 @@ function metricValue(m: PortfolioStatistic): string {
       </KpiCard>
 
       <KpiCard label="1-Year return">
-        <div class="kpi-value small up">{{ formatSignedPercent(heroOneYear) }}</div>
+        <div class="kpi-value small" :class="heroOneYear >= 0 ? 'up' : 'down'">
+          {{ formatSignedPercent(heroOneYear) }}
+        </div>
         <div class="kpi-sub muted">bench {{ formatSignedPercent(0.1471) }}</div>
       </KpiCard>
 
       <KpiCard label="CAGR">
-        <div class="kpi-value small up">{{ formatSignedPercent(heroCagr) }}</div>
+        <div class="kpi-value small" :class="heroCagr >= 0 ? 'up' : 'down'">
+          {{ formatSignedPercent(heroCagr) }}
+        </div>
         <div class="kpi-sub muted">since inception</div>
       </KpiCard>
 
