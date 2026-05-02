@@ -7,16 +7,29 @@ import { useChartPalette } from '@/util/chart-theme'
 
 const palette = useChartPalette()
 
-const props = defineProps<{
-  monthly: MonthlyReturn[]
-  highlightedYear?: number | null
-}>()
+const props = withDefaults(
+  defineProps<{
+    monthly: MonthlyReturn[]
+    highlightedYear?: number | null
+    logScale?: boolean
+  }>(),
+  { logScale: false }
+)
 
 const emit = defineEmits<{
   'year-hover': [year: number | null]
 }>()
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+// Signed log: stretches small returns toward visibility while preserving sign
+// and keeping zero at zero. Tuned so a 1% month registers ~15% color intensity
+// against a 100% reference.
+const SYMLOG_SCALE = 100
+const SYMLOG_DENOM = Math.log10(1 + SYMLOG_SCALE)
+function symlog(v: number): number {
+  return (Math.sign(v) * Math.log10(1 + Math.abs(v) * SYMLOG_SCALE)) / SYMLOG_DENOM
+}
 
 const years = computed(() => {
   const set = new Set<number>()
@@ -27,7 +40,8 @@ const years = computed(() => {
 const maxAbs = computed(() => {
   let max = 0
   for (const m of props.monthly) {
-    const v = Math.abs(m.portfolio)
+    const raw = Math.abs(m.portfolio)
+    const v = props.logScale ? Math.abs(symlog(m.portfolio)) : raw
     if (v > max) max = v
   }
   return max === 0 ? 0.01 : max
@@ -36,7 +50,11 @@ const maxAbs = computed(() => {
 const data = computed(() => {
   const yearIdx = new Map<number, number>()
   years.value.forEach((y, i) => yearIdx.set(y, i))
-  return props.monthly.map((m) => [yearIdx.get(m.year)!, m.month - 1, m.portfolio])
+  return props.monthly.map((m) => {
+    const display = props.logScale ? symlog(m.portfolio) : m.portfolio
+    // 4th slot stores the raw value so tooltips always show the real return.
+    return [yearIdx.get(m.year)!, m.month - 1, display, m.portfolio]
+  })
 })
 
 function parseColor(input: string): { r: number; g: number; b: number } {
@@ -90,12 +108,13 @@ const chartOption = computed<EChartsOption>(() => {
       borderColor: p.border,
       textStyle: { color: p.text1 },
       formatter: (params: unknown) => {
-        const pr = params as { value: [number, number, number] }
-        const [xi, yi, v] = pr.value
+        const pr = params as { value: [number, number, number, number?] }
+        const [xi, yi, v, raw] = pr.value
         const year = years.value[xi]
         const month = MONTHS[yi]
-        const pct = (v * 100).toFixed(2)
-        const sign = v > 0 ? '+' : ''
+        const display = raw ?? v
+        const pct = (display * 100).toFixed(2)
+        const sign = display > 0 ? '+' : ''
         return `${month} ${year} · ${sign}${pct}%`
       }
     },

@@ -7,6 +7,7 @@ import KpiCard from '@/components/ui/KpiCard.vue'
 import Panel from '@/components/ui/Panel.vue'
 import ReturnHeatmap from '@/components/charts/ReturnHeatmap.vue'
 import DrawdownCompareChart from '@/components/charts/DrawdownCompareChart.vue'
+import RollingReturnsChart from '@/components/charts/RollingReturnsChart.vue'
 import AnnualReturnsList from '@/components/portfolio/AnnualReturnsList.vue'
 import { formatSignedPercent, formatPercent } from '@/util/format'
 import { usePortfolio } from '@/composables/usePortfolio'
@@ -50,6 +51,7 @@ const annualReconciled = computed<AnnualReturn[]>(() => {
 const highlightedYear = ref<number | null>(null)
 const heatmapHelpOpen = ref(false)
 const ddHelpOpen = ref(false)
+const heatmapLogScale = ref(false)
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -119,22 +121,53 @@ function fmtMonth(year: number, month: number): string {
             <template #header>
               <div>
                 <h2>Monthly returns</h2>
-                <p class="panel-sub">Year × month · diverging scale</p>
+                <p class="panel-sub">
+                  Year × month · {{ heatmapLogScale ? 'log' : 'diverging' }} scale
+                </p>
               </div>
-              <button
-                type="button"
-                class="help-btn"
-                aria-label="How to read this chart"
-                @click="heatmapHelpOpen = true"
-              >
-                <span class="help-icon">ⓘ</span>
-                How to read this
-              </button>
+              <div class="header-actions">
+                <button
+                  type="button"
+                  class="scale-btn"
+                  :class="{ active: heatmapLogScale }"
+                  :aria-pressed="heatmapLogScale"
+                  @click="heatmapLogScale = !heatmapLogScale"
+                >
+                  Log scale
+                </button>
+                <button
+                  type="button"
+                  class="help-btn"
+                  aria-label="How to read this chart"
+                  @click="heatmapHelpOpen = true"
+                >
+                  <span class="help-icon">ⓘ</span>
+                  How to read this
+                </button>
+              </div>
             </template>
             <ReturnHeatmap
               :monthly="derived.monthly"
               :highlighted-year="highlightedYear"
+              :log-scale="heatmapLogScale"
               @year-hover="(y) => (highlightedYear = y)"
+            />
+          </Panel>
+
+          <Panel class="rolling-panel">
+            <template #header>
+              <div>
+                <h2>Rolling returns</h2>
+                <p class="panel-sub">
+                  Annualized portfolio return across 1-, 3-, and 5-year trailing windows
+                </p>
+              </div>
+            </template>
+            <RollingReturnsChart
+              :one-year="derived.rolling.oneYear"
+              :three-year="derived.rolling.threeYear"
+              :five-year="derived.rolling.fiveYear"
+              :benchmark-label="portfolio?.benchmark ?? 'Benchmark'"
             />
           </Panel>
 
@@ -299,6 +332,39 @@ function fmtMonth(year: number, month: number): string {
 .heatmap-panel :deep(header),
 .dd-panel :deep(header) {
   align-items: center;
+}
+.header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.scale-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+.scale-btn:hover {
+  color: var(--text-1);
+  border-color: var(--text-3);
+}
+.scale-btn.active {
+  color: var(--primary);
+  border-color: var(--primary-border);
+  background: var(--primary-soft-07);
+}
+.scale-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-glow);
 }
 .help-btn {
   background: transparent;

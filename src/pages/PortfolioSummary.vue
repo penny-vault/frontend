@@ -30,6 +30,8 @@ import type { PortfolioStatistic } from '@/api/endpoints/portfolios'
 
 const hoveredDrawdown = ref<DrawdownRange | null>(null)
 const focusedDrawdown = ref<DrawdownRange | null>(null)
+const showAllHoldings = ref(false)
+const HOLDINGS_COLLAPSED_LIMIT = 10
 
 // Theme — from Pinia UI store (read-only in the page, toggle lives in layout)
 const ui = useUiStore()
@@ -183,6 +185,15 @@ const displayHoldings = computed<DisplayHolding[]>(() => {
   return []
 })
 
+const visibleHoldings = computed<DisplayHolding[]>(() =>
+  showAllHoldings.value
+    ? displayHoldings.value
+    : displayHoldings.value.slice(0, HOLDINGS_COLLAPSED_LIMIT)
+)
+const hiddenHoldingsCount = computed(() =>
+  Math.max(0, displayHoldings.value.length - HOLDINGS_COLLAPSED_LIMIT)
+)
+
 function metricValue(m: PortfolioStatistic): string {
   if (m.format === 'percent') return formatPercent(m.value)
   return formatNumber(m.value)
@@ -304,7 +315,7 @@ function metricValue(m: PortfolioStatistic): string {
           </button>
         </template>
         <ul class="holdings">
-          <li v-for="(h, i) in displayHoldings" :key="h.ticker" :style="{ '--i': i }">
+          <li v-for="(h, i) in visibleHoldings" :key="h.ticker" :style="{ '--i': i }">
             <div class="h-top">
               <span class="ticker">{{ h.ticker }}</span>
               <span class="name">{{ h.name }}</span>
@@ -325,6 +336,14 @@ function metricValue(m: PortfolioStatistic): string {
             </div>
           </li>
         </ul>
+        <button
+          v-if="hiddenHoldingsCount > 0"
+          class="show-all-btn"
+          type="button"
+          @click="showAllHoldings = !showAllHoldings"
+        >
+          {{ showAllHoldings ? 'Show less' : `Show all (${displayHoldings.length})` }}
+        </button>
       </Panel>
     </section>
 
@@ -589,6 +608,34 @@ function metricValue(m: PortfolioStatistic): string {
 }
 .chg.muted {
   color: var(--text-5);
+}
+
+.show-all-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
+}
+.show-all-btn:hover {
+  background: var(--primary-soft-04);
+  color: var(--primary);
+  border-color: var(--primary-border);
+}
+.show-all-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-glow);
 }
 
 /* Bottom row */

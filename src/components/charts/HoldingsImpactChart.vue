@@ -33,6 +33,13 @@ const period = computed<HoldingsImpactPeriod>(() => {
   return match ?? props.impact.periods[0]!
 })
 
+function isCashTicker(ticker: string): boolean {
+  const t = ticker.trim().toUpperCase()
+  return t === '$CASH' || t === 'CASH'
+}
+
+const displayItems = computed(() => period.value.items.filter((it) => !isCashTicker(it.ticker)))
+
 // Convert a cumulative contribution (its share of the period's cumulative
 // return) into a contribution to the *annualized* return. Scales linearly
 // by the period's annualized:cumulative ratio so sum(annualized
@@ -47,7 +54,7 @@ function annualizedContribution(rawContribution: number): number {
 
 const maxAbs = computed(() => {
   let m = 0
-  for (const it of period.value.items) {
+  for (const it of displayItems.value) {
     const a = Math.abs(annualizedContribution(it.contribution))
     if (a > m) m = a
   }
@@ -136,7 +143,7 @@ function fmtDelta(pctValue: number): string {
         <div class="hac-col-head hac-col-head-right">Avg weight</div>
       </li>
       <li
-        v-for="item in period.items"
+        v-for="item in displayItems"
         :key="item.ticker"
         class="hac-row"
         :class="{ 'hac-row-removed': removed.has(item.ticker) }"
