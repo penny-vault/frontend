@@ -17,11 +17,20 @@ export interface ProgressStreamHandlers {
   onError?: (status: string, error?: string) => void
 }
 
+export interface ProgressStreamResult {
+  // True if the server emitted an explicit `done` or `error` event.
+  // False means the stream closed before the run reached a terminal state —
+  // progress pct=100 is emitted by the strategy binary before snapshot fsync,
+  // KPI extraction, and the DB commit, so a clean close mid-finalization is
+  // not completion. Reopen the stream to get an authoritative terminal event.
+  terminalEventSeen: boolean
+}
+
 export async function openProgressStream(
   url: string,
   handlers: ProgressStreamHandlers,
   signal?: AbortSignal
-): Promise<void> {
+): Promise<ProgressStreamResult> {
   const response = await fetchWithAuth(url, { signal: signal ?? null })
   if (!response.ok || !response.body) {
     throw new Error(`SSE connection failed: ${response.status}`)
@@ -64,16 +73,9 @@ export async function openProgressStream(
 
     buffer += decoder.decode()
     for (const line of buffer.split('\n')) dispatch(line)
-
-    // A clean close without an explicit terminal event means the server
-    // finished and hung up. Treat it as completion, not an error — the
-    // alternative (stranding the user on the progress page or bouncing
-    // them back to the create form) is worse than navigating to a summary
-    // that will reflect the run's actual state.
-    if (!terminalEventSeen) {
-      handlers.onDone?.('completed')
-    }
   } finally {
     reader.releaseLock()
   }
+
+  return { terminalEventSeen }
 }

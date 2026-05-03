@@ -54,6 +54,10 @@ export function triggerPortfolioRun(slug: string): Promise<BacktestRun> {
   return apiClient<BacktestRun>(`/portfolios/${slug}/runs`, { method: 'POST' })
 }
 
+export function getPortfolioRun(slug: string, runId: string): Promise<BacktestRun> {
+  return apiClient<BacktestRun>(`/portfolios/${slug}/runs/${runId}`)
+}
+
 export function getPortfolioSummary(slug: string): Promise<PortfolioSummary> {
   return apiClient<PortfolioSummary>(`/portfolios/${slug}/summary`)
 }

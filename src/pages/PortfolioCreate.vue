@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { marked } from 'marked'
 import { getStrategy, listStrategies } from '@/api/endpoints/strategies'
 import type { Strategy, StrategyParameter } from '@/api/endpoints/strategies'
-import { createPortfolio } from '@/api/endpoints/portfolios'
+import { createPortfolio, getPortfolioRun } from '@/api/endpoints/portfolios'
 import { openProgressStream } from '@/api/sse'
 import SegmentedControl from '@/components/ui/SegmentedControl.vue'
 import TickerPicker from '@/components/ui/TickerPicker.vue'
@@ -143,31 +143,98 @@ async function startProgressStream(slug: string, runId: string) {
   progressPct.value = 0
   abortController = new AbortController()
   const url = `${baseUrl}/portfolios/${slug}/runs/${runId}/progress`
+
+  // Progress events (incl. pct=100) are emitted by the strategy binary before
+  // snapshot fsync, KPI extraction, and the DB commit — only the SSE `done`/
+  // `error` event (or a terminal status from GET /runs/:runId) means the run
+  // is committed. So: never treat stream close or pct=100 as completion.
+  let finished = false
+  const handleTerminal = (status: string, error?: string) => {
+    if (finished) return
+    finished = true
+    if (status === 'success') {
+      progressPct.value = 100
+      router.push({ name: 'portfolio-summary', params: { id: slug } })
+    } else {
+      waitingForRun.value = false
+      submitError.value = error ?? 'Backtest failed. Please try again.'
+      submitting.value = false
+    }
+  }
+
+  // Returns true if the GET endpoint reports a terminal status.
+  const checkRunStatus = async (): Promise<boolean> => {
+    try {
+      const run = await getPortfolioRun(slug, runId)
+      if (run.status === 'success' || run.status === 'failed') {
+        handleTerminal(run.status, run.error ?? undefined)
+        return true
+      }
+    } catch {
+      // Best-effort; keep waiting on SSE.
+    }
+    return false
+  }
+
+  // Idle watchdog: if no progress event arrives for IDLE_MS, ask the GET
+  // endpoint whether the run has already finished (e.g., SSE stalled, the
+  // backend is mid-finalization, or a proxy is buffering).
+  const IDLE_MS = 20_000
+  let lastActivity = Date.now()
+  const idleTimer = window.setInterval(() => {
+    if (finished) return
+    if (Date.now() - lastActivity < IDLE_MS) return
+    lastActivity = Date.now() // throttle
+    checkRunStatus()
+  }, 5_000)
+
+  const MAX_REOPEN = 5
+  const REOPEN_DELAY_MS = 1_000
+
   try {
-    await openProgressStream(
-      url,
-      {
-        onProgress(data) {
-          progressPct.value = data.pct
+    for (let attempt = 0; attempt < MAX_REOPEN && !finished; attempt++) {
+      const result = await openProgressStream(
+        url,
+        {
+          onProgress(data) {
+            lastActivity = Date.now()
+            progressPct.value = data.pct
+          },
+          onDone(status) {
+            handleTerminal(status)
+          },
+          onError(status, error) {
+            handleTerminal(status, error)
+          }
         },
-        onDone() {
-          progressPct.value = 100
-          router.push({ name: 'portfolio-summary', params: { id: slug } })
-        },
-        onError(_status, error) {
-          waitingForRun.value = false
-          submitError.value = error ?? 'Backtest failed. Please try again.'
-          submitting.value = false
-        }
-      },
-      abortController.signal
-    )
+        abortController.signal
+      )
+
+      if (finished || result.terminalEventSeen) break
+
+      // Stream closed without a terminal event — ask GET for ground truth.
+      // If the run is already terminal, handleTerminal fires and we exit.
+      // Otherwise, reopen the stream (the backend short-circuits if the run
+      // becomes terminal before the next reopen).
+      if (await checkRunStatus()) break
+      await new Promise((r) => setTimeout(r, REOPEN_DELAY_MS))
+    }
+
+    if (!finished) {
+      // Final check before giving up.
+      if (await checkRunStatus()) return
+      waitingForRun.value = false
+      submitError.value = 'Lost connection to backtest. Open the portfolio to check status.'
+      submitting.value = false
+    }
   } catch (e) {
     if ((e as Error).name !== 'AbortError') {
       waitingForRun.value = false
       submitError.value = (e as Error).message
       submitting.value = false
     }
+  } finally {
+    window.clearInterval(idleTimer)
   }
 }
 
