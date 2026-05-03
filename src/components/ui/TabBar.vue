@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onBeforeUnmount, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 type TabItem = string | { label: string; to?: string; disabled?: boolean }
 
@@ -14,6 +14,7 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const router = useRouter()
 const navRef = ref<HTMLElement | null>(null)
 const indicator = ref({ left: 0, width: 0, show: false })
 
@@ -42,6 +43,22 @@ function isActive(tab: { label: string; to?: string }): boolean {
   return props.modelValue === tab.label
 }
 
+const selectedLabel = computed<string>(() => {
+  const routed = activeTabLabel.value
+  if (routed) return routed
+  if (props.modelValue) return props.modelValue
+  const first = normalizedTabs.value.find((t) => !t.disabled)
+  return first?.label ?? ''
+})
+
+function onSelectChange(event: Event) {
+  const label = (event.target as HTMLSelectElement).value
+  const tab = normalizedTabs.value.find((t) => t.label === label)
+  if (!tab || tab.disabled) return
+  if (tab.to) router.push(tab.to)
+  else emit('update:modelValue', tab.label)
+}
+
 function updateIndicator() {
   if (!navRef.value) return
   const active = navRef.value.querySelector<HTMLElement>('.tab-bar-item.active')
@@ -64,42 +81,61 @@ onBeforeUnmount(() => window.removeEventListener('resize', updateIndicator))
 </script>
 
 <template>
-  <nav ref="navRef" class="tab-bar">
-    <template v-for="tab in normalizedTabs" :key="tab.label">
-      <span v-if="tab.disabled" class="tab-bar-item is-disabled" :aria-disabled="true">
-        {{ tab.label }}
-      </span>
-      <router-link
-        v-else-if="tab.to"
-        :to="tab.to"
-        class="tab-bar-item"
-        :class="{ active: isActive(tab) }"
-      >
-        {{ tab.label }}
-      </router-link>
-      <a
-        v-else
-        class="tab-bar-item"
-        :class="{ active: isActive(tab) }"
-        @click="emit('update:modelValue', tab.label)"
-      >
-        {{ tab.label }}
-      </a>
-    </template>
-    <span
-      class="tab-underline"
-      v-show="indicator.show"
-      :style="{ transform: `translateX(${indicator.left}px)`, width: indicator.width + 'px' }"
-    />
-  </nav>
+  <div class="tab-bar-wrap">
+    <nav ref="navRef" class="tab-bar">
+      <template v-for="tab in normalizedTabs" :key="tab.label">
+        <span v-if="tab.disabled" class="tab-bar-item is-disabled" :aria-disabled="true">
+          {{ tab.label }}
+        </span>
+        <router-link
+          v-else-if="tab.to"
+          :to="tab.to"
+          class="tab-bar-item"
+          :class="{ active: isActive(tab) }"
+        >
+          {{ tab.label }}
+        </router-link>
+        <a
+          v-else
+          class="tab-bar-item"
+          :class="{ active: isActive(tab) }"
+          @click="emit('update:modelValue', tab.label)"
+        >
+          {{ tab.label }}
+        </a>
+      </template>
+      <span
+        class="tab-underline"
+        v-show="indicator.show"
+        :style="{ transform: `translateX(${indicator.left}px)`, width: indicator.width + 'px' }"
+      />
+    </nav>
+    <div class="tab-bar-select">
+      <select :value="selectedLabel" aria-label="Section" @change="onSelectChange">
+        <option
+          v-for="tab in normalizedTabs"
+          :key="tab.label"
+          :value="tab.label"
+          :disabled="tab.disabled"
+        >
+          {{ tab.label }}
+        </option>
+      </select>
+    </div>
+  </div>
 </template>
 
 <style scoped>
+.tab-bar-wrap {
+  margin-top: 8px;
+}
 .tab-bar {
   position: relative;
   display: flex;
   gap: 4px;
-  margin-top: 8px;
+}
+.tab-bar-select {
+  display: none;
 }
 .tab-bar-item {
   padding: 12px 16px;
@@ -142,6 +178,44 @@ onBeforeUnmount(() => window.removeEventListener('resize', updateIndicator))
 @media (prefers-reduced-motion: reduce) {
   .tab-underline {
     transition: none;
+  }
+}
+@media (max-width: 720px) {
+  .tab-bar {
+    display: none;
+  }
+  .tab-bar-select {
+    display: block;
+    position: relative;
+  }
+  .tab-bar-select::after {
+    content: '';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--text-3);
+    border-bottom: 2px solid var(--text-3);
+    transform: translateY(-75%) rotate(45deg);
+    pointer-events: none;
+  }
+  .tab-bar-select select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--surface-2, transparent);
+    color: var(--text-1);
+    border: 1px solid var(--border-1, var(--text-4));
+    border-radius: 6px;
+    padding: 10px 36px 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .tab-bar-select select:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
   }
 }
 </style>
