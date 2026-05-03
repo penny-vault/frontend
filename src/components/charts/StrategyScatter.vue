@@ -18,7 +18,7 @@ const emit = defineEmits<{
 const palette = useChartPalette()
 
 interface PlotPoint {
-  x: number // ulcer index (%)
+  x: number // ulcer index (unitless)
   y: number // cagr (%)
   shortCode: string
   name: string
@@ -48,7 +48,7 @@ const points = computed<PlotPoint[]>(() => {
     const ddAbs = s.maxDrawDown == null ? null : Math.abs(s.maxDrawDown)
     const t = ddAbs == null ? 0 : (ddAbs - ddLo) / ddSpan
     return {
-      x: (s.ulcerIndex as number) * 100,
+      x: s.ulcerIndex as number,
       y: (s.cagr as number) * 100,
       shortCode: s.shortCode,
       name: s.describe?.name ?? s.repoName ?? s.shortCode,
@@ -60,17 +60,17 @@ const points = computed<PlotPoint[]>(() => {
 })
 
 const xRange = computed(() => {
-  if (!points.value.length) return { min: 0, max: 10 }
+  if (!points.value.length) return { min: 0, max: 5 }
   let lo = Infinity
   let hi = -Infinity
   for (const p of points.value) {
     if (p.x < lo) lo = p.x
     if (p.x > hi) hi = p.x
   }
-  const pad = Math.max(0.5, (hi - lo) * 0.15)
+  const pad = Math.max(0.05, (hi - lo) * 0.15)
   return {
-    min: Math.max(0, Math.floor(lo - pad)),
-    max: Math.ceil(hi + pad)
+    min: Math.max(0, Math.floor((lo - pad) * 10) / 10),
+    max: Math.ceil((hi + pad) * 10) / 10
   }
 })
 
@@ -114,7 +114,7 @@ const chartOption = computed<EChartsOption>(() => {
           </div>
           <div style="font-variant-numeric:tabular-nums;font-size:12px">
             <span style="color:${p.text3}">Ulcer</span>
-            <span style="color:${p.text1};margin-left:6px">${d.x.toFixed(2)}%</span>
+            <span style="color:${p.text1};margin-left:6px">${d.x.toFixed(2)}</span>
           </div>
           ${ddRow}
         `
@@ -129,7 +129,7 @@ const chartOption = computed<EChartsOption>(() => {
       nameLocation: 'middle',
       nameGap: 26,
       nameTextStyle: { color: p.text3, fontSize: 11 },
-      axisLabel: { color: p.text3, fontSize: 10, formatter: '{value}%' },
+      axisLabel: { color: p.text3, fontSize: 10 },
       axisLine: { lineStyle: { color: p.border } },
       splitLine: { lineStyle: { color: p.border, opacity: 0.4 } }
     },
