@@ -498,6 +498,16 @@ html:not(.pv-dark) {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
+}
+@media (max-width: 600px) {
+  .d-body {
+    padding: 0 16px;
+  }
+  .d-top-inner {
+    padding: 0 8px;
+    gap: 8px;
+  }
 }
 .d-top.scrolled {
   background: var(--bg-scrolled);
@@ -972,6 +982,14 @@ html:not(.pv-dark) {
 @media (max-width: 720px) {
   .d-top-search {
     display: none;
+  }
+}
+@media (max-width: 420px) {
+  .brand-text .thin {
+    display: none;
+  }
+  .brand {
+    padding: 0 8px 0 4px;
   }
 }
 

@@ -155,6 +155,7 @@ const highlightShortCode = computed(() => hovered.value ?? selected.value)
   display: inline-flex;
   align-items: center;
   width: 260px;
+  max-width: 100%;
 }
 .sl-search-icon {
   position: absolute;
@@ -246,6 +247,17 @@ const highlightShortCode = computed(() => hovered.value ?? selected.value)
   .sl-scatter-panel {
     height: 460px;
     max-height: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .sl-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .sl-search {
+    width: 100%;
   }
 }
 </style>

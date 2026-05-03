@@ -751,7 +751,8 @@ const stepsMeta = [
   padding-top: 80px;
 }
 .ow-waiting-card {
-  width: 420px;
+  width: 100%;
+  max-width: 420px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -801,7 +802,7 @@ const stepsMeta = [
 
 @media (max-width: 600px) {
   .ow-card {
-    padding: 24px 20px;
+    padding: 20px 16px;
   }
   .ow-params {
     grid-template-columns: 1fr;
@@ -811,6 +812,23 @@ const stepsMeta = [
   }
   .ow-step-label {
     display: none;
+  }
+  .ow-waiting {
+    padding: 32px 16px 0;
+  }
+  .ow-waiting-card {
+    padding: 24px 20px 28px;
+  }
+  .ow-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .ow-btn {
+    width: 100%;
+  }
+  .ow-title {
+    font-size: 20px;
   }
 }
 

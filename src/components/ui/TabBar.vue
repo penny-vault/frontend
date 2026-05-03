@@ -204,9 +204,9 @@ onBeforeUnmount(() => window.removeEventListener('resize', updateIndicator))
     width: 100%;
     appearance: none;
     -webkit-appearance: none;
-    background: var(--surface-2, transparent);
+    background: var(--bg-alt);
     color: var(--text-1);
-    border: 1px solid var(--border-1, var(--text-4));
+    border: 1px solid var(--border);
     border-radius: 6px;
     padding: 10px 36px 10px 12px;
     font-size: 14px;

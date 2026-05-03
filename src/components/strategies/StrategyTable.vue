@@ -5,6 +5,9 @@ import VGrid from '@revolist/vue3-datagrid'
 import type { CellTemplateProp } from '@revolist/revogrid'
 import type { Strategy } from '@/api/endpoints/strategies'
 import { formatPercent, formatSignedPercent, formatNumber } from '@/util/format'
+import { useMediaQuery } from '@/util/motion'
+
+const isNarrow = useMediaQuery('(max-width: 720px)')
 
 const props = defineProps<{
   strategies: Strategy[]
@@ -136,12 +139,13 @@ const rows = computed<Row[]>(() =>
 
 const columns = computed(() => {
   const rowClass = (row: Row) => (row.rowState ? `st-row-${row.rowState}` : '')
+  const narrow = isNarrow.value
 
   return [
     {
       prop: 'name',
       name: 'Strategy',
-      size: 220,
+      size: narrow ? 160 : 220,
       pin: 'colPinStart' as const,
       readonly: true,
       sortable: true,
@@ -153,7 +157,7 @@ const columns = computed(() => {
     ...METRICS.map((spec) => ({
       prop: spec.key,
       name: spec.label,
-      size: spec.size,
+      size: narrow ? Math.max(70, Math.round(spec.size * 0.8)) : spec.size,
       readonly: true,
       sortable: true,
       cellTemplate: (h: unknown, p: CellTemplateProp) =>

@@ -5,6 +5,9 @@ import type { CellTemplateProp, CellCompareFunc } from '@revolist/revogrid'
 import type { HoldingsHistoryEntry } from '@/api/endpoints/portfolios'
 import { buildJustificationColumns } from '@/util/holdings'
 import { formatCurrency, formatDate } from '@/util/format'
+import { useMediaQuery } from '@/util/motion'
+
+const isNarrow = useMediaQuery('(max-width: 720px)')
 
 const props = defineProps<{
   entries: HoldingsHistoryEntry[]
@@ -75,11 +78,12 @@ function compareByAnnotation(key: string): CellCompareFunc {
 const columns = computed(() => {
   const rowClass = (model: Row) =>
     model.timestamp === props.selectedTimestamp ? 'holdings-row-selected' : ''
+  const narrow = isNarrow.value
   const base = [
     {
       prop: 'dateLabel',
       name: 'Date',
-      size: 130,
+      size: narrow ? 110 : 130,
       pin: 'colPinStart' as const,
       readonly: true,
       sortable: true,
@@ -90,7 +94,7 @@ const columns = computed(() => {
     {
       prop: 'tickers',
       name: 'Tickers',
-      size: 220,
+      size: narrow ? 120 : 220,
       readonly: true,
       sortable: false,
       cellProperties: ({ model }: CellTemplateProp) => ({ class: rowClass(model as Row) })
@@ -98,7 +102,7 @@ const columns = computed(() => {
     {
       prop: 'valueLabel',
       name: 'Value',
-      size: 140,
+      size: narrow ? 100 : 140,
       readonly: true,
       sortable: true,
       cellCompare: compareByTotalValue,
@@ -108,7 +112,7 @@ const columns = computed(() => {
   const dyn = justificationKeys.value.map((k) => ({
     prop: `just_${k}`,
     name: k,
-    size: 120,
+    size: narrow ? 90 : 120,
     readonly: true,
     sortable: true,
     cellCompare: compareByAnnotation(k),
@@ -126,7 +130,7 @@ function onCellFocus(e: CustomEvent) {
 </script>
 
 <template>
-  <div class="revo-wrap">
+  <div class="revo-wrap holdings-history-grid" :class="{ 'is-narrow': isNarrow }">
     <v-grid
       :source="rows"
       :columns="columns"
@@ -138,3 +142,13 @@ function onCellFocus(e: CustomEvent) {
     />
   </div>
 </template>
+
+<style>
+.holdings-history-grid.is-narrow {
+  font-size: 11px;
+}
+.holdings-history-grid.is-narrow .rgHeaderCell,
+.holdings-history-grid.is-narrow .rgCell {
+  font-size: 11px;
+}
+</style>

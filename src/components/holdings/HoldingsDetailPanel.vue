@@ -133,4 +133,19 @@ const rows = computed(() => {
   color: var(--text-3);
   font-size: 13px;
 }
+
+@media (max-width: 720px) {
+  .hdp {
+    padding: 12px;
+  }
+  .hdp-head,
+  .hdp-row {
+    grid-template-columns: minmax(60px, 1fr) 80px 50px 90px;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .hdp-head {
+    font-size: 10px;
+  }
+}
 </style>

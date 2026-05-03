@@ -589,6 +589,60 @@ async function onSendEmail() {
   gap: 12px;
 }
 
+@media (max-width: 900px) {
+  .ps-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+  .ps-card {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 560px) {
+  .ps-card {
+    padding: 16px;
+  }
+  .ps-rename-form,
+  .ps-email-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ps-rename-form .ps-input,
+  .ps-email-form .ps-input {
+    width: 100%;
+    flex: none;
+  }
+  .ps-rename-form .ps-btn,
+  .ps-email-form .ps-btn {
+    width: 100%;
+  }
+  .ps-confirm-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .ps-confirm-actions .ps-btn {
+    width: 100%;
+  }
+  .ps-alert-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .ps-alert-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .ps-alert-recipients {
+    white-space: normal;
+    word-break: break-all;
+  }
+  .ps-kv-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
 .ps-card {
   background: var(--panel);
   border: 1px solid var(--border);

@@ -406,6 +406,26 @@ function inputStep(p: StrategyParameter): string {
   overflow-y: auto;
 }
 
+@media (max-width: 960px) {
+  .pc-page {
+    padding: 16px 0 64px;
+  }
+  .pc-layout {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .pc-main {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+  .pc-aside {
+    position: static;
+    width: 100%;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
 .pc-aside-inner {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -581,6 +601,31 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+@media (max-width: 560px) {
+  .pc-fields {
+    grid-template-columns: 1fr;
+  }
+  .pc-card {
+    padding: 16px;
+  }
+  .pc-waiting {
+    padding: 32px 16px 0;
+  }
+  .pc-waiting-card {
+    padding: 24px 20px 28px;
+  }
+  .pc-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .pc-btn {
+    width: 100%;
+  }
+  h1 {
+    font-size: 24px;
+  }
 }
 
 .pc-field {
@@ -805,7 +850,8 @@ h1 {
 }
 
 .pc-waiting-card {
-  width: 420px;
+  width: 100%;
+  max-width: 420px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 4px;

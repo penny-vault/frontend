@@ -133,6 +133,34 @@ const tabs = computed(() => {
   color: var(--text-3);
 }
 
+@media (max-width: 720px) {
+  .pl-header {
+    position: sticky;
+    top: 48px;
+    z-index: 9;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    gap: 8px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .pl-title-row h1 {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  .pl-meta .meta {
+    font-size: 11px;
+  }
+  .pl-tabs {
+    width: 100%;
+  }
+}
+
 .pl-loading {
   padding: 24px 0;
 }

@@ -81,6 +81,27 @@ export function useScrolled(threshold = 4): Ref<boolean> {
   return scrolled
 }
 
+export function useMediaQuery(query: string): Ref<boolean> {
+  const matches = ref(false)
+  let mql: MediaQueryList | null = null
+
+  function update() {
+    if (mql) matches.value = mql.matches
+  }
+
+  onMounted(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    mql = window.matchMedia(query)
+    matches.value = mql.matches
+    mql.addEventListener('change', update)
+  })
+  onBeforeUnmount(() => {
+    mql?.removeEventListener('change', update)
+  })
+
+  return matches
+}
+
 export function useMounted(delay = 30): Ref<boolean> {
   const mounted = ref(false)
   onMounted(() => {
