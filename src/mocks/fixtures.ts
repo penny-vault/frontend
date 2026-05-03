@@ -106,9 +106,10 @@ export const portfolioFixture: Portfolio = {
   parameters: { lookback: 12, topN: 3 },
   status: 'ready',
   createdAt: '2025-01-02T00:00:00Z',
-  lastUpdated: '2026-04-14T21:00:00Z',
+  updatedAt: '2026-04-14T21:00:00Z',
   lastRunAt: '2026-04-14T21:00:00Z',
-  startDate: '2015-01-02'
+  startDate: '2015-01-02',
+  runRetention: 2
 }
 
 export const portfolioFixture2: Portfolio = {
@@ -120,9 +121,10 @@ export const portfolioFixture2: Portfolio = {
   parameters: { duration: 'short' },
   status: 'ready',
   createdAt: '2025-06-15T00:00:00Z',
-  lastUpdated: '2026-04-14T21:00:00Z',
+  updatedAt: '2026-04-14T21:00:00Z',
   lastRunAt: '2026-04-14T21:00:00Z',
-  startDate: '2019-06-15'
+  startDate: '2019-06-15',
+  runRetention: 2
 }
 
 export const portfolioFixture3: Portfolio = {
@@ -134,9 +136,10 @@ export const portfolioFixture3: Portfolio = {
   parameters: {},
   status: 'ready',
   createdAt: '2026-01-04T00:00:00Z',
-  lastUpdated: '2026-04-14T21:00:00Z',
+  updatedAt: '2026-04-14T21:00:00Z',
   lastRunAt: '2026-04-14T21:00:00Z',
-  startDate: '2021-01-04'
+  startDate: '2021-01-04',
+  runRetention: 2
 }
 
 export const summaryFixture1: PortfolioSummary = {
@@ -349,21 +352,21 @@ export const portfolioListFixture: PortfolioListItem[] = [
     inceptionDate: '2015-01-02',
     currentValue: summaryFixture1.currentValue,
     ytdReturn: summaryFixture1.ytdReturn,
-    maxDrawdown: summaryFixture1.maxDrawDown
+    maxDrawDown: summaryFixture1.maxDrawDown
   },
   {
     ...portfolioFixture2,
     inceptionDate: '2019-06-15',
     currentValue: summaryFixture2.currentValue,
     ytdReturn: summaryFixture2.ytdReturn,
-    maxDrawdown: summaryFixture2.maxDrawDown
+    maxDrawDown: summaryFixture2.maxDrawDown
   },
   {
     ...portfolioFixture3,
     inceptionDate: '2021-01-04',
     currentValue: summaryFixture3.currentValue,
     ytdReturn: summaryFixture3.ytdReturn,
-    maxDrawdown: summaryFixture3.maxDrawDown
+    maxDrawDown: summaryFixture3.maxDrawDown
   }
 ]
 

@@ -121,6 +121,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/portfolios/{slug}/upgrade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upgrade portfolio to the latest installed strategy version
+         * @description Re-pins the portfolio to the registry's currently installed strategy version
+         *     and dispatches a fresh backtest run. If the supplied (or stored) parameters
+         *     are compatible with the new describe, no body is required.
+         *
+         *     If parameters cannot be auto-merged (any removed, retyped, or added-without-default),
+         *     the response is 409 with a structured diff and the new describe; the client must
+         *     resubmit the call with an explicit `parameters` map validated against the new describe.
+         */
+        post: operations["upgradePortfolioStrategy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/portfolios/{slug}/runs/{runId}": {
         parameters: {
             query?: never;
@@ -489,30 +515,45 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            lastUpdated: string;
+            updatedAt: string;
+            /**
+             * @description Number of recent backtest runs to retain. Defaults to 2; minimum 1.
+             * @default 2
+             */
+            runRetention: number;
             /** Format: date-time */
             lastRunAt?: string | null;
             lastError?: string | null;
             /**
-             * Format: date
-             * @description Date the portfolio's live history begins (YYYY-MM-DD). Null until the first backtest completes.
-             */
-            inceptionDate?: string | null;
-            /**
              * Format: double
-             * @description Most recent portfolio value in dollars. Null until the first backtest completes.
+             * @description Latest portfolio equity from the most recent successful run. Null until a run has succeeded.
              */
             currentValue?: number | null;
             /**
              * Format: double
-             * @description Year-to-date return as a decimal (e.g. 0.12 = 12%). Null until the first backtest completes.
+             * @description Year-to-date return as a decimal fraction. Null until a run has succeeded.
              */
             ytdReturn?: number | null;
             /**
              * Format: double
-             * @description Maximum drawdown as a negative decimal (e.g. -0.25 = -25%). Null until the first backtest completes.
+             * @description Worst peak-to-trough drawdown over the inception window, as a negative decimal fraction. Null until a run has succeeded.
              */
-            maxDrawdown?: number | null;
+            maxDrawDown?: number | null;
+            /**
+             * Format: double
+             * @description Annualized Sharpe ratio over the inception window. Null until a run has succeeded.
+             */
+            sharpe?: number | null;
+            /**
+             * Format: double
+             * @description Compound annual growth rate from inception to the latest equity row, as a decimal fraction. Null until a run has succeeded.
+             */
+            cagrSinceInception?: number | null;
+            /**
+             * Format: date
+             * @description First date of the equity series; pinned on the first successful run.
+             */
+            inceptionDate?: string | null;
         };
         PortfolioCreated: components["schemas"]["Portfolio"] & {
             /**
@@ -595,21 +636,27 @@ export interface components {
             tax?: components["schemas"]["MetricGroup"];
             advanced?: components["schemas"]["MetricGroup"];
         };
+        /**
+         * @description Trailing returns for a portfolio or its benchmark. Sub-annual cells
+         *     (ytd, oneYear) are cumulative period returns. Multi-year cells
+         *     (threeYear, fiveYear, tenYear, sinceInception) are annualized (CAGR).
+         *     Any cell is null when the snapshot does not span the requested window.
+         */
         TrailingReturnRow: {
             title: string;
             kind: components["schemas"]["ReturnRowKind"];
             /** Format: double */
-            ytd: number;
+            ytd?: number | null;
             /** Format: double */
-            oneYear: number;
+            oneYear?: number | null;
             /** Format: double */
-            threeYear: number;
+            threeYear?: number | null;
             /** Format: double */
-            fiveYear: number;
+            fiveYear?: number | null;
             /** Format: double */
-            tenYear: number;
+            tenYear?: number | null;
             /** Format: double */
-            sinceInception: number;
+            sinceInception?: number | null;
         };
         Holding: {
             /** @example VTI */
@@ -815,9 +862,14 @@ export interface components {
              * @description Backtest end date (YYYY-MM-DD). Omit to use today.
              */
             endDate?: string;
+            /**
+             * @description Number of recent backtest runs to retain. Defaults to 2; minimum 1.
+             * @default 2
+             */
+            runRetention: number;
         };
         /**
-         * @description PATCH body. Only `name`, `startDate`, and `endDate` are mutable.
+         * @description PATCH body. Only `name`, `startDate`, `endDate`, and `runRetention` are mutable.
          *     Any other field is rejected with 422. All fields are optional; omit
          *     any field you do not want to change.
          */
@@ -833,6 +885,37 @@ export interface components {
              * @description Backtest end date (YYYY-MM-DD).
              */
             endDate?: string;
+            /**
+             * @description Number of recent backtest runs to retain. Defaults to 2; minimum 1.
+             * @default 2
+             */
+            runRetention: number;
+        };
+        /**
+         * @description Returned with a `202 Accepted` status from the snapshot-reading
+         *     endpoints when the portfolio's run database is missing and a
+         *     recompute has been queued. Clients should poll `pollUrl` until the
+         *     underlying run reaches a terminal status, then retry the original
+         *     request.
+         */
+        RecalculatingResponse: {
+            /**
+             * @description Always the literal `recalculating`.
+             * @enum {string}
+             */
+            status: "recalculating";
+            /**
+             * Format: uuid
+             * @description ID of the queued or in-flight backtest run.
+             */
+            runId: string;
+            portfolioSlug: string;
+            /** @description Lifecycle status of the run at the time of the response. */
+            runStatus: components["schemas"]["RunStatus"];
+            /** @description URL to GET for run status (`/portfolios/{slug}/runs/{runId}`). */
+            pollUrl: string;
+            /** @description Human-readable explanation suitable for surfacing in a UI. */
+            message?: string;
         };
         BacktestRun: {
             /** Format: uuid */
@@ -896,6 +979,24 @@ export interface components {
             maxDrawDown?: number | null;
             /** Format: double */
             sharpe?: number | null;
+            /** Format: double */
+            sortino?: number | null;
+            /** Format: double */
+            ulcerIndex?: number | null;
+            /** Format: double */
+            beta?: number | null;
+            /** Format: double */
+            alpha?: number | null;
+            /** Format: double */
+            stdDev?: number | null;
+            /** Format: double */
+            taxCostRatio?: number | null;
+            /** Format: double */
+            oneYearReturn?: number | null;
+            /** Format: double */
+            ytdReturn?: number | null;
+            /** Format: double */
+            benchmarkYtdReturn?: number | null;
         };
         StrategyDescribe: {
             shortCode: string;
@@ -1006,6 +1107,20 @@ export interface components {
             };
             content: {
                 "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /**
+         * @description The snapshot for this portfolio is missing or has been evicted, and a
+         *     backtest run has been queued (or is already in flight) to rebuild it.
+         *     The body carries the run id and a poll URL the client can GET to
+         *     observe progress to completion.
+         */
+        Recalculating: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["RecalculatingResponse"];
             };
         };
     };
@@ -1178,6 +1293,7 @@ export interface operations {
                     "application/json": components["schemas"]["PortfolioPerformance"];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
@@ -1211,6 +1327,7 @@ export interface operations {
                     "application/json": components["schemas"]["TransactionsResponse"];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
@@ -1266,6 +1383,113 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
+        };
+    };
+    upgradePortfolioStrategy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Portfolio slug, e.g. `adm-aggressive-gm59`. */
+                slug: components["parameters"]["PortfolioSlug"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Explicit parameter values, validated against the new describe.
+                     *     Required only if a prior call returned 409 parameters_incompatible.
+                     */
+                    parameters?: {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description Upgraded, or already at latest. The body's `status` field disambiguates. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "upgraded" | "already_at_latest";
+                        from_version?: string;
+                        to_version?: string;
+                        /** @description Set on already_at_latest only. */
+                        version?: string;
+                        /**
+                         * Format: uuid
+                         * @description Set on `upgraded` when a dispatcher is configured.
+                         */
+                        run_id?: string;
+                    };
+                };
+            };
+            /** @description Resubmit body invalid (missing required parameter or unknown key). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            /**
+             * @description Either a run is already in progress (`error: run_in_progress`),
+             *     or parameters cannot be auto-merged and a resubmit is required
+             *     (`error: parameters_incompatible`, with `incompatibilities` and `new_describe`).
+             */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        error?: "run_in_progress" | "parameters_incompatible";
+                        from_version?: string;
+                        to_version?: string;
+                        incompatibilities?: {
+                            removed?: string[];
+                            added_without_default?: string[];
+                            retyped?: {
+                                name?: string;
+                                from?: string;
+                                to?: string;
+                            }[];
+                        };
+                        current_parameters?: {
+                            [key: string]: unknown;
+                        };
+                        new_describe?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Strategy is not installable (no registry row, missing installed_ver, or install_error set). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        error?: "strategy_not_installable";
+                    };
+                };
+            };
+            500: components["responses"]["ServerError"];
+            /** @description Backtest queue is full; portfolio was upgraded but no run was queued. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     getPortfolioRun: {
@@ -1345,6 +1569,7 @@ export interface operations {
                     "application/json": components["schemas"]["PortfolioSummary"];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
@@ -1371,6 +1596,7 @@ export interface operations {
                     "application/json": components["schemas"]["Drawdown"][];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
@@ -1397,6 +1623,7 @@ export interface operations {
                     "application/json": components["schemas"]["PortfolioStatistic"][];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
@@ -1428,6 +1655,7 @@ export interface operations {
                     "application/json": components["schemas"]["PortfolioMetrics"];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
@@ -1454,6 +1682,7 @@ export interface operations {
                     "application/json": components["schemas"]["TrailingReturnRow"][];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
@@ -1480,6 +1709,7 @@ export interface operations {
                     "application/json": components["schemas"]["HoldingsResponse"];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
@@ -1507,6 +1737,7 @@ export interface operations {
                     "application/json": components["schemas"]["HoldingsAsOfResponse"];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
@@ -1538,6 +1769,7 @@ export interface operations {
                     "application/json": components["schemas"]["HoldingsHistoryResponse"];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
@@ -1567,6 +1799,7 @@ export interface operations {
                     "application/json": components["schemas"]["HoldingsImpactResponse"];
                 };
             };
+            202: components["responses"]["Recalculating"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];

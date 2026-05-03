@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/vue-query'
 import { getPortfolioStatistics, type PortfolioStatistic } from '@/api/endpoints/portfolios'
 import { computed, type Ref } from 'vue'
+import { useRecalculatingQuery } from './useRecalculatingQuery'
 
 export function usePortfolioStatistics(portfolioId: Ref<string | null>) {
-  return useQuery<PortfolioStatistic[]>({
+  return useRecalculatingQuery<PortfolioStatistic[]>({
     queryKey: computed(() => ['portfolio', portfolioId.value, 'statistics']),
     queryFn: () => {
       if (!portfolioId.value) throw new Error('portfolioId is required')

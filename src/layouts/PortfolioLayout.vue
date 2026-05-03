@@ -3,8 +3,10 @@ import { computed, watchEffect, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Skeleton from 'primevue/skeleton'
 import TabBar from '@/components/ui/TabBar.vue'
+import RecalculatingPanel from '@/components/portfolio/RecalculatingPanel.vue'
 import { formatDate } from '@/util/format'
 import { usePortfolio } from '@/composables/usePortfolio'
+import { usePortfolioSummary } from '@/composables/usePortfolioSummary'
 
 const route = useRoute()
 
@@ -14,6 +16,20 @@ const portfolioId = computed(() => {
 })
 
 const { data: portfolio, isLoading, error } = usePortfolio(portfolioId)
+
+// One snapshot-reading query at the layout level so any tab transition into
+// a portfolio detects a missing-snapshot recompute. Vue Query dedups, so the
+// PortfolioSummary page sees the same cache entry without a second request.
+const {
+  recalcInfo: summaryRecalcInfo,
+  runStatus: summaryRunStatus,
+  isRecalculating: summaryIsRecalculating,
+  error: summaryError
+} = usePortfolioSummary(portfolioId)
+const showRecalc = computed(
+  () => summaryIsRecalculating.value && route.name !== 'portfolio-settings'
+)
+const summaryErrorMessage = computed(() => summaryError.value?.message ?? null)
 
 watchEffect(() => {
   document.title = portfolio.value ? `Penny Vault - ${portfolio.value.name}` : 'Penny Vault'
@@ -59,7 +75,7 @@ const tabs = computed(() => {
         <span class="meta">
           Last updated:
           {{
-            formatDate(portfolio.lastRunAt ?? portfolio.lastUpdated, {
+            formatDate(portfolio.lastRunAt ?? portfolio.updatedAt, {
               month: 'long',
               day: 'numeric',
               year: 'numeric'
@@ -71,7 +87,13 @@ const tabs = computed(() => {
     <TabBar :tabs="tabs" class="pl-tabs" />
   </div>
 
-  <router-view v-if="portfolio" :key="$route.fullPath" />
+  <RecalculatingPanel
+    v-if="portfolio && showRecalc && summaryRecalcInfo"
+    :info="summaryRecalcInfo"
+    :run-status="summaryRunStatus"
+    :error="summaryErrorMessage"
+  />
+  <router-view v-else-if="portfolio" :key="$route.fullPath" />
 </template>
 
 <style scoped>

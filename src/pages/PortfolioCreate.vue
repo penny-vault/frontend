@@ -175,6 +175,7 @@ async function onSubmit() {
       strategyCode: strategyShortCode.value,
       parameters: coercedParams(),
       benchmark: benchmark.value?.ticker ?? 'SPY',
+      runRetention: 2,
       ...(inceptionDate.value ? { startDate: inceptionDate.value } : {})
     })
     waitingPortfolioName.value = created.name

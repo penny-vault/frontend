@@ -57,7 +57,10 @@ async function onRename() {
   renameError.value = null
   renameSuccess.value = false
   try {
-    await updatePortfolio(portfolioId.value, { name: nameInput.value.trim() })
+    await updatePortfolio(portfolioId.value, {
+      name: nameInput.value.trim(),
+      runRetention: portfolio.value?.runRetention ?? 2
+    })
     await queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId.value] })
     await queryClient.invalidateQueries({ queryKey: ['portfolios'] })
     renameSuccess.value = true
@@ -122,7 +125,7 @@ const infoRows = computed(() => {
     },
     {
       label: 'Updated',
-      value: formatDate(p.lastUpdated, { month: 'short', day: 'numeric', year: 'numeric' }),
+      value: formatDate(p.updatedAt, { month: 'short', day: 'numeric', year: 'numeric' }),
       mono: false
     },
     {

@@ -1,16 +1,16 @@
-import { useQuery } from '@tanstack/vue-query'
 import {
   getPortfolioMetrics,
   type PortfolioMetrics,
   type GetMetricsParams
 } from '@/api/endpoints/portfolios'
 import { computed, type Ref } from 'vue'
+import { useRecalculatingQuery } from './useRecalculatingQuery'
 
 export function usePortfolioMetrics(
   portfolioId: Ref<string | null>,
   params: GetMetricsParams = {}
 ) {
-  return useQuery<PortfolioMetrics>({
+  return useRecalculatingQuery<PortfolioMetrics>({
     queryKey: computed(() => [
       'portfolio',
       portfolioId.value,

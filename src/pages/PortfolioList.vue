@@ -15,19 +15,12 @@ const showOnboarding = computed(
   () => !isLoading.value && !error.value && (portfolios.value?.length ?? 0) === 0
 )
 
-// The OpenAPI schema and the actual server payload disagree on a couple of
-// fields on the portfolio list response. Read both spellings.
-type ListItemActual = PortfolioListItem & {
-  maxDrawDown?: number | null
-  updatedAt?: string | null
+function maxDrawdownOf(p: PortfolioListItem): number | null {
+  return p.maxDrawDown ?? null
 }
 
-function maxDrawdownOf(p: ListItemActual): number | null {
-  return p.maxDrawdown ?? p.maxDrawDown ?? null
-}
-
-function lastRefreshOf(p: ListItemActual): string | null {
-  return p.lastRunAt ?? p.updatedAt ?? p.lastUpdated ?? null
+function lastRefreshOf(p: PortfolioListItem): string | null {
+  return p.lastRunAt ?? p.updatedAt ?? null
 }
 
 function openPortfolio(id: string) {

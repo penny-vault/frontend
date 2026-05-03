@@ -1,4 +1,4 @@
-import { apiClient } from '../client'
+import { apiClient, type ApiFetchOptions } from '../client'
 import type { components } from '../types'
 
 export type Portfolio = components['schemas']['Portfolio']
@@ -21,6 +21,22 @@ export type TransactionType = Transaction['type']
 export type BacktestRun = components['schemas']['BacktestRun']
 export type PortfolioMetrics = components['schemas']['PortfolioMetrics']
 export type MetricGroup = components['schemas']['MetricGroup']
+export type RecalculatingResponse = components['schemas']['RecalculatingResponse']
+
+export type MaybeRecalculating<T> =
+  | { recalculating: false; data: T }
+  | { recalculating: true; info: RecalculatingResponse }
+
+async function getOrRecalculating<T>(
+  url: string,
+  options: ApiFetchOptions = {}
+): Promise<MaybeRecalculating<T>> {
+  const response = await apiClient.raw<T | RecalculatingResponse>(url, options)
+  if (response.status === 202) {
+    return { recalculating: true, info: response._data as RecalculatingResponse }
+  }
+  return { recalculating: false, data: response._data as T }
+}
 
 // listPortfolios returns Portfolio[]; the KPI fields the dashboard needs
 // (currentValue, ytdReturn, maxDrawdown, inceptionDate) live on Portfolio itself.
@@ -58,16 +74,18 @@ export function getPortfolioRun(slug: string, runId: string): Promise<BacktestRu
   return apiClient<BacktestRun>(`/portfolios/${slug}/runs/${runId}`)
 }
 
-export function getPortfolioSummary(slug: string): Promise<PortfolioSummary> {
-  return apiClient<PortfolioSummary>(`/portfolios/${slug}/summary`)
+export function getPortfolioSummary(slug: string): Promise<MaybeRecalculating<PortfolioSummary>> {
+  return getOrRecalculating<PortfolioSummary>(`/portfolios/${slug}/summary`)
 }
 
-export function getPortfolioDrawdowns(slug: string): Promise<Drawdown[]> {
-  return apiClient<Drawdown[]>(`/portfolios/${slug}/drawdowns`)
+export function getPortfolioDrawdowns(slug: string): Promise<MaybeRecalculating<Drawdown[]>> {
+  return getOrRecalculating<Drawdown[]>(`/portfolios/${slug}/drawdowns`)
 }
 
-export function getPortfolioStatistics(slug: string): Promise<PortfolioStatistic[]> {
-  return apiClient<PortfolioStatistic[]>(`/portfolios/${slug}/statistics`)
+export function getPortfolioStatistics(
+  slug: string
+): Promise<MaybeRecalculating<PortfolioStatistic[]>> {
+  return getOrRecalculating<PortfolioStatistic[]>(`/portfolios/${slug}/statistics`)
 }
 
 export interface GetMetricsParams {
@@ -78,12 +96,14 @@ export interface GetMetricsParams {
 export function getPortfolioMetrics(
   slug: string,
   params: GetMetricsParams = {}
-): Promise<PortfolioMetrics> {
-  return apiClient<PortfolioMetrics>(`/portfolios/${slug}/metrics`, { params })
+): Promise<MaybeRecalculating<PortfolioMetrics>> {
+  return getOrRecalculating<PortfolioMetrics>(`/portfolios/${slug}/metrics`, { params })
 }
 
-export function getPortfolioTrailingReturns(slug: string): Promise<TrailingReturnRow[]> {
-  return apiClient<TrailingReturnRow[]>(`/portfolios/${slug}/trailing-returns`)
+export function getPortfolioTrailingReturns(
+  slug: string
+): Promise<MaybeRecalculating<TrailingReturnRow[]>> {
+  return getOrRecalculating<TrailingReturnRow[]>(`/portfolios/${slug}/trailing-returns`)
 }
 
 export interface GetPerformanceParams {
@@ -95,16 +115,18 @@ export interface GetPerformanceParams {
 export function getPortfolioPerformance(
   slug: string,
   params: GetPerformanceParams = {}
-): Promise<PortfolioPerformance> {
-  return apiClient<PortfolioPerformance>(`/portfolios/${slug}/performance`, { params })
+): Promise<MaybeRecalculating<PortfolioPerformance>> {
+  return getOrRecalculating<PortfolioPerformance>(`/portfolios/${slug}/performance`, { params })
 }
 
-export function getPortfolioHoldings(slug: string): Promise<HoldingsResponse> {
-  return apiClient<HoldingsResponse>(`/portfolios/${slug}/holdings`)
+export function getPortfolioHoldings(slug: string): Promise<MaybeRecalculating<HoldingsResponse>> {
+  return getOrRecalculating<HoldingsResponse>(`/portfolios/${slug}/holdings`)
 }
 
-export function getPortfolioHoldingsHistory(slug: string): Promise<HoldingsHistoryResponse> {
-  return apiClient<HoldingsHistoryResponse>(`/portfolios/${slug}/holdings/history`)
+export function getPortfolioHoldingsHistory(
+  slug: string
+): Promise<MaybeRecalculating<HoldingsHistoryResponse>> {
+  return getOrRecalculating<HoldingsHistoryResponse>(`/portfolios/${slug}/holdings/history`)
 }
 
 export interface GetTransactionsParams {
@@ -116,12 +138,12 @@ export interface GetTransactionsParams {
 export function getPortfolioTransactions(
   slug: string,
   params: GetTransactionsParams = {}
-): Promise<TransactionsResponse> {
+): Promise<MaybeRecalculating<TransactionsResponse>> {
   const queryParams: Record<string, string> = {}
   if (params.from) queryParams.from = params.from
   if (params.to) queryParams.to = params.to
   if (params.types?.length) queryParams.type = params.types.join(',')
-  return apiClient<TransactionsResponse>(`/portfolios/${slug}/transactions`, {
+  return getOrRecalculating<TransactionsResponse>(`/portfolios/${slug}/transactions`, {
     params: queryParams
   })
 }
@@ -139,10 +161,10 @@ export interface GetHoldingsImpactParams {
 export function getPortfolioHoldingsImpact(
   slug: string,
   params: GetHoldingsImpactParams = {}
-): Promise<HoldingsImpactResponse> {
+): Promise<MaybeRecalculating<HoldingsImpactResponse>> {
   const queryParams: Record<string, string> = {}
   if (params.top !== undefined) queryParams.top = String(params.top)
-  return apiClient<HoldingsImpactResponse>(`/portfolios/${slug}/holdings-impact`, {
+  return getOrRecalculating<HoldingsImpactResponse>(`/portfolios/${slug}/holdings-impact`, {
     params: queryParams
   })
 }

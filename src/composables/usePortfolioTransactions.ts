@@ -1,16 +1,16 @@
-import { useQuery } from '@tanstack/vue-query'
 import { computed, type Ref } from 'vue'
 import {
   getPortfolioTransactions,
   type GetTransactionsParams,
   type TransactionsResponse
 } from '@/api/endpoints/portfolios'
+import { useRecalculatingQuery } from './useRecalculatingQuery'
 
 export function usePortfolioTransactions(
   portfolioId: Ref<string | null>,
   params: Ref<GetTransactionsParams>
 ) {
-  return useQuery<TransactionsResponse>({
+  return useRecalculatingQuery<TransactionsResponse>({
     queryKey: computed(() => [
       'portfolio',
       portfolioId.value,

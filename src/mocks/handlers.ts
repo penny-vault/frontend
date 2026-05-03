@@ -64,7 +64,8 @@ export const handlers = [
       benchmark: String(body.benchmark ?? 'SPY'),
       status: 'pending',
       createdAt: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      runRetention: 2,
       runId: crypto.randomUUID()
     }
     return HttpResponse.json(created, { status: 201 })
@@ -93,7 +94,7 @@ export const handlers = [
     }
     const body = (await request.json()) as { name?: string }
     if (body.name)
-      portfolioMap[slug] = { ...portfolio, name: body.name, lastUpdated: new Date().toISOString() }
+      portfolioMap[slug] = { ...portfolio, name: body.name, updatedAt: new Date().toISOString() }
     return HttpResponse.json(portfolioMap[slug])
   }),
 

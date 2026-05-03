@@ -148,7 +148,8 @@ async function onCreate() {
       strategyCode: s.shortCode,
       parameters: coercedParams(),
       benchmark: s.describe?.benchmark ?? 'SPY',
-      startDate: '2010-01-01'
+      startDate: '2010-01-01',
+      runRetention: 2
     })
     waitingPortfolioName.value = created.name
     if (!created.runId) throw new Error('Server did not return a runId')
