@@ -40,32 +40,110 @@ const calmar = (cagr: number | null, maxDD: number | null): number | null => {
 }
 
 const METRICS: MetricSpec[] = [
-  { key: 'cagr', label: 'CAGR', size: 100, format: 'signedPercent', tone: 'sign',
-    pick: (s) => s.cagr ?? null },
-  { key: 'oneYearReturn', label: '1Y', size: 100, format: 'signedPercent', tone: 'sign',
-    pick: (s) => s.oneYearReturn ?? null },
-  { key: 'ytdReturn', label: 'YTD', size: 100, format: 'signedPercent', tone: 'sign',
-    pick: (s) => s.ytdReturn ?? null },
-  { key: 'benchmarkYtdReturn', label: 'BM YTD', size: 100, format: 'signedPercent', tone: 'muted',
-    pick: (s) => s.benchmarkYtdReturn ?? null },
-  { key: 'sharpe', label: 'Sharpe', size: 80, format: 'number', tone: 'sign',
-    pick: (s) => s.sharpe ?? null },
-  { key: 'sortino', label: 'Sortino', size: 80, format: 'number', tone: 'sign',
-    pick: (s) => s.sortino ?? null },
-  { key: 'calmar', label: 'Calmar', size: 80, format: 'number', tone: 'sign',
-    pick: (s) => calmar(s.cagr ?? null, s.maxDrawDown ?? null) },
-  { key: 'maxDD', label: 'Max DD', size: 95, format: 'percent', tone: 'warn',
-    pick: (s) => s.maxDrawDown ?? null },
-  { key: 'stdDev', label: 'Std Dev', size: 95, format: 'percent', tone: 'muted',
-    pick: (s) => s.stdDev ?? null },
-  { key: 'ulcerIndex', label: 'Ulcer', size: 75, format: 'number', tone: 'muted',
-    pick: (s) => s.ulcerIndex ?? null },
-  { key: 'beta', label: 'Beta', size: 75, format: 'number', tone: 'muted',
-    pick: (s) => s.beta ?? null },
-  { key: 'alpha', label: 'Alpha', size: 100, format: 'signedPercent', tone: 'sign',
-    pick: (s) => s.alpha ?? null },
-  { key: 'taxCostRatio', label: 'Tax Cost', size: 95, format: 'percent', tone: 'muted',
-    pick: (s) => s.taxCostRatio ?? null }
+  {
+    key: 'cagr',
+    label: 'CAGR',
+    size: 100,
+    format: 'signedPercent',
+    tone: 'sign',
+    pick: (s) => s.cagr ?? null
+  },
+  {
+    key: 'oneYearReturn',
+    label: '1Y',
+    size: 100,
+    format: 'signedPercent',
+    tone: 'sign',
+    pick: (s) => s.oneYearReturn ?? null
+  },
+  {
+    key: 'ytdReturn',
+    label: 'YTD',
+    size: 100,
+    format: 'signedPercent',
+    tone: 'sign',
+    pick: (s) => s.ytdReturn ?? null
+  },
+  {
+    key: 'benchmarkYtdReturn',
+    label: 'BM YTD',
+    size: 100,
+    format: 'signedPercent',
+    tone: 'muted',
+    pick: (s) => s.benchmarkYtdReturn ?? null
+  },
+  {
+    key: 'sharpe',
+    label: 'Sharpe',
+    size: 80,
+    format: 'number',
+    tone: 'sign',
+    pick: (s) => s.sharpe ?? null
+  },
+  {
+    key: 'sortino',
+    label: 'Sortino',
+    size: 80,
+    format: 'number',
+    tone: 'sign',
+    pick: (s) => s.sortino ?? null
+  },
+  {
+    key: 'calmar',
+    label: 'Calmar',
+    size: 80,
+    format: 'number',
+    tone: 'sign',
+    pick: (s) => calmar(s.cagr ?? null, s.maxDrawDown ?? null)
+  },
+  {
+    key: 'maxDD',
+    label: 'Max DD',
+    size: 95,
+    format: 'percent',
+    tone: 'warn',
+    pick: (s) => s.maxDrawDown ?? null
+  },
+  {
+    key: 'stdDev',
+    label: 'Std Dev',
+    size: 95,
+    format: 'percent',
+    tone: 'muted',
+    pick: (s) => s.stdDev ?? null
+  },
+  {
+    key: 'ulcerIndex',
+    label: 'Ulcer',
+    size: 75,
+    format: 'number',
+    tone: 'muted',
+    pick: (s) => s.ulcerIndex ?? null
+  },
+  {
+    key: 'beta',
+    label: 'Beta',
+    size: 75,
+    format: 'number',
+    tone: 'muted',
+    pick: (s) => s.beta ?? null
+  },
+  {
+    key: 'alpha',
+    label: 'Alpha',
+    size: 100,
+    format: 'signedPercent',
+    tone: 'sign',
+    pick: (s) => s.alpha ?? null
+  },
+  {
+    key: 'taxCostRatio',
+    label: 'Tax Cost',
+    size: 95,
+    format: 'percent',
+    tone: 'muted',
+    pick: (s) => s.taxCostRatio ?? null
+  }
 ]
 
 interface Row {

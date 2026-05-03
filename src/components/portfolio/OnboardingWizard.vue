@@ -132,9 +132,7 @@ const {
   }
 })
 
-const canSubmit = computed(
-  () => !!selectedStrategy.value && portfolioName.value.trim() !== ''
-)
+const canSubmit = computed(() => !!selectedStrategy.value && portfolioName.value.trim() !== '')
 
 async function onCreate() {
   const s = selectedStrategy.value
@@ -159,8 +157,7 @@ async function onCreate() {
       data?: { title?: string; detail?: string }
       message?: string
     }
-    submitError.value =
-      fe.data?.detail ?? fe.data?.title ?? fe.message ?? 'Unknown error'
+    submitError.value = fe.data?.detail ?? fe.data?.title ?? fe.message ?? 'Unknown error'
     submitting.value = false
   }
 }
@@ -208,21 +205,17 @@ const stepsMeta = [
           <h1 class="ow-title">Let's create your first portfolio</h1>
           <div class="ow-intro-body">
             <p>
-              A portfolio is a backtested implementation of a quantitative strategy.
-              Penny Vault runs the strategy across historical market data so you can
-              see how it would have performed, and then keeps it up to date on the
-              strategy's rebalance schedule.
+              A portfolio is a backtested implementation of a quantitative strategy. Penny Vault
+              runs the strategy across historical market data so you can see how it would have
+              performed, and then keeps it up to date on the strategy's rebalance schedule.
             </p>
             <p>
-              You'll pick a strategy, review its parameters, and we'll handle the
-              backtest. You can always tweak the name, benchmark, and other settings
-              afterward.
+              You'll pick a strategy, review its parameters, and we'll handle the backtest. You can
+              always tweak the name, benchmark, and other settings afterward.
             </p>
           </div>
           <div class="ow-actions">
-            <button class="ow-btn ow-btn--primary" @click="step = 2">
-              Get started
-            </button>
+            <button class="ow-btn ow-btn--primary" @click="step = 2">Get started</button>
           </div>
         </section>
 
@@ -231,14 +224,12 @@ const stepsMeta = [
           <header class="ow-step-header">
             <h1 class="ow-title">Pick a strategy</h1>
             <p class="ow-sub">
-              Choose how your portfolio will decide what to hold. You can change
-              this later by creating another portfolio.
+              Choose how your portfolio will decide what to hold. You can change this later by
+              creating another portfolio.
             </p>
           </header>
 
-          <div v-if="strategiesLoading" class="ow-strategies-loading">
-            Loading strategies…
-          </div>
+          <div v-if="strategiesLoading" class="ow-strategies-loading">Loading strategies…</div>
           <div v-else-if="strategiesError" class="ow-error" role="alert">
             Could not load strategies. {{ strategiesError }}
           </div>
@@ -257,10 +248,7 @@ const stepsMeta = [
                 <span class="ow-strategy-name">{{ strategyDisplayName(s) }}</span>
                 <span class="ow-strategy-code">{{ s.shortCode }}</span>
               </div>
-              <p
-                v-if="strategyShortDescription(s)"
-                class="ow-strategy-desc"
-              >
+              <p v-if="strategyShortDescription(s)" class="ow-strategy-desc">
                 {{ strategyShortDescription(s) }}
               </p>
               <div class="ow-strategy-go" aria-hidden="true">
@@ -281,9 +269,7 @@ const stepsMeta = [
           </div>
 
           <div class="ow-actions ow-actions--between">
-            <button class="ow-btn ow-btn--ghost" type="button" @click="step = 1">
-              Back
-            </button>
+            <button class="ow-btn ow-btn--ghost" type="button" @click="step = 1">Back</button>
           </div>
         </section>
 
@@ -291,37 +277,21 @@ const stepsMeta = [
         <section v-else-if="step === 3 && selectedStrategy" class="ow-step-body">
           <header class="ow-step-header">
             <h1 class="ow-title">Configure parameters</h1>
-            <p class="ow-sub">
-              Defaults usually work well — pick a preset for a different style.
-            </p>
+            <p class="ow-sub">Defaults usually work well — pick a preset for a different style.</p>
           </header>
 
           <div class="ow-selected">
             <div class="ow-selected-names">
-              <span class="ow-selected-name">{{
-                strategyDisplayName(selectedStrategy)
-              }}</span>
+              <span class="ow-selected-name">{{ strategyDisplayName(selectedStrategy) }}</span>
               <span class="ow-selected-code">{{ selectedStrategy.shortCode }}</span>
             </div>
-            <button
-              class="ow-selected-change"
-              type="button"
-              @click="step = 2"
-            >
-              Change
-            </button>
+            <button class="ow-selected-change" type="button" @click="step = 2">Change</button>
           </div>
 
           <form class="ow-form" @submit.prevent="onCreate">
             <div class="ow-field ow-field--full">
               <label class="ow-label" for="ow-name">Portfolio name</label>
-              <input
-                id="ow-name"
-                v-model="portfolioName"
-                class="ow-input"
-                type="text"
-                required
-              />
+              <input id="ow-name" v-model="portfolioName" class="ow-input" type="text" required />
             </div>
 
             <div v-if="presets.length" class="ow-preset-row">
@@ -348,9 +318,7 @@ const stepsMeta = [
                 <span v-if="p.description" class="ow-hint">{{ p.description }}</span>
               </div>
             </div>
-            <p v-else class="ow-no-params">
-              This strategy has no configurable parameters.
-            </p>
+            <p v-else class="ow-no-params">This strategy has no configurable parameters.</p>
 
             <div v-if="submitError" class="ow-error" role="alert">{{ submitError }}</div>
 

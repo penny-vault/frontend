@@ -67,66 +67,66 @@ function createPortfolio() {
       </div>
 
       <div v-else class="pl-cards">
-      <Panel
-        v-for="p in portfolios"
-        :key="p.slug"
-        class="portfolio-card"
-        tabindex="0"
-        @click="openPortfolio(p.slug)"
-        @keydown.enter="openPortfolio(p.slug)"
-      >
-        <div class="card-top">
-          <h2>{{ p.name }}</h2>
-          <span class="card-bench">{{ p.benchmark }}</span>
-        </div>
-        <div class="card-kpis">
-          <div class="card-kpi">
-            <div class="card-kpi-label">Current value</div>
-            <div class="card-kpi-value num">{{ formatCurrency(p.currentValue) }}</div>
+        <Panel
+          v-for="p in portfolios"
+          :key="p.slug"
+          class="portfolio-card"
+          tabindex="0"
+          @click="openPortfolio(p.slug)"
+          @keydown.enter="openPortfolio(p.slug)"
+        >
+          <div class="card-top">
+            <h2>{{ p.name }}</h2>
+            <span class="card-bench">{{ p.benchmark }}</span>
           </div>
-          <div class="card-kpi">
-            <div class="card-kpi-label">YTD</div>
-            <div class="card-kpi-value num" :class="(p.ytdReturn ?? 0) >= 0 ? 'up' : 'down'">
-              {{ formatPercent(p.ytdReturn ?? 0) }}
+          <div class="card-kpis">
+            <div class="card-kpi">
+              <div class="card-kpi-label">Current value</div>
+              <div class="card-kpi-value num">{{ formatCurrency(p.currentValue) }}</div>
+            </div>
+            <div class="card-kpi">
+              <div class="card-kpi-label">YTD</div>
+              <div class="card-kpi-value num" :class="(p.ytdReturn ?? 0) >= 0 ? 'up' : 'down'">
+                {{ formatPercent(p.ytdReturn ?? 0) }}
+              </div>
+            </div>
+            <div class="card-kpi">
+              <div class="card-kpi-label">Max DD</div>
+              <div class="card-kpi-value num warn">{{ formatPercent(maxDrawdownOf(p)) }}</div>
             </div>
           </div>
-          <div class="card-kpi">
-            <div class="card-kpi-label">Max DD</div>
-            <div class="card-kpi-value num warn">{{ formatPercent(maxDrawdownOf(p)) }}</div>
+          <div class="card-footer">
+            <span class="card-date"
+              >Since
+              {{
+                p.inceptionDate
+                  ? formatDate(p.inceptionDate, { month: 'short', year: 'numeric' })
+                  : '—'
+              }}</span
+            >
+            <span class="card-updated">
+              Updated
+              {{ lastRefreshOf(p) ? formatDate(lastRefreshOf(p)!) : '—' }}
+            </span>
           </div>
-        </div>
-        <div class="card-footer">
-          <span class="card-date"
-            >Since
-            {{
-              p.inceptionDate
-                ? formatDate(p.inceptionDate, { month: 'short', year: 'numeric' })
-                : '—'
-            }}</span
-          >
-          <span class="card-updated">
-            Updated
-            {{ lastRefreshOf(p) ? formatDate(lastRefreshOf(p)!) : '—' }}
-          </span>
-        </div>
-      </Panel>
+        </Panel>
 
-      <button class="portfolio-card-new" @click="createPortfolio">
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linecap="round"
-        >
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        <span>New portfolio</span>
-      </button>
-    </div>
+        <button class="portfolio-card-new" @click="createPortfolio">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>New portfolio</span>
+        </button>
+      </div>
     </template>
   </main>
 </template>

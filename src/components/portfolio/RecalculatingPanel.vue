@@ -48,9 +48,7 @@ watch(
         {{ runStatus === 'queued' ? 'Queued' : 'Recalculating portfolio' }}
       </div>
       <h2 class="rp-title">Bringing this portfolio up to date</h2>
-      <p class="rp-sub">
-        We're rebuilding the latest snapshot. This usually takes 10–30 seconds.
-      </p>
+      <p class="rp-sub">We're rebuilding the latest snapshot. This usually takes 10–30 seconds.</p>
 
       <div class="rp-progress-track">
         <div class="rp-progress-bar" :style="{ width: progressPct + '%' }" />

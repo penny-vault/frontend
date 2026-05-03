@@ -100,9 +100,6 @@ export function useRecalculatingQuery<T>(
     error,
     isRecalculating: computed(() => !!recalcInfo.value),
     recalcInfo,
-    runStatus: computed(
-      () =>
-        runQuery.data.value?.status ?? recalcInfo.value?.runStatus ?? null
-    )
+    runStatus: computed(() => runQuery.data.value?.status ?? recalcInfo.value?.runStatus ?? null)
   }
 }
