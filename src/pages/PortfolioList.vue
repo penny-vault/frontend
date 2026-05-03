@@ -1,13 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Skeleton from 'primevue/skeleton'
 import Panel from '@/components/ui/Panel.vue'
+import OnboardingWizard from '@/components/portfolio/OnboardingWizard.vue'
 import type { PortfolioListItem } from '@/api/endpoints/portfolios'
 import { usePortfolioList } from '@/composables/usePortfolioList'
 import { formatCurrency, formatPercent, formatDate } from '@/util/format'
 
 const router = useRouter()
 const { data: portfolios, isLoading, error } = usePortfolioList()
+
+const showOnboarding = computed(
+  () => !isLoading.value && !error.value && (portfolios.value?.length ?? 0) === 0
+)
 
 // The OpenAPI schema and the actual server payload disagree on a couple of
 // fields on the portfolio list response. Read both spellings.
@@ -35,36 +41,39 @@ function createPortfolio() {
 
 <template>
   <main class="pl-main">
-    <div class="pl-header">
-      <div>
-        <h1>Portfolios</h1>
-        <p v-if="portfolios?.length" class="pl-sub">{{ portfolios.length }} portfolios</p>
+    <OnboardingWizard v-if="showOnboarding" />
+
+    <template v-else>
+      <div class="pl-header">
+        <div>
+          <h1>Portfolios</h1>
+          <p v-if="portfolios?.length" class="pl-sub">{{ portfolios.length }} portfolios</p>
+        </div>
+        <RouterLink :to="{ name: 'strategy-list' }" class="pl-strategies-link">
+          Browse strategies
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </RouterLink>
       </div>
-      <RouterLink :to="{ name: 'strategy-list' }" class="pl-strategies-link">
-        Browse strategies
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </svg>
-      </RouterLink>
-    </div>
 
-    <div v-if="isLoading" class="pl-loading">
-      <Skeleton v-for="n in 4" :key="n" width="100%" height="10rem" />
-    </div>
-    <div v-else-if="error" class="error-banner" role="alert">
-      Could not load portfolios. {{ (error as Error).message }}
-    </div>
+      <div v-if="isLoading" class="pl-loading">
+        <Skeleton v-for="n in 4" :key="n" width="100%" height="10rem" />
+      </div>
+      <div v-else-if="error" class="error-banner" role="alert">
+        Could not load portfolios. {{ (error as Error).message }}
+      </div>
 
-    <div v-else class="pl-cards">
+      <div v-else class="pl-cards">
       <Panel
         v-for="p in portfolios"
         :key="p.slug"
@@ -125,6 +134,7 @@ function createPortfolio() {
         <span>New portfolio</span>
       </button>
     </div>
+    </template>
   </main>
 </template>
 
