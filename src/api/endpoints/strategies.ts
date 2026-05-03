@@ -47,6 +47,15 @@ export interface Strategy {
   cagr?: number | null
   maxDrawDown?: number | null
   sharpe?: number | null
+  sortino?: number | null
+  ulcerIndex?: number | null
+  beta?: number | null
+  alpha?: number | null
+  stdDev?: number | null
+  taxCostRatio?: number | null
+  oneYearReturn?: number | null
+  ytdReturn?: number | null
+  benchmarkYtdReturn?: number | null
 }
 
 export function listStrategies(): Promise<Strategy[]> {

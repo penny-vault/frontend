@@ -19,23 +19,57 @@ const emit = defineEmits<{
 
 const router = useRouter()
 
+type MetricFormat = 'number' | 'percent' | 'signedPercent'
+type MetricTone = 'sign' | 'warn' | 'muted'
+
+interface MetricSpec {
+  key: string
+  label: string
+  size: number
+  format: MetricFormat
+  tone: MetricTone
+  pick: (s: Strategy) => number | null
+}
+
+const calmar = (cagr: number | null, maxDD: number | null): number | null => {
+  if (cagr == null || maxDD == null || maxDD === 0) return null
+  return cagr / Math.abs(maxDD)
+}
+
+const METRICS: MetricSpec[] = [
+  { key: 'cagr', label: 'CAGR', size: 100, format: 'signedPercent', tone: 'sign',
+    pick: (s) => s.cagr ?? null },
+  { key: 'oneYearReturn', label: '1Y', size: 90, format: 'signedPercent', tone: 'sign',
+    pick: (s) => s.oneYearReturn ?? null },
+  { key: 'ytdReturn', label: 'YTD', size: 90, format: 'signedPercent', tone: 'sign',
+    pick: (s) => s.ytdReturn ?? null },
+  { key: 'benchmarkYtdReturn', label: 'BM YTD', size: 90, format: 'signedPercent', tone: 'muted',
+    pick: (s) => s.benchmarkYtdReturn ?? null },
+  { key: 'sharpe', label: 'Sharpe', size: 80, format: 'number', tone: 'sign',
+    pick: (s) => s.sharpe ?? null },
+  { key: 'sortino', label: 'Sortino', size: 80, format: 'number', tone: 'sign',
+    pick: (s) => s.sortino ?? null },
+  { key: 'calmar', label: 'Calmar', size: 80, format: 'number', tone: 'sign',
+    pick: (s) => calmar(s.cagr ?? null, s.maxDrawDown ?? null) },
+  { key: 'maxDD', label: 'Max DD', size: 90, format: 'percent', tone: 'warn',
+    pick: (s) => s.maxDrawDown ?? null },
+  { key: 'stdDev', label: 'Std Dev', size: 85, format: 'percent', tone: 'muted',
+    pick: (s) => s.stdDev ?? null },
+  { key: 'ulcerIndex', label: 'Ulcer', size: 75, format: 'number', tone: 'muted',
+    pick: (s) => s.ulcerIndex ?? null },
+  { key: 'beta', label: 'Beta', size: 75, format: 'number', tone: 'muted',
+    pick: (s) => s.beta ?? null },
+  { key: 'alpha', label: 'Alpha', size: 85, format: 'signedPercent', tone: 'sign',
+    pick: (s) => s.alpha ?? null },
+  { key: 'taxCostRatio', label: 'Tax Cost', size: 90, format: 'percent', tone: 'muted',
+    pick: (s) => s.taxCostRatio ?? null }
+]
+
 interface Row {
   shortCode: string
   name: string
-  repoLabel: string
-  state: Strategy['installState']
-  stateLabel: string
-  isOfficial: boolean
-  ownerTag: 'official' | 'community'
-  cagr: number | null
-  sharpe: number | null
-  maxDD: number | null
-  stars: number | null
-  cagrLabel: string
-  cagrClass: string
-  sharpeLabel: string
-  maxDDLabel: string
-  starsLabel: string
+  schedule: string
+  benchmark: string
   rowState: 'selected' | 'hovered' | ''
   [key: string]: unknown
 }
@@ -44,34 +78,59 @@ function strategyName(s: Strategy): string {
   return s.describe?.name ?? s.repoName ?? s.shortCode
 }
 
+const SCHEDULE_LABELS: Record<string, string> = {
+  '@daily': 'Daily',
+  '@weekend': 'Weekly',
+  '@weekly': 'Weekly',
+  '@monthend': 'Monthly',
+  '@monthly': 'Monthly',
+  '@quarterend': 'Quarterly',
+  '@quarterly': 'Quarterly',
+  '@yearend': 'Annually',
+  '@yearly': 'Annually'
+}
+
+function scheduleLabel(schedule: string | undefined): string {
+  if (!schedule) return '—'
+  return SCHEDULE_LABELS[schedule] ?? schedule.replace(/^@/, '')
+}
+
+function formatMetric(value: number | null, format: MetricFormat): string {
+  if (value == null) return '—'
+  if (format === 'percent') return formatPercent(value)
+  if (format === 'signedPercent') return formatSignedPercent(value)
+  return formatNumber(value)
+}
+
+function metricClass(value: number | null, tone: MetricTone): string {
+  if (value == null) return 'st-cell-muted'
+  if (tone === 'warn') return 'st-cell-warn'
+  if (tone === 'muted') return 'st-cell-muted'
+  return value >= 0 ? 'st-cell-up' : 'st-cell-down'
+}
+
 const rows = computed<Row[]>(() =>
   props.strategies.map<Row>((s) => {
-    const cagr = s.cagr ?? null
     const rowState =
       s.shortCode === props.selectedShortCode
         ? 'selected'
         : s.shortCode === props.hoveredShortCode
           ? 'hovered'
           : ''
-    return {
+    const row: Row = {
       shortCode: s.shortCode,
       name: strategyName(s),
-      repoLabel: `${s.repoOwner}/${s.repoName}`,
-      state: s.installState,
-      stateLabel: s.installState,
-      isOfficial: s.isOfficial,
-      ownerTag: s.isOfficial ? 'official' : 'community',
-      cagr,
-      sharpe: s.sharpe ?? null,
-      maxDD: s.maxDrawDown ?? null,
-      stars: s.stars ?? null,
-      cagrLabel: cagr == null ? '—' : formatSignedPercent(cagr),
-      cagrClass: cagr == null ? 'st-cell-muted' : cagr >= 0 ? 'st-cell-up' : 'st-cell-down',
-      sharpeLabel: s.sharpe == null ? '—' : formatNumber(s.sharpe),
-      maxDDLabel: s.maxDrawDown == null ? '—' : formatPercent(s.maxDrawDown),
-      starsLabel: s.stars == null ? '—' : String(s.stars),
+      schedule: scheduleLabel(s.describe?.schedule),
+      benchmark: s.describe?.benchmark ?? '—',
       rowState
     }
+    for (const m of METRICS) {
+      const v = m.pick(s)
+      row[m.key] = v
+      row[`${m.key}Label`] = formatMetric(v, m.format)
+      row[`${m.key}Class`] = metricClass(v, m.tone)
+    }
+    return row
   })
 )
 
@@ -91,98 +150,47 @@ const columns = computed(() => {
         'data-short-code': (model as Row).shortCode
       })
     },
-    {
-      prop: 'cagr',
-      name: 'CAGR',
-      size: 100,
+    ...METRICS.map((spec) => ({
+      prop: spec.key,
+      name: spec.label,
+      size: spec.size,
       readonly: true,
       sortable: true,
-      cellTemplate: (h: unknown, p: CellTemplateProp) => (p.model as Row).cagrLabel,
+      cellTemplate: (h: unknown, p: CellTemplateProp) =>
+        (p.model as Row)[`${spec.key}Label`] as string,
       cellProperties: ({ model }: CellTemplateProp) => {
         const m = model as Row
+        const cls = m[`${spec.key}Class`] as string
         return {
-          class: `st-num ${m.cagrClass} ${rowClass(m)}`.trim(),
+          class: `st-num ${cls} ${rowClass(m)}`.trim(),
           'data-short-code': m.shortCode
         }
       }
-    },
+    })),
     {
-      prop: 'sharpe',
-      name: 'Sharpe',
-      size: 90,
-      readonly: true,
-      sortable: true,
-      cellTemplate: (h: unknown, p: CellTemplateProp) => (p.model as Row).sharpeLabel,
-      cellProperties: ({ model }: CellTemplateProp) => {
-        const m = model as Row
-        return { class: `st-num ${rowClass(m)}`.trim(), 'data-short-code': m.shortCode }
-      }
-    },
-    {
-      prop: 'maxDD',
-      name: 'Max DD',
-      size: 100,
-      readonly: true,
-      sortable: true,
-      cellTemplate: (h: unknown, p: CellTemplateProp) => (p.model as Row).maxDDLabel,
-      cellProperties: ({ model }: CellTemplateProp) => {
-        const m = model as Row
-        return {
-          class: `st-num st-cell-warn ${rowClass(m)}`.trim(),
-          'data-short-code': m.shortCode
-        }
-      }
-    },
-    {
-      prop: 'stars',
-      name: 'Stars',
-      size: 80,
-      readonly: true,
-      sortable: true,
-      cellTemplate: (h: unknown, p: CellTemplateProp) => (p.model as Row).starsLabel,
-      cellProperties: ({ model }: CellTemplateProp) => {
-        const m = model as Row
-        return {
-          class: `st-num st-cell-muted ${rowClass(m)}`.trim(),
-          'data-short-code': m.shortCode
-        }
-      }
-    },
-    {
-      prop: 'shortCode',
-      name: 'Code',
-      size: 80,
-      readonly: true,
-      sortable: true,
-      cellProperties: ({ model }: CellTemplateProp) => {
-        const m = model as Row
-        return { class: `st-code ${rowClass(m)}`.trim(), 'data-short-code': m.shortCode }
-      }
-    },
-    {
-      prop: 'ownerTag',
-      name: 'Source',
+      prop: 'schedule',
+      name: 'Rebalance',
       size: 110,
       readonly: true,
       sortable: true,
       cellProperties: ({ model }: CellTemplateProp) => {
         const m = model as Row
         return {
-          class: `st-source st-source-${m.ownerTag} ${rowClass(m)}`.trim(),
+          class: `st-meta ${rowClass(m)}`.trim(),
           'data-short-code': m.shortCode
         }
       }
     },
     {
-      prop: 'stateLabel',
-      name: 'State',
-      size: 100,
+      prop: 'benchmark',
+      name: 'Benchmark',
+      size: 110,
       readonly: true,
       sortable: true,
       cellProperties: ({ model }: CellTemplateProp) => {
         const m = model as Row
         return {
-          class: `st-state st-state-${m.state} ${rowClass(m)}`.trim(),
+          class: `st-mono ${rowClass(m)}`.trim(),
           'data-short-code': m.shortCode
         }
       }
@@ -306,16 +314,15 @@ function onGridMouseLeave() {
   font-weight: 500;
   color: var(--text-1);
 }
-.revo-wrap.st-grid-wrap .st-code {
+.revo-wrap.st-grid-wrap .st-mono {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
-  color: var(--text-3);
+  color: var(--text-2);
   letter-spacing: 0.02em;
 }
-.revo-wrap.st-grid-wrap .st-repo {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11.5px;
-  color: var(--text-4);
+.revo-wrap.st-grid-wrap .st-meta {
+  font-size: 12px;
+  color: var(--text-3);
 }
 .revo-wrap.st-grid-wrap .st-cell-up {
   color: var(--gain);
@@ -328,30 +335,6 @@ function onGridMouseLeave() {
 }
 .revo-wrap.st-grid-wrap .st-cell-muted {
   color: var(--text-3);
-}
-
-.revo-wrap.st-grid-wrap .st-source,
-.revo-wrap.st-grid-wrap .st-state {
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-.revo-wrap.st-grid-wrap .st-source-official {
-  color: var(--primary);
-}
-.revo-wrap.st-grid-wrap .st-source-community {
-  color: var(--secondary);
-}
-.revo-wrap.st-grid-wrap .st-state-ready {
-  color: var(--gain);
-}
-.revo-wrap.st-grid-wrap .st-state-installing,
-.revo-wrap.st-grid-wrap .st-state-pending {
-  color: var(--primary);
-}
-.revo-wrap.st-grid-wrap .st-state-failed {
-  color: var(--loss);
 }
 
 .revo-wrap.st-grid-wrap .st-row-selected {

@@ -549,13 +549,27 @@ function metricValue(m: PortfolioStatistic): string {
   gap: 16px;
 }
 /* Holdings */
+.holdings-panel {
+  min-height: 0;
+}
 .holdings-panel .holdings {
   list-style: none;
-  padding: 0;
+  padding: 0 6px 0 0;
   margin: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.holdings-panel .holdings::-webkit-scrollbar {
+  width: 6px;
+}
+.holdings-panel .holdings::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
 }
 .holdings li {
   padding: 10px 0;
