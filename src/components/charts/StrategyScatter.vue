@@ -18,7 +18,7 @@ const emit = defineEmits<{
 const palette = useChartPalette()
 
 interface PlotPoint {
-  x: number // sharpe
+  x: number // sortino
   y: number // cagr (%)
   shortCode: string
   name: string
@@ -31,7 +31,7 @@ const SIZE_MIN = 8
 const SIZE_MAX = 26
 
 const points = computed<PlotPoint[]>(() => {
-  const ready = props.strategies.filter((s) => s.sharpe != null && s.cagr != null)
+  const ready = props.strategies.filter((s) => s.sortino != null && s.cagr != null)
 
   let ddLo = Infinity
   let ddHi = 0
@@ -48,7 +48,7 @@ const points = computed<PlotPoint[]>(() => {
     const ddAbs = s.maxDrawDown == null ? null : Math.abs(s.maxDrawDown)
     const t = ddAbs == null ? 0 : (ddAbs - ddLo) / ddSpan
     return {
-      x: s.sharpe as number,
+      x: s.sortino as number,
       y: (s.cagr as number) * 100,
       shortCode: s.shortCode,
       name: s.describe?.name ?? s.repoName ?? s.shortCode,
@@ -113,7 +113,7 @@ const chartOption = computed<EChartsOption>(() => {
             <span style="color:${p.text1};margin-left:6px">${d.y.toFixed(2)}%</span>
           </div>
           <div style="font-variant-numeric:tabular-nums;font-size:12px">
-            <span style="color:${p.text3}">Sharpe</span>
+            <span style="color:${p.text3}">Sortino</span>
             <span style="color:${p.text1};margin-left:6px">${d.x.toFixed(2)}</span>
           </div>
           ${ddRow}
@@ -125,7 +125,7 @@ const chartOption = computed<EChartsOption>(() => {
       type: 'value',
       min: xRange.value.min,
       max: xRange.value.max,
-      name: 'Sharpe',
+      name: 'Sortino',
       nameLocation: 'middle',
       nameGap: 26,
       nameTextStyle: { color: p.text3, fontSize: 11 },

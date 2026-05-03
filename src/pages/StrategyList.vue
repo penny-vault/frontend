@@ -112,7 +112,7 @@ const highlightShortCode = computed(() => hovered.value ?? selected.value)
           <template #header>
             <div>
               <h2>Risk · return</h2>
-              <p class="panel-sub">Sharpe vs CAGR · bubble = max drawdown</p>
+              <p class="panel-sub">Sortino vs CAGR · bubble = max drawdown</p>
             </div>
           </template>
           <StrategyScatter
