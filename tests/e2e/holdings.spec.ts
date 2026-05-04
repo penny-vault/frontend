@@ -8,7 +8,7 @@ test.describe('Portfolio Holdings', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/Growth Sleeve/, {
       timeout: 10_000
     })
-    await page.getByRole('link', { name: 'Holdings' }).click()
+    await page.getByRole('link', { name: 'Holdings', exact: true }).click()
     await expect(page).toHaveURL(new RegExp(`/portfolios/${DEMO_ID}/holdings$`), {
       timeout: 5_000
     })

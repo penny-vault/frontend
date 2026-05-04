@@ -275,9 +275,7 @@ function fmtMonthLabel(m: MonthlyReturn): string {
           </div>
           <div v-if="intraYearMaxDrawdown != null" class="m-row">
             <dt>Intra-year max DD</dt>
-            <dd class="num down">
-              {{ (intraYearMaxDrawdown * 100).toFixed(2) }}%
-            </dd>
+            <dd class="num down">{{ (intraYearMaxDrawdown * 100).toFixed(2) }}%</dd>
           </div>
         </dl>
 
@@ -307,8 +305,8 @@ function fmtMonthLabel(m: MonthlyReturn): string {
       <div class="ard-chart-wrap">
         <VChart v-if="visible" class="ard-chart" :option="chartOption" autoresize />
         <p class="ard-blurb">
-          Both lines start at 0% on the first day of the year, so the chart shows cumulative
-          growth from year-open.
+          Both lines start at 0% on the first day of the year, so the chart shows cumulative growth
+          from year-open.
           <template v-if="winnerLabel === 'portfolio'">
             The portfolio outperformed the {{ benchmarkLabel || 'benchmark' }} by
             {{ (annual.delta * 100).toFixed(2) }} pp.
@@ -318,8 +316,8 @@ function fmtMonthLabel(m: MonthlyReturn): string {
             {{ (Math.abs(annual.delta) * 100).toFixed(2) }} pp.
           </template>
           <template v-else-if="winnerLabel === 'tie'">
-            The portfolio and the {{ benchmarkLabel || 'benchmark' }} returned roughly the same
-            this year.
+            The portfolio and the {{ benchmarkLabel || 'benchmark' }} returned roughly the same this
+            year.
           </template>
         </p>
       </div>

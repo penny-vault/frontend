@@ -116,9 +116,7 @@ function fmtSignedPct(v: number): string {
 
 const daysToTrough = computed(() => diffDays(startDate.value, troughDate.value))
 const daysToRecovery = computed(() => diffDays(troughDate.value, recoveryDate.value))
-const totalUnderwater = computed(() =>
-  diffDays(startDate.value, recoveryDate.value ?? new Date())
-)
+const totalUnderwater = computed(() => diffDays(startDate.value, recoveryDate.value ?? new Date()))
 
 const chartOption = computed<EChartsOption>(() => {
   const p = palette.value
@@ -141,9 +139,7 @@ const chartOption = computed<EChartsOption>(() => {
   }
 
   const troughPct =
-    troughValues.value && peakP
-      ? pctFromBase(troughValues.value.portfolio, peakP)
-      : null
+    troughValues.value && peakP ? pctFromBase(troughValues.value.portfolio, peakP) : null
 
   const series: NonNullable<EChartsOption['series']> = [
     {
@@ -174,12 +170,7 @@ const chartOption = computed<EChartsOption>(() => {
             markArea: {
               silent: true,
               itemStyle: { color: p.lossSoft15 },
-              data: [
-                [
-                  { xAxis: dd.start },
-                  { xAxis: dd.recovery ?? lastWindowDate ?? dd.start }
-                ]
-              ]
+              data: [[{ xAxis: dd.start }, { xAxis: dd.recovery ?? lastWindowDate ?? dd.start }]]
             },
             markLine: {
               silent: true,
@@ -221,7 +212,9 @@ const chartOption = computed<EChartsOption>(() => {
           .map((x) => {
             const pct = fmtSignedPct(x.value[1])
             const dollars =
-              x.value[2] != null ? ` <span style="opacity:0.65">${compactCurrency(x.value[2])}</span>` : ''
+              x.value[2] != null
+                ? ` <span style="opacity:0.65">${compactCurrency(x.value[2])}</span>`
+                : ''
             return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${x.color};margin-right:6px"></span>${x.seriesName} <strong>${pct}</strong>${dollars}`
           })
           .join('<br/>')
@@ -265,9 +258,7 @@ const dateRangeText = computed(() => {
   const dd = props.drawdown
   if (!dd) return ''
   const start = formatDate(dd.start, { month: 'short', year: 'numeric' })
-  const end = dd.recovery
-    ? formatDate(dd.recovery, { month: 'short', year: 'numeric' })
-    : 'ongoing'
+  const end = dd.recovery ? formatDate(dd.recovery, { month: 'short', year: 'numeric' }) : 'ongoing'
   return `${start} → ${end}`
 })
 
@@ -377,15 +368,17 @@ const benchmarkComparison = computed<'worse' | 'better' | 'similar' | null>(() =
       <div class="ddd-chart-wrap">
         <VChart v-if="visible" class="ddd-chart" :option="chartOption" autoresize />
         <p class="ddd-blurb">
-          A drawdown is the peak-to-trough decline in portfolio value, measured against the
-          highest value reached so far.
+          A drawdown is the peak-to-trough decline in portfolio value, measured against the highest
+          value reached so far.
           <template v-if="benchmarkComparison === 'worse'">
-            Over this window the {{ benchmarkLabel || 'benchmark' }} fell harder
-            ({{ formatPercent(benchmarkDrawdown!) }}) than the portfolio.
+            Over this window the {{ benchmarkLabel || 'benchmark' }} fell harder ({{
+              formatPercent(benchmarkDrawdown!)
+            }}) than the portfolio.
           </template>
           <template v-else-if="benchmarkComparison === 'better'">
-            Over this window the {{ benchmarkLabel || 'benchmark' }} held up better
-            ({{ formatPercent(benchmarkDrawdown!) }}) than the portfolio.
+            Over this window the {{ benchmarkLabel || 'benchmark' }} held up better ({{
+              formatPercent(benchmarkDrawdown!)
+            }}) than the portfolio.
           </template>
           <template v-else-if="benchmarkComparison === 'similar'">
             Over this window the {{ benchmarkLabel || 'benchmark' }} moved roughly in line with the
