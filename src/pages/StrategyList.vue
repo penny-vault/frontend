@@ -6,12 +6,36 @@ import StrategyScatter from '@/components/charts/StrategyScatter.vue'
 import StrategyTable from '@/components/strategies/StrategyTable.vue'
 import { useStrategyList } from '@/composables/useStrategyList'
 import type { Strategy } from '@/api/endpoints/strategies'
+import {
+  PAIRS,
+  SIZE_OPTIONS,
+  DEFAULT_PAIR_ID,
+  DEFAULT_SIZE_KEY,
+  type SizeKey
+} from '@/components/charts/strategyScatterMetrics'
+import { watch } from 'vue'
 
 const { data: strategies, isLoading, error } = useStrategyList()
 
 const selected = ref<string | null>(null)
 const hovered = ref<string | null>(null)
 const query = ref('')
+
+const pairId = ref<string>(DEFAULT_PAIR_ID)
+const sizeKey = ref<SizeKey>(DEFAULT_SIZE_KEY)
+
+const activePair = computed(() => PAIRS.find((p) => p.id === pairId.value) ?? PAIRS[0]!)
+const xKey = computed(() => activePair.value.x)
+const yKey = computed(() => activePair.value.y)
+
+// Avoid encoding the same dimension twice: if the size matches the new axis pair,
+// fall back to the first non-conflicting size.
+watch([xKey, yKey], () => {
+  if (sizeKey.value === xKey.value || sizeKey.value === yKey.value) {
+    const fallback = SIZE_OPTIONS.find((o) => o.key !== xKey.value && o.key !== yKey.value)
+    if (fallback) sizeKey.value = fallback.key
+  }
+})
 
 const orderedStrategies = computed<Strategy[]>(() => {
   if (!strategies.value) return []
@@ -110,14 +134,38 @@ const highlightShortCode = computed(() => hovered.value ?? selected.value)
       <aside class="sl-aside">
         <Panel class="sl-scatter-panel">
           <template #header>
-            <div>
-              <h2>Risk · return</h2>
-              <p class="panel-sub">Ulcer Index vs CAGR · bubble = max drawdown</p>
+            <h2>Risk · return</h2>
+            <div class="sl-scatter-controls">
+              <label class="sl-field">
+                <span class="sl-field-label">Compare</span>
+                <span class="sl-select-wrap">
+                  <select v-model="pairId" class="sl-select">
+                    <option v-for="p in PAIRS" :key="p.id" :value="p.id">{{ p.label }}</option>
+                  </select>
+                </span>
+              </label>
+              <label class="sl-field">
+                <span class="sl-field-label">Bubble size</span>
+                <span class="sl-select-wrap">
+                  <select v-model="sizeKey" class="sl-select">
+                    <option
+                      v-for="opt in SIZE_OPTIONS"
+                      :key="opt.key"
+                      :value="opt.key"
+                      :disabled="opt.key === xKey || opt.key === yKey"
+                    >
+                      {{ opt.label }}{{ opt.key === xKey || opt.key === yKey ? ' (on axis)' : '' }}
+                    </option>
+                  </select>
+                </span>
+              </label>
             </div>
           </template>
           <StrategyScatter
             :strategies="filteredStrategies"
             :highlight-short-code="highlightShortCode"
+            :pair-id="pairId"
+            :size-key="sizeKey"
             @select="selected = $event"
             @hover="hovered = $event"
           />
@@ -234,6 +282,57 @@ const highlightShortCode = computed(() => hovered.value ?? selected.value)
   height: calc(100vh - 96px);
   max-height: 720px;
   min-height: 460px;
+}
+.sl-scatter-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.sl-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.02em;
+}
+.sl-field-label {
+  text-transform: uppercase;
+}
+.sl-select-wrap {
+  position: relative;
+  display: inline-block;
+}
+.sl-select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--text-3);
+  border-bottom: 1.5px solid var(--text-3);
+  transform: translateY(-75%) rotate(45deg);
+  pointer-events: none;
+}
+.sl-select {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-1);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 26px 4px 8px;
+  cursor: pointer;
+}
+.sl-select:focus-visible {
+  outline: 1px solid var(--primary);
+  outline-offset: 1px;
 }
 
 @media (max-width: 880px) {

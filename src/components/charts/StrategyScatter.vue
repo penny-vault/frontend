@@ -4,10 +4,21 @@ import VChart from 'vue-echarts'
 import type { EChartsOption } from 'echarts'
 import { useChartPalette } from '@/util/chart-theme'
 import type { Strategy } from '@/api/endpoints/strategies'
+import {
+  METRICS,
+  PAIRS,
+  DEFAULT_PAIR_ID,
+  type MetricDef,
+  type MetricKey,
+  type PairDef,
+  type SizeKey
+} from './strategyScatterMetrics'
 
 const props = defineProps<{
   strategies: Strategy[]
   highlightShortCode?: string | null
+  pairId: string
+  sizeKey: SizeKey
 }>()
 
 const emit = defineEmits<{
@@ -17,78 +28,146 @@ const emit = defineEmits<{
 
 const palette = useChartPalette()
 
+const DEFAULT_PAIR = PAIRS.find((p) => p.id === DEFAULT_PAIR_ID)!
+const pair = computed<PairDef>(() => PAIRS.find((p) => p.id === props.pairId) ?? DEFAULT_PAIR)
+const xMetric = computed<MetricDef>(() => METRICS[pair.value.x])
+const yMetric = computed<MetricDef>(() => METRICS[pair.value.y])
+const sizeMetric = computed<MetricDef | null>(() =>
+  props.sizeKey === 'uniform' ? null : METRICS[props.sizeKey as MetricKey]
+)
+
 interface PlotPoint {
-  x: number // ulcer index (unitless)
-  y: number // cagr (%)
+  x: number
+  y: number
   shortCode: string
   name: string
   isOfficial: boolean
-  maxDD: number | null
-  size: number // resolved symbol size in px
+  rawX: number
+  rawY: number
+  rawSize: number | null
+  size: number
 }
 
 const SIZE_MIN = 8
 const SIZE_MAX = 26
+const SIZE_UNIFORM = 12
+
+function rawMetric(s: Strategy, key: MetricKey): number | null {
+  const v = s[key]
+  return v == null ? null : (v as number)
+}
+
+function axisLabelFormatter(metric: MetricDef): (val: number) => string {
+  if (metric.format === 'percent') {
+    return (val) => `${Math.round(val * 10) / 10}%`
+  }
+  return (val) => (Math.round(val * 100) / 100).toString()
+}
+
+function pointValue(metric: MetricDef, raw: number): number {
+  const v = metric.magnitude ? Math.abs(raw) : raw
+  return metric.format === 'percent' ? v * 100 : v
+}
+
+function formatValue(metric: MetricDef, raw: number): string {
+  const v = metric.magnitude ? Math.abs(raw) : raw
+  if (metric.format === 'percent') return `${(v * 100).toFixed(metric.precision)}%`
+  return v.toFixed(metric.precision)
+}
 
 const points = computed<PlotPoint[]>(() => {
-  const ready = props.strategies.filter((s) => s.ulcerIndex != null && s.cagr != null)
+  const xKey = xMetric.value.key
+  const yKey = yMetric.value.key
+  const ready = props.strategies.filter(
+    (s) => rawMetric(s, xKey) != null && rawMetric(s, yKey) != null
+  )
 
-  let ddLo = Infinity
-  let ddHi = 0
-  for (const s of ready) {
-    const dd = s.maxDrawDown == null ? null : Math.abs(s.maxDrawDown)
-    if (dd == null) continue
-    if (dd < ddLo) ddLo = dd
-    if (dd > ddHi) ddHi = dd
+  const sizeIsUniform = props.sizeKey === 'uniform'
+  let szLo = Infinity
+  let szHi = 0
+  if (!sizeIsUniform) {
+    for (const s of ready) {
+      const r = rawMetric(s, props.sizeKey as MetricKey)
+      if (r == null) continue
+      const v = Math.abs(r)
+      if (v < szLo) szLo = v
+      if (v > szHi) szHi = v
+    }
   }
-  if (!Number.isFinite(ddLo)) ddLo = 0
-  const ddSpan = Math.max(1e-9, ddHi - ddLo)
+  if (!Number.isFinite(szLo)) szLo = 0
+  const szSpan = Math.max(1e-9, szHi - szLo)
 
   return ready.map((s) => {
-    const ddAbs = s.maxDrawDown == null ? null : Math.abs(s.maxDrawDown)
-    const t = ddAbs == null ? 0 : (ddAbs - ddLo) / ddSpan
+    const xRaw = rawMetric(s, xKey) as number
+    const yRaw = rawMetric(s, yKey) as number
+    const sRaw = sizeIsUniform ? null : rawMetric(s, props.sizeKey as MetricKey)
+    const sMag = sRaw == null ? null : Math.abs(sRaw)
+    const t = sMag == null ? 0 : (sMag - szLo) / szSpan
     return {
-      x: s.ulcerIndex as number,
-      y: (s.cagr as number) * 100,
+      x: pointValue(xMetric.value, xRaw),
+      y: pointValue(yMetric.value, yRaw),
       shortCode: s.shortCode,
       name: s.describe?.name ?? s.repoName ?? s.shortCode,
       isOfficial: s.isOfficial,
-      maxDD: s.maxDrawDown ?? null,
-      size: SIZE_MIN + t * (SIZE_MAX - SIZE_MIN)
+      rawX: xRaw,
+      rawY: yRaw,
+      rawSize: sRaw,
+      size: sizeIsUniform ? SIZE_UNIFORM : SIZE_MIN + t * (SIZE_MAX - SIZE_MIN)
     }
   })
 })
 
-const xRange = computed(() => {
-  if (!points.value.length) return { min: 0, max: 5 }
+function rangeFor(metric: MetricDef, vals: number[], emptyDefault: { min: number; max: number }) {
+  if (!vals.length) return emptyDefault
   let lo = Infinity
   let hi = -Infinity
-  for (const p of points.value) {
-    if (p.x < lo) lo = p.x
-    if (p.x > hi) hi = p.x
+  for (const v of vals) {
+    if (v < lo) lo = v
+    if (v > hi) hi = v
   }
-  const pad = Math.max(0.05, (hi - lo) * 0.15)
-  return {
-    min: Math.max(0, Math.floor((lo - pad) * 10) / 10),
-    max: Math.ceil((hi + pad) * 10) / 10
+  const span = hi - lo
+  const pad = Math.max(span * 0.15, metric.format === 'percent' ? 1 : 0.05)
+  let min = lo - pad
+  let max = hi + pad
+  if (metric.nonNegative && min < 0) min = 0
+  // Round to clean values so axis tick labels don't show fractional cruft.
+  if (metric.format === 'percent') {
+    min = Math.floor(min)
+    max = Math.ceil(max)
+  } else {
+    min = Math.floor(min * 10) / 10
+    max = Math.ceil(max * 10) / 10
   }
-})
+  return { min, max }
+}
 
-const yRange = computed(() => {
-  if (!points.value.length) return { min: 0, max: 20 }
-  let lo = Infinity
-  let hi = -Infinity
-  for (const p of points.value) {
-    if (p.y < lo) lo = p.y
-    if (p.y > hi) hi = p.y
-  }
-  const pad = Math.max(1, (hi - lo) * 0.15)
-  return { min: Math.floor(lo - pad), max: Math.ceil(hi + pad) }
-})
+const xRange = computed(() =>
+  rangeFor(
+    xMetric.value,
+    points.value.map((p) => p.x),
+    { min: 0, max: 5 }
+  )
+)
+const yRange = computed(() =>
+  rangeFor(
+    yMetric.value,
+    points.value.map((p) => p.y),
+    { min: 0, max: 20 }
+  )
+)
+
+const sizeLegendLabel = computed(() => (sizeMetric.value ? `size = ${sizeMetric.value.label}` : ''))
 
 const chartOption = computed<EChartsOption>(() => {
   const p = palette.value
   const hi = props.highlightShortCode ?? null
+  const yLabel = yMetric.value.label
+  const xLabel = xMetric.value.label
+  const sm = sizeMetric.value
+  const sizeKeyVal = props.sizeKey
+  const xKeyVal = xMetric.value.key
+  const yKeyVal = yMetric.value.key
+
   return {
     tooltip: {
       trigger: 'item',
@@ -99,37 +178,47 @@ const chartOption = computed<EChartsOption>(() => {
       formatter: (params: unknown) => {
         const v = params as { data: PlotPoint }
         const d = v.data
-        const ddRow =
-          d.maxDD == null
-            ? ''
-            : `<div style="color:${p.text3};font-size:11px">max DD ${(d.maxDD * 100).toFixed(1)}%</div>`
+        const yVal = formatValue(yMetric.value, d.rawY)
+        const xVal = formatValue(xMetric.value, d.rawX)
+        const showSize =
+          sm != null && sizeKeyVal !== xKeyVal && sizeKeyVal !== yKeyVal && d.rawSize != null
+        const sizeRow = showSize
+          ? `<div style="font-variant-numeric:tabular-nums;font-size:12px">
+               <span style="color:${p.text3}">${sm.label}</span>
+               <span style="color:${p.text1};margin-left:6px">${formatValue(sm, d.rawSize as number)}</span>
+             </div>`
+          : ''
         return `
           <div style="font-weight:500;color:${p.text1};margin-bottom:2px">${d.name}</div>
           <div style="color:${p.text3};font-size:11px;margin-bottom:6px">${d.shortCode}${
             d.isOfficial ? ' · official' : ''
           }</div>
           <div style="font-variant-numeric:tabular-nums;font-size:12px">
-            <span style="color:${p.text3}">CAGR</span>
-            <span style="color:${p.text1};margin-left:6px">${d.y.toFixed(2)}%</span>
+            <span style="color:${p.text3}">${yLabel}</span>
+            <span style="color:${p.text1};margin-left:6px">${yVal}</span>
           </div>
           <div style="font-variant-numeric:tabular-nums;font-size:12px">
-            <span style="color:${p.text3}">Ulcer</span>
-            <span style="color:${p.text1};margin-left:6px">${d.x.toFixed(2)}</span>
+            <span style="color:${p.text3}">${xLabel}</span>
+            <span style="color:${p.text1};margin-left:6px">${xVal}</span>
           </div>
-          ${ddRow}
+          ${sizeRow}
         `
       }
     },
-    grid: { left: 48, right: 14, top: 14, bottom: 40 },
+    grid: { left: 52, right: 14, top: 14, bottom: 40 },
     xAxis: {
       type: 'value',
       min: xRange.value.min,
       max: xRange.value.max,
-      name: 'Ulcer Index',
+      name: xLabel,
       nameLocation: 'middle',
       nameGap: 26,
       nameTextStyle: { color: p.text3, fontSize: 11 },
-      axisLabel: { color: p.text3, fontSize: 10 },
+      axisLabel: {
+        color: p.text3,
+        fontSize: 10,
+        formatter: axisLabelFormatter(xMetric.value)
+      },
       axisLine: { lineStyle: { color: p.border } },
       splitLine: { lineStyle: { color: p.border, opacity: 0.4 } }
     },
@@ -137,11 +226,15 @@ const chartOption = computed<EChartsOption>(() => {
       type: 'value',
       min: yRange.value.min,
       max: yRange.value.max,
-      name: 'CAGR',
+      name: yLabel,
       nameLocation: 'middle',
-      nameGap: 38,
+      nameGap: 42,
       nameTextStyle: { color: p.text3, fontSize: 11 },
-      axisLabel: { color: p.text3, fontSize: 10, formatter: '{value}%' },
+      axisLabel: {
+        color: p.text3,
+        fontSize: 10,
+        formatter: axisLabelFormatter(yMetric.value)
+      },
       axisLine: { lineStyle: { color: p.border } },
       splitLine: { lineStyle: { color: p.border, opacity: 0.4 } }
     },
@@ -203,13 +296,15 @@ function onMouseOut() {
       <span class="ss-legend-label">official</span>
       <span class="ss-dot ss-dot--community" />
       <span class="ss-legend-label">community</span>
-      <span class="ss-legend-sep" aria-hidden="true">·</span>
-      <span class="ss-legend-size">
-        <span class="ss-size ss-size--sm" />
-        <span class="ss-size ss-size--md" />
-        <span class="ss-size ss-size--lg" />
-      </span>
-      <span class="ss-legend-label">size = |max DD|</span>
+      <template v-if="sizeMetric">
+        <span class="ss-legend-sep" aria-hidden="true">·</span>
+        <span class="ss-legend-size">
+          <span class="ss-size ss-size--sm" />
+          <span class="ss-size ss-size--md" />
+          <span class="ss-size ss-size--lg" />
+        </span>
+        <span class="ss-legend-label">{{ sizeLegendLabel }}</span>
+      </template>
     </div>
     <VChart
       class="ss-chart"
