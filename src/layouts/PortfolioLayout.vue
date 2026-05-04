@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, watchEffect, onUnmounted } from 'vue'
+import { computed, ref, watchEffect, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Skeleton from 'primevue/skeleton'
 import TabBar from '@/components/ui/TabBar.vue'
 import RecalculatingPanel from '@/components/portfolio/RecalculatingPanel.vue'
+import StrategyDescriptionDialog from '@/components/portfolio/StrategyDescriptionDialog.vue'
 import { formatDate } from '@/util/format'
 import { usePortfolio } from '@/composables/usePortfolio'
 import { usePortfolioSummary } from '@/composables/usePortfolioSummary'
+
+const strategyDialogOpen = ref(false)
 
 const route = useRoute()
 
@@ -65,7 +68,29 @@ const tabs = computed(() => {
 
   <div v-if="portfolio" class="pl-header">
     <div class="pl-title-row">
-      <h1>{{ portfolio.name }}</h1>
+      <div class="pl-title-line">
+        <h1>{{ portfolio.name }}</h1>
+        <button
+          type="button"
+          class="pl-info-btn"
+          aria-label="About this strategy"
+          title="About this strategy"
+          @click="strategyDialogOpen = true"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <line x1="12" y1="11" x2="12" y2="17" />
+            <circle cx="12" cy="7.5" r="0.6" fill="currentColor" stroke="none" />
+          </svg>
+        </button>
+      </div>
       <div class="pl-meta">
         <span v-if="portfolio.startDate" class="meta">
           Inception:
@@ -85,6 +110,13 @@ const tabs = computed(() => {
     </div>
     <TabBar :tabs="tabs" class="pl-tabs" />
   </div>
+
+  <StrategyDescriptionDialog
+    v-if="portfolio"
+    v-model:visible="strategyDialogOpen"
+    :strategy-code="portfolio.strategyCode ?? null"
+    :portfolio-parameters="portfolio.parameters ?? null"
+  />
 
   <RecalculatingPanel
     v-if="portfolio && showRecalc && summaryRecalcInfo"
@@ -109,11 +141,43 @@ const tabs = computed(() => {
 .pl-title-row {
   min-width: 0;
 }
-.pl-title-row h1 {
+.pl-title-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.pl-title-line h1 {
   font-size: 28px;
   font-weight: 400;
   letter-spacing: -0.01em;
-  margin-bottom: 8px;
+  margin: 0;
+}
+.pl-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text-3);
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+.pl-info-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary-border);
+  background: var(--primary-soft-04);
+}
+.pl-info-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-glow);
 }
 .pl-tabs {
   margin-top: 0;
@@ -148,9 +212,15 @@ const tabs = computed(() => {
     padding-left: 16px;
     padding-right: 16px;
   }
-  .pl-title-row h1 {
-    font-size: 20px;
+  .pl-title-line {
     margin-bottom: 4px;
+  }
+  .pl-title-line h1 {
+    font-size: 20px;
+  }
+  .pl-info-btn {
+    width: 22px;
+    height: 22px;
   }
   .pl-meta .meta {
     font-size: 11px;
