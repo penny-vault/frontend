@@ -37,9 +37,16 @@ export function usePortfolioRunProgress(options: UsePortfolioRunProgressOptions 
       }
     }
 
+    // Monotonic forward: progress never regresses. Both SSE events and the
+    // GET poll feed through here, so whichever source is ahead wins.
+    const advance = (pct: number) => {
+      if (pct > progressPct.value) progressPct.value = pct
+    }
+
     const checkRunStatus = async (): Promise<boolean> => {
       try {
         const run = await getPortfolioRun(slug, runId)
+        if (run.progress?.pct !== undefined) advance(run.progress.pct)
         if (run.status === 'success' || run.status === 'failed') {
           handleTerminal(run.status, run.error ?? undefined)
           return true
@@ -50,17 +57,14 @@ export function usePortfolioRunProgress(options: UsePortfolioRunProgressOptions 
       return false
     }
 
-    // Idle watchdog: if no progress event arrives for IDLE_MS, ask the GET
-    // endpoint whether the run already finished (SSE stalled, mid-finalization,
-    // proxy buffering, etc.).
-    const IDLE_MS = 20_000
-    let lastActivity = Date.now()
-    const idleTimer = window.setInterval(() => {
+    // Backstop poll every 2s, regardless of SSE state. If the stream is
+    // disconnected or buffered, the GET response still surfaces the latest
+    // progress snapshot and terminal status.
+    const POLL_MS = 2_000
+    const pollTimer = window.setInterval(() => {
       if (finished) return
-      if (Date.now() - lastActivity < IDLE_MS) return
-      lastActivity = Date.now()
       checkRunStatus()
-    }, 5_000)
+    }, POLL_MS)
 
     const MAX_REOPEN = 5
     const REOPEN_DELAY_MS = 1_000
@@ -71,8 +75,7 @@ export function usePortfolioRunProgress(options: UsePortfolioRunProgressOptions 
           url,
           {
             onProgress(data) {
-              lastActivity = Date.now()
-              progressPct.value = data.pct
+              advance(data.pct)
             },
             onDone(status) {
               handleTerminal(status)
@@ -100,7 +103,7 @@ export function usePortfolioRunProgress(options: UsePortfolioRunProgressOptions 
         options.onFailure?.((e as Error).message)
       }
     } finally {
-      window.clearInterval(idleTimer)
+      window.clearInterval(pollTimer)
     }
   }
 

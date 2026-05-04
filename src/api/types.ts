@@ -928,9 +928,16 @@ export interface components {
             finishedAt?: string | null;
             durationMs?: number | null;
             error?: string | null;
+            progress?: components["schemas"]["RunProgress"];
         };
-        /** @description SSE data payload for a `progress` event during an active backtest run. */
-        RunProgressEvent: {
+        /**
+         * @description Latest progress snapshot from the in-memory progress hub. Returned
+         *     on `BacktestRun` for active runs that have emitted at least one
+         *     progress message; also serves as the SSE `progress` event payload.
+         *     Absent on queued runs, terminal runs, and active runs that have
+         *     not yet reported (e.g., immediately after API restart).
+         */
+        RunProgress: {
             /** Format: int64 */
             step: number;
             /** Format: int64 */
