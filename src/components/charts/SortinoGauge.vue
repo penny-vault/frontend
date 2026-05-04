@@ -10,26 +10,24 @@ const props = defineProps<{
   sortino: number
 }>()
 
-const MAX = 4
+const MAX = 2.5
 
 const clamped = computed(() => Math.max(0, Math.min(MAX, props.sortino)))
 
 const zones = computed(() => {
   const p = palette.value
   return [
-    { range: '0–1', label: 'poor', color: p.loss },
-    { range: '1–2', label: 'ok', color: p.secondary },
-    { range: '2–3', label: 'good', color: p.gain },
-    { range: '3+', label: 'great', color: p.gain }
+    { range: '< 0.75', label: 'poor', color: p.loss },
+    { range: '0.75–1.25', label: 'ok', color: p.secondary },
+    { range: '1.25+', label: 'great', color: p.gain }
   ]
 })
 
 const activeIndex = computed(() => {
   const v = props.sortino
-  if (v < 1) return 0
-  if (v < 2) return 1
-  if (v < 3) return 2
-  return 3
+  if (v < 0.75) return 0
+  if (v < 1.25) return 1
+  return 2
 })
 
 const chartOption = computed<EChartsOption>(() => {
@@ -49,9 +47,8 @@ const chartOption = computed<EChartsOption>(() => {
           lineStyle: {
             width: 5,
             color: [
-              [0.25, p.loss],
-              [0.5, p.secondary],
-              [0.75, p.gain],
+              [0.75 / 2.5, p.loss],
+              [1.25 / 2.5, p.secondary],
               [1, p.gain]
             ]
           }
