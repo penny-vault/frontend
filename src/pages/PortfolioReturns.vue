@@ -11,6 +11,9 @@ import ReturnHeatmap from '@/components/charts/ReturnHeatmap.vue'
 import DrawdownCompareChart from '@/components/charts/DrawdownCompareChart.vue'
 import RollingReturnsChart from '@/components/charts/RollingReturnsChart.vue'
 import AnnualReturnsList from '@/components/portfolio/AnnualReturnsList.vue'
+import DrawdownDetailDialog from '@/components/portfolio/DrawdownDetailDialog.vue'
+import AnnualReturnDetailDialog from '@/components/portfolio/AnnualReturnDetailDialog.vue'
+import type { DrawdownRange } from '@/util/chart'
 import { formatSignedPercent, formatPercent, formatDate } from '@/util/format'
 import { useMounted } from '@/util/motion'
 import { usePortfolio } from '@/composables/usePortfolio'
@@ -58,6 +61,27 @@ const highlightedYear = ref<number | null>(null)
 const heatmapHelpOpen = ref(false)
 const ddHelpOpen = ref(false)
 const heatmapLogScale = ref(false)
+const drawdownDetailOpen = ref(false)
+const selectedDrawdown = ref<DrawdownRange | null>(null)
+
+function openDrawdownDetail(d: DrawdownRange): void {
+  selectedDrawdown.value = d
+  drawdownDetailOpen.value = true
+}
+
+const annualDetailOpen = ref(false)
+const selectedAnnualYear = ref<number | null>(null)
+
+const selectedAnnual = computed(() => {
+  const year = selectedAnnualYear.value
+  if (year == null) return null
+  return annualReconciled.value.find((a) => a.year === year) ?? null
+})
+
+function openAnnualDetail(year: number): void {
+  selectedAnnualYear.value = year
+  annualDetailOpen.value = true
+}
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -203,20 +227,28 @@ function fmtMonth(year: number, month: number): string {
           </Panel>
         </div>
         <div class="pr-right">
-          <Panel title="Annual returns" subtitle="Portfolio vs. benchmark">
+          <Panel title="Annual returns" subtitle="Portfolio vs. benchmark · click for details">
             <AnnualReturnsList
               :annual="annualReconciled"
               :highlighted-year="highlightedYear"
               @year-hover="(y) => (highlightedYear = y)"
+              @year-select="openAnnualDetail"
             />
           </Panel>
 
-          <Panel title="Deepest drawdowns" subtitle="Peak to trough events">
+          <Panel title="Deepest drawdowns" subtitle="Peak to trough events · click for details">
             <ul v-if="(drawdownsData ?? []).length > 0" class="dd-list">
               <li
                 v-for="(d, i) in (drawdownsData ?? []).slice(0, 10)"
                 :key="`${d.start}-${d.trough}`"
                 :style="{ '--i': i }"
+                class="dd-row"
+                role="button"
+                tabindex="0"
+                :aria-label="`View details for ${formatPercent(d.depth)} drawdown starting ${formatDate(d.start, { month: 'short', day: 'numeric', year: 'numeric' })}`"
+                @click="openDrawdownDetail(d)"
+                @keydown.enter.prevent="openDrawdownDetail(d)"
+                @keydown.space.prevent="openDrawdownDetail(d)"
               >
                 <span class="dd-rank">{{ String(i + 1).padStart(2, '0') }}</span>
                 <span class="dd-dot" />
@@ -283,6 +315,21 @@ function fmtMonth(year: number, month: number): string {
           </li>
         </ul>
       </Dialog>
+
+      <DrawdownDetailDialog
+        v-model:visible="drawdownDetailOpen"
+        :drawdown="selectedDrawdown"
+        :points="measurements?.points ?? []"
+        :benchmark-label="portfolio?.benchmark ?? 'Benchmark'"
+      />
+
+      <AnnualReturnDetailDialog
+        v-model:visible="annualDetailOpen"
+        :annual="selectedAnnual"
+        :points="measurements?.points ?? []"
+        :monthly="derived?.monthly ?? []"
+        :benchmark-label="portfolio?.benchmark ?? 'Benchmark'"
+      />
 
       <Dialog
         v-model:visible="ddHelpOpen"
@@ -470,11 +517,26 @@ function fmtMonth(year: number, month: number): string {
   display: grid;
   grid-template-columns: 28px 1px 1fr;
   gap: 12px;
-  padding: 10px 4px;
+  padding: 10px 8px;
+  margin: 0 -8px;
   border-bottom: 1px solid var(--border);
+  border-radius: 2px;
 }
 .dd-list li:last-child {
   border-bottom: none;
+}
+.dd-row {
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease;
+  outline: none;
+}
+.dd-row:hover {
+  background: var(--primary-soft-04);
+}
+.dd-row:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary-glow);
 }
 .dd-rank {
   font-family: 'IBM Plex Mono', monospace;

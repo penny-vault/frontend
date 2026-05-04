@@ -11,6 +11,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'year-hover': [year: number | null]
+  'year-select': [year: number]
 }>()
 
 const sorted = computed(() => [...props.annual].sort((a, b) => b.year - a.year))
@@ -40,8 +41,16 @@ function rowClass(year: number): string {
       v-for="a in sorted"
       :key="a.year"
       :class="rowClass(a.year)"
+      role="button"
+      tabindex="0"
+      :aria-label="`View details for ${a.year}`"
       @mouseenter="emit('year-hover', a.year)"
       @mouseleave="emit('year-hover', null)"
+      @focus="emit('year-hover', a.year)"
+      @blur="emit('year-hover', null)"
+      @click="emit('year-select', a.year)"
+      @keydown.enter.prevent="emit('year-select', a.year)"
+      @keydown.space.prevent="emit('year-select', a.year)"
     >
       <div class="arl-top">
         <span class="arl-year">{{ a.year }}</span>
@@ -83,7 +92,11 @@ function rowClass(year: number): string {
   transition:
     background 180ms ease,
     opacity 180ms ease;
-  cursor: default;
+  cursor: pointer;
+  outline: none;
+}
+.arl li:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary-glow);
 }
 .arl li:last-child {
   border-bottom: none;
