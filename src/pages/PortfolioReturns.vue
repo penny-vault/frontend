@@ -5,15 +5,19 @@ import Dialog from 'primevue/dialog'
 import Skeleton from 'primevue/skeleton'
 import KpiCard from '@/components/ui/KpiCard.vue'
 import Panel from '@/components/ui/Panel.vue'
+import StatusDot from '@/components/ui/StatusDot.vue'
+import AnimatedBar from '@/components/ui/AnimatedBar.vue'
 import ReturnHeatmap from '@/components/charts/ReturnHeatmap.vue'
 import DrawdownCompareChart from '@/components/charts/DrawdownCompareChart.vue'
 import RollingReturnsChart from '@/components/charts/RollingReturnsChart.vue'
 import AnnualReturnsList from '@/components/portfolio/AnnualReturnsList.vue'
-import { formatSignedPercent, formatPercent } from '@/util/format'
+import { formatSignedPercent, formatPercent, formatDate } from '@/util/format'
+import { useMounted } from '@/util/motion'
 import { usePortfolio } from '@/composables/usePortfolio'
 import { usePortfolioMeasurements } from '@/composables/usePortfolioMeasurements'
 import { usePortfolioReturns } from '@/composables/usePortfolioReturns'
 import { usePortfolioSummary } from '@/composables/usePortfolioSummary'
+import { usePortfolioDrawdowns } from '@/composables/usePortfolioDrawdowns'
 import type { AnnualReturn } from '@/util/returns'
 
 const route = useRoute()
@@ -31,6 +35,8 @@ const {
   error
 } = usePortfolioMeasurements(portfolioId, measurementsParams)
 const derived = usePortfolioReturns(measurements)
+const { data: drawdownsData } = usePortfolioDrawdowns(portfolioId)
+const mounted = useMounted(60)
 
 // Replace the current-year row's portfolio/benchmark with the server's
 // authoritative YTD values so this page agrees with the overview's YTD KPI.
@@ -203,6 +209,49 @@ function fmtMonth(year: number, month: number): string {
               :highlighted-year="highlightedYear"
               @year-hover="(y) => (highlightedYear = y)"
             />
+          </Panel>
+
+          <Panel title="Deepest drawdowns" subtitle="Peak to trough events">
+            <ul v-if="(drawdownsData ?? []).length > 0" class="dd-list">
+              <li
+                v-for="(d, i) in (drawdownsData ?? []).slice(0, 10)"
+                :key="`${d.start}-${d.trough}`"
+                :style="{ '--i': i }"
+              >
+                <span class="dd-rank">{{ String(i + 1).padStart(2, '0') }}</span>
+                <span class="dd-dot" />
+                <div class="dd-body">
+                  <div class="dd-top">
+                    <span class="dd-depth num">{{ formatPercent(d.depth) }}</span>
+                    <span class="dd-status" :class="d.recovery ? 'ok' : 'warn'">
+                      <StatusDot :tone="d.recovery ? 'ok' : 'warn'" :pulse="!d.recovery" />
+                      {{ d.recovery ? 'Recovered' : 'Active' }}
+                    </span>
+                  </div>
+                  <div class="dd-meta">
+                    {{ formatDate(d.start, { month: 'short', day: 'numeric', year: 'numeric' }) }}
+                    <span class="arr">→</span>
+                    {{
+                      d.recovery
+                        ? formatDate(d.recovery, {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })
+                        : 'ongoing'
+                    }}
+                  </div>
+                  <AnimatedBar
+                    :value="Math.min(1, Math.abs(d.depth) / 0.35)"
+                    :gradient="'var(--grad-gain-to-warn)'"
+                    :delay="120 + i * 80"
+                    :animate="mounted"
+                    style="margin-top: 8px"
+                  />
+                </div>
+              </li>
+            </ul>
+            <div v-else class="dd-empty">No drawdowns recorded.</div>
           </Panel>
         </div>
       </div>
@@ -408,6 +457,82 @@ function fmtMonth(year: number, month: number): string {
   border: 1px solid var(--loss);
   border-radius: 6px;
   font-size: 13px;
+}
+
+.dd-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+.dd-list li {
+  display: grid;
+  grid-template-columns: 28px 1px 1fr;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.dd-list li:last-child {
+  border-bottom: none;
+}
+.dd-rank {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  padding-top: 2px;
+}
+.dd-dot {
+  background: var(--border);
+  width: 1px;
+  height: 100%;
+}
+.dd-body {
+  min-width: 0;
+}
+.dd-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.dd-depth {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--loss);
+  font-variant-numeric: tabular-nums;
+}
+.dd-status {
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.dd-status.ok {
+  color: var(--gain);
+}
+.dd-status.warn {
+  color: var(--secondary);
+}
+.dd-meta {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dd-meta .arr {
+  color: var(--text-5);
+  margin: 0 4px;
+}
+.dd-empty {
+  font-size: 12.5px;
+  color: var(--text-3);
+  padding: 20px 4px;
+  text-align: center;
 }
 @media (max-width: 1024px) {
   .pr-kpis {

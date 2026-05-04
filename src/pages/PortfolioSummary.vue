@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, RouterLink } from 'vue-router'
 import Tag from 'primevue/tag'
-import StatusDot from '@/components/ui/StatusDot.vue'
 import Panel from '@/components/ui/Panel.vue'
 import AnimatedBar from '@/components/ui/AnimatedBar.vue'
 import KpiCard from '@/components/ui/KpiCard.vue'
@@ -11,6 +10,7 @@ import ValueChart from '@/components/charts/ValueChart.vue'
 import type { DrawdownRange } from '@/util/chart'
 import {
   formatCurrency,
+  formatCurrencyCents,
   formatPercent,
   formatSignedPercent,
   formatNumber,
@@ -26,12 +26,16 @@ import { usePortfolioDrawdowns } from '@/composables/usePortfolioDrawdowns'
 import { usePortfolioStatistics } from '@/composables/usePortfolioStatistics'
 import { usePortfolioTrailingReturns } from '@/composables/usePortfolioTrailingReturns'
 import { usePortfolioHoldings } from '@/composables/usePortfolioHoldings'
-import type { PortfolioStatistic } from '@/api/endpoints/portfolios'
+import { usePortfolioTransactions } from '@/composables/usePortfolioTransactions'
+import type {
+  GetTransactionsParams,
+  PortfolioStatistic,
+  Transaction,
+  TransactionType
+} from '@/api/endpoints/portfolios'
 
-const hoveredDrawdown = ref<DrawdownRange | null>(null)
-const focusedDrawdown = ref<DrawdownRange | null>(null)
 const showAllHoldings = ref(false)
-const HOLDINGS_COLLAPSED_LIMIT = 10
+const HOLDINGS_COLLAPSED_LIMIT = 5
 
 // Theme — from Pinia UI store (read-only in the page, toggle lives in layout)
 const ui = useUiStore()
@@ -54,6 +58,41 @@ const { data: trailingReturnsData } = usePortfolioTrailingReturns(portfolioId)
 
 const { data: measurementsData } = usePortfolioMeasurements(portfolioId, measurementsParams)
 const { data: holdingsData } = usePortfolioHoldings(portfolioId)
+
+const transactionsParams = ref<GetTransactionsParams>({})
+const { data: transactionsData } = usePortfolioTransactions(portfolioId, transactionsParams)
+
+const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
+  buy: 'Buy',
+  sell: 'Sell',
+  dividend: 'Dividend',
+  interest: 'Interest',
+  fee: 'Fee',
+  deposit: 'Deposit',
+  withdrawal: 'Withdrawal',
+  split: 'Split',
+  journal: 'Journal'
+}
+
+const recentTransactions = computed<Transaction[]>(() => {
+  const items = transactionsData.value?.items ?? []
+  return [...items]
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.batchId - a.batchId))
+    .slice(0, 5)
+})
+
+function txAmountClass(t: Transaction): string {
+  const a = t.amount ?? 0
+  if (a > 0) return 'up'
+  if (a < 0) return 'down'
+  return 'muted'
+}
+
+function txDirClass(v: number): string {
+  if (v > 0) return 'up'
+  if (v < 0) return 'down'
+  return 'muted'
+}
 
 // Map measurement points to the chart TimeSeries shape
 const chartSeries = computed(() => {
@@ -79,11 +118,6 @@ const heroAlpha = computed(() => summaryData.value?.alpha ?? 0)
 
 // Page-level mounted flag for AnimatedBar animations
 const mounted = useMounted(60)
-
-function toggleFocusDrawdown(d: DrawdownRange): void {
-  if (focusedDrawdown.value === d) focusedDrawdown.value = null
-  else focusedDrawdown.value = d
-}
 
 const darkTheme = {
   fontFamily: '"IBM Plex Sans", "Inter", sans-serif',
@@ -193,6 +227,9 @@ const visibleHoldings = computed<DisplayHolding[]>(() =>
 const hiddenHoldingsCount = computed(() =>
   Math.max(0, displayHoldings.value.length - HOLDINGS_COLLAPSED_LIMIT)
 )
+const singleHolding = computed<DisplayHolding | null>(() =>
+  displayHoldings.value.length === 1 ? (displayHoldings.value[0] ?? null) : null
+)
 
 function metricValue(m: PortfolioStatistic): string {
   if (m.format === 'percent') return formatPercent(m.value)
@@ -276,172 +313,7 @@ function metricValue(m: PortfolioStatistic): string {
       </KpiCard>
     </section>
 
-    <section class="d-chart-row">
-      <ValueChart
-        :series="chartSeries"
-        :drawdowns="(drawdownsData ?? []) as DrawdownRange[]"
-        :theme="theme"
-        :benchmark-label="portfolioData.benchmark ?? ''"
-        :hovered-drawdown="hoveredDrawdown"
-        :focused-drawdown="focusedDrawdown"
-        class="reveal"
-        :style="{ '--d': '160ms' }"
-        @update:focused-drawdown="focusedDrawdown = $event"
-      />
-
-      <Panel class="holdings-panel reveal" :style="{ '--d': '220ms' }">
-        <template #header>
-          <div>
-            <h2>Holdings</h2>
-            <p class="panel-sub">
-              {{ displayHoldings.length }} position{{ displayHoldings.length === 1 ? '' : 's' }}
-              <template v-if="holdingsData?.date">
-                · as of
-                {{ formatDate(holdingsData.date, { month: 'short', day: 'numeric' }) }}</template
-              >
-            </p>
-          </div>
-          <button class="icon-btn sm" title="View all">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </button>
-        </template>
-        <ul class="holdings">
-          <li v-for="(h, i) in visibleHoldings" :key="h.ticker" :style="{ '--i': i }">
-            <div class="h-top">
-              <span class="ticker">{{ h.ticker }}</span>
-              <span class="name">{{ h.name }}</span>
-              <span class="weight num">{{ formatPercent(h.weight) }}</span>
-            </div>
-            <AnimatedBar
-              :value="h.weight"
-              :gradient="'var(--grad-primary-to-gain)'"
-              :delay="240 + i * 90"
-              :animate="mounted"
-              style="margin-top: 6px"
-            />
-            <div class="h-bot">
-              <span class="value num">{{ formatCurrency(h.value) }}</span>
-              <span class="chg num" :class="h.chg > 0 ? 'up' : h.chg < 0 ? 'down' : 'muted'">
-                {{ h.chg === 0 ? '—' : formatSignedPercent(h.chg) }}
-              </span>
-            </div>
-          </li>
-        </ul>
-        <button
-          v-if="hiddenHoldingsCount > 0"
-          class="show-all-btn"
-          type="button"
-          @click="showAllHoldings = !showAllHoldings"
-        >
-          {{ showAllHoldings ? 'Show less' : `Show all (${displayHoldings.length})` }}
-        </button>
-      </Panel>
-    </section>
-
-    <section class="d-bottom-row">
-      <Panel
-        title="Deepest drawdowns"
-        subtitle="Peak to trough events"
-        class="reveal"
-        :style="{ '--d': '280ms' }"
-      >
-        <ul class="dd-list" :class="{ 'has-focus': focusedDrawdown }">
-          <li
-            v-for="(d, i) in (drawdownsData ?? []).slice(0, 10)"
-            :key="i"
-            :style="{ '--i': i }"
-            :class="{
-              'is-hovered': hoveredDrawdown === d && focusedDrawdown !== d,
-              'is-focused': focusedDrawdown === d,
-              'is-dimmed': focusedDrawdown && focusedDrawdown !== d
-            }"
-            role="button"
-            tabindex="0"
-            @mouseenter="hoveredDrawdown = d"
-            @mouseleave="hoveredDrawdown = null"
-            @focus="hoveredDrawdown = d"
-            @blur="hoveredDrawdown = null"
-            @click="toggleFocusDrawdown(d)"
-            @keydown.enter.prevent="toggleFocusDrawdown(d)"
-            @keydown.space.prevent="toggleFocusDrawdown(d)"
-          >
-            <span class="dd-rank">{{ String(i + 1).padStart(2, '0') }}</span>
-            <span class="dd-dot" />
-            <div class="dd-body">
-              <div class="dd-top">
-                <span class="dd-depth num">{{ formatPercent(d.depth) }}</span>
-                <span class="dd-status" :class="d.recovery ? 'ok' : 'warn'">
-                  <StatusDot :tone="d.recovery ? 'ok' : 'warn'" :pulse="!d.recovery" />
-                  {{ d.recovery ? 'Recovered' : 'Active' }}
-                </span>
-              </div>
-              <div class="dd-meta">
-                {{ formatDate(d.start, { month: 'short', day: 'numeric', year: 'numeric' }) }}
-                <span class="arr">→</span>
-                {{
-                  d.recovery
-                    ? formatDate(d.recovery, { month: 'short', day: 'numeric', year: 'numeric' })
-                    : 'ongoing'
-                }}
-                <span class="dd-hint">
-                  <span class="dd-cue" v-if="focusedDrawdown === d">focused · click to clear</span>
-                  <span class="dd-cue" v-else>click to zoom</span>
-                </span>
-              </div>
-              <AnimatedBar
-                :value="Math.min(1, Math.abs(d.depth) / 0.35)"
-                :gradient="'var(--grad-gain-to-warn)'"
-                :delay="360 + i * 80"
-                :animate="mounted"
-                style="margin-top: 8px"
-              />
-            </div>
-            <span class="dd-pin" aria-hidden="true">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </span>
-          </li>
-        </ul>
-      </Panel>
-
-      <Panel
-        title="Risk &amp; style metrics"
-        subtitle="Trailing statistics"
-        class="reveal"
-        :style="{ '--d': '340ms' }"
-      >
-        <div class="d-metrics-grid">
-          <div
-            v-for="(m, i) in statisticsData ?? []"
-            :key="m.label"
-            class="dm"
-            :style="{ '--i': i }"
-          >
-            <div class="dm-l">{{ m.label }}</div>
-            <div class="dm-v num">{{ metricValue(m) }}</div>
-          </div>
-        </div>
-      </Panel>
-    </section>
-
-    <Panel class="d-returns reveal" :style="{ '--d': '400ms' }">
+    <Panel class="d-returns reveal" :style="{ '--d': '140ms' }">
       <template #header>
         <div>
           <h2>Trailing returns</h2>
@@ -487,6 +359,168 @@ function metricValue(m: PortfolioStatistic): string {
         </table>
       </div>
     </Panel>
+
+    <section class="d-chart-row">
+      <ValueChart
+        :series="chartSeries"
+        :drawdowns="(drawdownsData ?? []) as DrawdownRange[]"
+        :theme="theme"
+        :benchmark-label="portfolioData.benchmark ?? ''"
+        class="reveal"
+        :style="{ '--d': '200ms' }"
+      />
+
+      <Panel class="holdings-panel reveal" :style="{ '--d': '260ms' }">
+        <template #header>
+          <div>
+            <h2>Holdings</h2>
+            <p class="panel-sub">
+              {{ displayHoldings.length }} position{{ displayHoldings.length === 1 ? '' : 's' }}
+              <template v-if="holdingsData?.date">
+                · as of
+                {{ formatDate(holdingsData.date, { month: 'short', day: 'numeric' }) }}</template
+              >
+            </p>
+          </div>
+          <RouterLink
+            v-if="portfolioId"
+            :to="{ name: 'portfolio-holdings', params: { id: portfolioId } }"
+            class="icon-btn sm"
+            title="View all holdings"
+            aria-label="View all holdings"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </RouterLink>
+        </template>
+
+        <div v-if="singleHolding" class="holdings-hero">
+          <div class="hero-top">
+            <span class="hero-ticker">{{ singleHolding.ticker }}</span>
+            <span class="hero-chg num" :class="txDirClass(singleHolding.chg)">
+              {{ singleHolding.chg === 0 ? '—' : formatSignedPercent(singleHolding.chg) }}
+            </span>
+          </div>
+          <div class="hero-value num">{{ formatCurrency(singleHolding.value) }}</div>
+          <div class="hero-meta">
+            {{ formatPercent(singleHolding.weight) }} of portfolio
+            <template v-if="singleHolding.name"> · {{ singleHolding.name }}</template>
+          </div>
+        </div>
+
+        <template v-else>
+          <ul class="holdings">
+            <li v-for="(h, i) in visibleHoldings" :key="h.ticker" :style="{ '--i': i }">
+              <div class="h-top">
+                <span class="ticker">{{ h.ticker }}</span>
+                <span class="name">{{ h.name }}</span>
+                <span class="weight num">{{ formatPercent(h.weight) }}</span>
+              </div>
+              <AnimatedBar
+                :value="h.weight"
+                :gradient="'var(--grad-primary-to-gain)'"
+                :delay="240 + i * 90"
+                :animate="mounted"
+                style="margin-top: 6px"
+              />
+              <div class="h-bot">
+                <span class="value num">{{ formatCurrency(h.value) }}</span>
+                <span class="chg num" :class="txDirClass(h.chg)">
+                  {{ h.chg === 0 ? '—' : formatSignedPercent(h.chg) }}
+                </span>
+              </div>
+            </li>
+          </ul>
+          <button
+            v-if="hiddenHoldingsCount > 0"
+            class="show-all-btn"
+            type="button"
+            @click="showAllHoldings = !showAllHoldings"
+          >
+            {{ showAllHoldings ? 'Show less' : `Show all (${displayHoldings.length})` }}
+          </button>
+        </template>
+      </Panel>
+    </section>
+
+    <section class="d-bottom-row">
+      <Panel
+        title="Risk &amp; style metrics"
+        subtitle="Trailing statistics"
+        class="reveal"
+        :style="{ '--d': '320ms' }"
+      >
+        <div class="d-metrics-grid">
+          <div
+            v-for="(m, i) in statisticsData ?? []"
+            :key="m.label"
+            class="dm"
+            :style="{ '--i': i }"
+          >
+            <div class="dm-l">{{ m.label }}</div>
+            <div class="dm-v num">{{ metricValue(m) }}</div>
+          </div>
+        </div>
+      </Panel>
+
+      <Panel class="reveal" :style="{ '--d': '380ms' }">
+        <template #header>
+          <div>
+            <h2>Recent activity</h2>
+            <p class="panel-sub">Latest portfolio actions</p>
+          </div>
+          <RouterLink
+            v-if="portfolioId"
+            :to="{ name: 'portfolio-transactions', params: { id: portfolioId } }"
+            class="icon-btn sm"
+            title="View all transactions"
+            aria-label="View all transactions"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </RouterLink>
+        </template>
+        <ul v-if="recentTransactions.length > 0" class="activity-list">
+          <li
+            v-for="(t, i) in recentTransactions"
+            :key="`${t.batchId}-${t.date}-${t.ticker ?? ''}-${i}`"
+            :style="{ '--i': i }"
+          >
+            <span class="act-date">{{
+              formatDate(t.date + 'T12:00:00Z', {
+                timeZone: 'America/New_York',
+                month: 'short',
+                day: 'numeric'
+              })
+            }}</span>
+            <span class="act-type" :class="`tx-${t.type}`">{{
+              TRANSACTION_TYPE_LABELS[t.type]
+            }}</span>
+            <span class="act-ticker">{{ t.ticker || '—' }}</span>
+            <span class="act-amount num" :class="txAmountClass(t)">
+              {{ t.amount != null ? formatCurrencyCents(t.amount) : '—' }}
+            </span>
+          </li>
+        </ul>
+        <div v-else class="activity-empty">No transactions yet.</div>
+      </Panel>
+    </section>
   </main>
 </template>
 
@@ -652,201 +686,124 @@ function metricValue(m: PortfolioStatistic): string {
   box-shadow: 0 0 0 2px var(--primary-glow);
 }
 
+/* Holdings hero (single-holding case) */
+.holdings-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 4px 8px;
+}
+.hero-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hero-ticker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+}
+.hero-chg {
+  font-size: 14px;
+  font-weight: 500;
+}
+.hero-value {
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+  font-family: 'IBM Plex Mono', monospace;
+  line-height: 1.1;
+}
+.hero-meta {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
 /* Bottom row */
 .d-bottom-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.5fr 1fr;
   gap: 16px;
 }
 
-.dd-list {
+/* Recent activity */
+.activity-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
-.dd-list li {
+.activity-list li {
   display: grid;
-  grid-template-columns: 32px 1px 1fr auto;
-  gap: 14px;
-  padding: 10px 10px;
-  margin: 0 -10px;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 10px 4px;
   border-bottom: 1px solid var(--border);
-  border-radius: 2px;
-  cursor: pointer;
-  position: relative;
-  transition:
-    background 180ms ease,
-    border-color 180ms ease,
-    opacity 180ms ease,
-    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  outline: none;
+  font-size: 12.5px;
 }
-.dd-list li:last-child {
+.activity-list li:last-child {
   border-bottom: none;
 }
-.dd-list li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
-  background: transparent;
-  border-radius: 2px;
-  transition:
-    background 180ms ease,
-    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  transform-origin: center;
-  transform: scaleY(0.4);
-}
-.dd-list li.is-hovered {
-  background: var(--secondary-soft-06);
-  border-bottom-color: var(--secondary-border);
-}
-.dd-list li.is-hovered::before {
-  background: var(--secondary);
-  transform: scaleY(1);
-}
-.dd-list li.is-focused {
-  background: var(--primary-soft-07);
-  border: 1px solid var(--primary-border);
-  border-bottom-color: var(--primary-border);
-}
-.dd-list li.is-focused::before {
-  background: var(--primary);
-  transform: scaleY(1);
-  box-shadow: 0 0 10px var(--primary-glow);
-}
-.dd-list.has-focus li.is-dimmed {
-  opacity: 0.42;
-}
-.dd-list.has-focus li.is-dimmed:hover {
-  opacity: 0.75;
-}
-
-.dd-list li:focus-visible {
-  box-shadow: 0 0 0 2px var(--primary-glow);
-}
-
-.dd-rank {
+.act-date {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--text-3);
-  letter-spacing: 0.08em;
-  padding-top: 2px;
-  transition: color 180ms ease;
+  letter-spacing: 0.04em;
+  min-width: 54px;
 }
-.dd-list li.is-hovered .dd-rank {
-  color: var(--secondary);
+.act-type {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 2px;
+  background: var(--panel-hover);
+  color: var(--text-2);
 }
-.dd-list li.is-focused .dd-rank {
-  color: var(--primary);
-}
-
-.dd-dot {
-  background: var(--border);
-  width: 1px;
-  height: 100%;
-  transition: background 180ms ease;
-}
-.dd-list li.is-hovered .dd-dot {
-  background: var(--secondary);
-}
-.dd-list li.is-focused .dd-dot {
-  background: var(--primary);
-}
-
-.dd-body {
-  min-width: 0;
-}
-.dd-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.dd-depth {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--loss);
-  font-variant-numeric: tabular-nums;
-}
-.dd-status {
-  font-size: 11px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.dd-status.ok {
+.act-type.tx-buy {
+  background: var(--gain-soft-15);
   color: var(--gain);
 }
-.dd-status.warn {
-  color: var(--secondary);
+.act-type.tx-sell {
+  background: var(--loss-soft-15);
+  color: var(--loss);
 }
-.dd-meta {
-  font-size: 12px;
+.act-type.tx-dividend,
+.act-type.tx-interest {
+  background: var(--primary-soft-07);
+  color: var(--primary);
+}
+.act-ticker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+.act-amount {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.act-amount.up {
+  color: var(--gain);
+}
+.act-amount.down {
+  color: var(--loss);
+}
+.act-amount.muted {
+  color: var(--text-5);
+}
+.activity-empty {
+  font-size: 12.5px;
   color: var(--text-3);
-  margin-top: 2px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.dd-meta .arr {
-  color: var(--text-5);
-  margin: 0 6px;
-}
-.dd-hint {
-  margin-left: auto;
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-5);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition:
-    opacity 180ms ease,
-    transform 180ms ease,
-    color 180ms ease;
-}
-.dd-list li.is-hovered .dd-hint,
-.dd-list li.is-focused .dd-hint,
-.dd-list li:focus-visible .dd-hint {
-  opacity: 1;
-  transform: translateX(0);
-}
-.dd-list li.is-hovered .dd-cue {
-  color: var(--secondary);
-}
-.dd-list li.is-focused .dd-cue {
-  color: var(--primary);
-}
-
-.dd-pin {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  color: var(--text-5);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition:
-    opacity 180ms ease,
-    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    color 180ms ease;
-  align-self: center;
-}
-.dd-list li.is-hovered .dd-pin {
-  opacity: 1;
-  transform: translateX(0);
-  color: var(--secondary);
-}
-.dd-list li.is-focused .dd-pin {
-  opacity: 1;
-  transform: translateX(0) rotate(45deg);
-  color: var(--primary);
+  padding: 20px 4px;
+  text-align: center;
 }
 
 /* Metrics grid */
@@ -987,14 +944,6 @@ function metricValue(m: PortfolioStatistic): string {
   .chip,
   .holdings li {
     transition: none !important;
-  }
-  .dd-list li,
-  .dd-list li::before,
-  .dd-rank,
-  .dd-dot,
-  .dd-hint,
-  .dd-pin {
-    transition: none;
   }
 }
 
