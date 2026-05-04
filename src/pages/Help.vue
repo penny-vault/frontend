@@ -179,11 +179,6 @@ function jumpTo(id: string) {
             </dd>
             <dt>Risk</dt>
             <dd>Volatility, Sharpe, Sortino, ulcer index, and the deepest historical drawdowns.</dd>
-            <dt>Factors</dt>
-            <dd>
-              Exposure to market, size, value, momentum, quality, and low-vol factors over multiple
-              windows.
-            </dd>
             <dt>Holdings</dt>
             <dd>
               Current positions, weight, and a holdings-impact view showing each ticker's

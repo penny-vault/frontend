@@ -47,7 +47,6 @@ const tabs = computed(() => {
     { label: 'Returns', to: `/portfolios/${id}/returns` },
     { label: 'vs. Benchmark', to: `/portfolios/${id}/vs-benchmark` },
     { label: 'Risk', to: `/portfolios/${id}/risk` },
-    { label: 'Factors', to: `/portfolios/${id}/factors` },
     { label: 'Holdings', to: `/portfolios/${id}/holdings` },
     { label: 'Transactions', to: `/portfolios/${id}/transactions` },
     { label: 'Settings', to: `/portfolios/${id}/settings` }
