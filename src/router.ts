@@ -32,6 +32,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('./pages/StrategyList.vue')
       },
       {
+        path: 'help',
+        name: 'help',
+        component: () => import('./pages/Help.vue')
+      },
+      {
         path: 'portfolios/new',
         name: 'portfolio-create',
         component: () => import('./pages/PortfolioCreate.vue')

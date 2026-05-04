@@ -82,6 +82,10 @@ const userEmail = computed(() =>
   isMockMode ? 'jeremy@fergason.me' : (auth?.user?.value?.email ?? '')
 )
 const userPicture = computed(() => (isMockMode ? null : (auth?.user?.value?.picture ?? null)))
+const userInitial = computed(() => {
+  const source = userName.value?.trim() || userEmail.value?.trim() || ''
+  return source.charAt(0).toUpperCase() || '?'
+})
 
 function openAccountDialog() {
   accountDialogOpen.value = true
@@ -107,7 +111,8 @@ const userMenuItems = ref([
   },
   {
     label: 'Help',
-    icon: 'pi pi-question-circle'
+    icon: 'pi pi-question-circle',
+    command: () => router.push('/help')
   },
   { separator: true },
   {
@@ -203,7 +208,9 @@ function handleLogout() {
           >
             <i :class="isLight ? 'pi pi-sun' : 'pi pi-moon'" />
           </button>
-          <button class="av" aria-label="User menu" @click="toggleUserMenu">J</button>
+          <button class="av" aria-label="User menu" @click="toggleUserMenu">
+            {{ userInitial }}
+          </button>
           <Menu ref="userMenuRef" :model="userMenuItems" :popup="true" />
         </div>
       </div>
@@ -238,6 +245,21 @@ function handleLogout() {
             <path d="M3 12h4l3-9 4 18 3-9h4" />
           </svg>
           Strategies
+        </button>
+        <button class="sidebar-item" @click="sidebarNav('/help')">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14" />
+            <line x1="12" y1="17" x2="12" y2="17.01" />
+          </svg>
+          Help
         </button>
       </div>
       <div class="sidebar-section">
