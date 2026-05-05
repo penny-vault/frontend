@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import Tag from 'primevue/tag'
-import SelectButton from 'primevue/selectbutton'
 import Panel from '@/components/ui/Panel.vue'
 import AnimatedBar from '@/components/ui/AnimatedBar.vue'
 import KpiCard from '@/components/ui/KpiCard.vue'
@@ -26,7 +25,6 @@ import { usePortfolioSummary } from '@/composables/usePortfolioSummary'
 import { usePortfolioDrawdowns } from '@/composables/usePortfolioDrawdowns'
 import { usePortfolioStatistics } from '@/composables/usePortfolioStatistics'
 import { usePortfolioTrailingReturns } from '@/composables/usePortfolioTrailingReturns'
-import { usePortfolioMetrics } from '@/composables/usePortfolioMetrics'
 import { usePortfolioHoldings } from '@/composables/usePortfolioHoldings'
 import { usePortfolioTransactions } from '@/composables/usePortfolioTransactions'
 import type {
@@ -57,77 +55,6 @@ const { data: summaryData } = usePortfolioSummary(portfolioId)
 const { data: drawdownsData } = usePortfolioDrawdowns(portfolioId)
 const { data: statisticsData } = usePortfolioStatistics(portfolioId)
 const { data: trailingReturnsData } = usePortfolioTrailingReturns(portfolioId)
-
-// Trailing-returns method toggle: TWRR (default) or MWRR.
-type ReturnMethod = 'TWRR' | 'MWRR'
-const returnMethod = ref<ReturnMethod>('TWRR')
-const methodOptions: { label: string; value: ReturnMethod }[] = [
-  { label: 'TWRR', value: 'TWRR' },
-  { label: 'MWRR', value: 'MWRR' }
-]
-// MWRR per window from the metrics endpoint. Loaded eagerly so the toggle
-// is instant; cached by Vue Query so it costs one request per portfolio.
-const TRAILING_WINDOWS = ['ytd', '1yr', '3yr', '5yr', '10yr', 'since_inception']
-const { data: mwrrMetrics } = usePortfolioMetrics(portfolioId, {
-  metric: 'MWRR',
-  window: TRAILING_WINDOWS.join(',')
-})
-
-function mwrrValueFor(window: string): number | null {
-  const m = mwrrMetrics.value
-  if (!m) return null
-  const idx = m.windows.indexOf(window)
-  if (idx < 0) return null
-  return m.summary?.MWRR?.[idx] ?? null
-}
-
-// Latest equity-series date from the measurements query, used to size the
-// YTD window when converting MWRR (annualized) to a cumulative period
-// return. Falls back to "today" while measurements are loading.
-const latestSnapshotDate = computed<Date>(() => {
-  const pts = measurementsData.value?.points ?? []
-  const last = pts[pts.length - 1]
-  return last ? new Date(last.date) : new Date()
-})
-
-const ytdYears = computed(() => {
-  const d = latestSnapshotDate.value
-  const yearStart = Date.UTC(d.getUTCFullYear(), 0, 1)
-  const days = (d.getTime() - yearStart) / (1000 * 60 * 60 * 24)
-  return Math.max(days, 1) / 365.25
-})
-
-// Convert annualized rate r into the cumulative return over n years:
-// (1+r)^n - 1. For YTD this re-expresses MWRR's XIRR in the same unit
-// (cumulative period return) as TWRR's YTD cell, so the column means the
-// same thing in both methods.
-function annualizedToCumulative(r: number | null | undefined, years: number): number | null {
-  if (r == null) return null
-  return Math.pow(1 + r, years) - 1
-}
-
-const displayedTrailingReturns = computed(() => {
-  const rows = trailingReturnsData.value ?? []
-  if (returnMethod.value !== 'MWRR') return rows
-  // MWRR mode: replace the portfolio row's cells with MWRR per window.
-  // pvbt returns MWRR annualized for every window; for sub-annual windows
-  // we convert to cumulative so the column unit matches TWRR mode.
-  // Benchmark and after-tax rows are unchanged — MWRR is undefined for a
-  // passive benchmark, and the tax rows from the API are already TWRR-derived.
-  return rows.map((r) => {
-    if (r.kind !== 'portfolio') return r
-    const ytdMwrr = mwrrValueFor('ytd')
-    return {
-      ...r,
-      ytd: annualizedToCumulative(ytdMwrr, ytdYears.value),
-      oneYear: mwrrValueFor('1yr'),
-      threeYear: mwrrValueFor('3yr'),
-      fiveYear: mwrrValueFor('5yr'),
-      tenYear: mwrrValueFor('10yr'),
-      sinceInception: mwrrValueFor('since_inception')
-    }
-  })
-})
 
 const { data: measurementsData } = usePortfolioMeasurements(portfolioId, measurementsParams)
 const { data: holdingsData } = usePortfolioHoldings(portfolioId)
@@ -182,6 +109,9 @@ const heroValue = computed(() => summaryData.value?.currentValue ?? 0)
 const heroYtd = computed(() => summaryData.value?.ytdReturn ?? 0)
 const heroBenchmarkYtd = computed(() => summaryData.value?.benchmarkYtdReturn ?? null)
 const heroOneYear = computed(() => summaryData.value?.oneYearReturn ?? 0)
+const heroBenchmarkOneYear = computed(
+  () => trailingReturnsData.value?.find((r) => r.kind === 'benchmark')?.oneYear ?? null
+)
 const heroCagr = computed(() => summaryData.value?.cagrSinceInception ?? 0)
 const heroMaxDd = computed(() => summaryData.value?.maxDrawDown ?? 0)
 const heroSharpe = computed(() => summaryData.value?.sharpe ?? 0)
@@ -346,7 +276,11 @@ function metricValue(m: PortfolioStatistic): string {
         <div class="kpi-value small" :class="heroOneYear >= 0 ? 'up' : 'down'">
           {{ formatSignedPercent(heroOneYear) }}
         </div>
-        <div class="kpi-sub muted">bench {{ formatSignedPercent(0.1471) }}</div>
+        <div class="kpi-sub muted">
+          <template v-if="heroBenchmarkOneYear !== null">
+            bench {{ formatSignedPercent(heroBenchmarkOneYear) }}
+          </template>
+        </div>
       </KpiCard>
 
       <KpiCard label="CAGR">
@@ -393,15 +327,6 @@ function metricValue(m: PortfolioStatistic): string {
           <p class="panel-sub">Portfolio and benchmark, with after-tax variants</p>
         </div>
         <div class="chip-row">
-          <SelectButton
-            v-model="returnMethod"
-            :options="methodOptions"
-            option-label="label"
-            option-value="value"
-            :allow-empty="false"
-            aria-label="Return method"
-            class="method-toggle"
-          />
           <Tag
             :value="'Benchmark · ' + portfolioData.benchmark"
             severity="warn"
@@ -429,8 +354,8 @@ function metricValue(m: PortfolioStatistic): string {
           </thead>
           <tbody>
             <tr
-              v-for="(r, i) in displayedTrailingReturns"
-              :key="r.kind"
+              v-for="(r, i) in trailingReturnsData ?? []"
+              :key="r.title"
               :class="`v-${r.kind}`"
               :style="{ '--i': i }"
             >
@@ -932,15 +857,6 @@ function metricValue(m: PortfolioStatistic): string {
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
-}
-.chip-row :deep(.method-toggle) {
-  font-size: 11px;
-}
-.chip-row :deep(.method-toggle .p-togglebutton) {
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
 }
 
 .ret-table-wrap {
