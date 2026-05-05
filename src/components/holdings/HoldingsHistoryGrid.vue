@@ -96,7 +96,7 @@ const columns = computed(() => {
       name: 'Tickers',
       size: narrow ? 120 : 220,
       readonly: true,
-      sortable: false,
+      sortable: true,
       cellProperties: ({ model }: CellTemplateProp) => ({ class: rowClass(model as Row) })
     },
     {
