@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import Tag from 'primevue/tag'
+import SelectButton from 'primevue/selectbutton'
 import Panel from '@/components/ui/Panel.vue'
 import AnimatedBar from '@/components/ui/AnimatedBar.vue'
 import KpiCard from '@/components/ui/KpiCard.vue'
@@ -107,11 +108,30 @@ const chartSeries = computed(() => {
 // Computed hero values from the separate summary endpoint
 const heroValue = computed(() => summaryData.value?.currentValue ?? 0)
 const heroYtd = computed(() => summaryData.value?.ytdReturn ?? 0)
-const heroBenchmarkYtd = computed(() => summaryData.value?.benchmarkYtdReturn ?? null)
+const heroBenchmarkYtd = computed(
+  () => trailingReturnsData.value?.find((r) => r.kind === 'benchmark')?.ytd ?? null
+)
 const heroOneYear = computed(() => summaryData.value?.oneYearReturn ?? 0)
 const heroBenchmarkOneYear = computed(
   () => trailingReturnsData.value?.find((r) => r.kind === 'benchmark')?.oneYear ?? null
 )
+
+type TaxView = 'pre' | 'post'
+const taxView = ref<TaxView>('pre')
+const taxViewOptions: { label: string; value: TaxView }[] = [
+  { label: 'Pre-tax', value: 'pre' },
+  { label: 'After-tax', value: 'post' }
+]
+const hasAfterTaxRows = computed(() =>
+  (trailingReturnsData.value ?? []).some(
+    (r) => r.kind === 'portfolio-tax' || r.kind === 'benchmark-tax'
+  )
+)
+const displayedTrailingReturns = computed(() => {
+  const rows = trailingReturnsData.value ?? []
+  if (taxView.value === 'post') return rows.filter((r) => r.kind.endsWith('-tax'))
+  return rows.filter((r) => !r.kind.endsWith('-tax'))
+})
 const heroCagr = computed(() => summaryData.value?.cagrSinceInception ?? 0)
 const heroMaxDd = computed(() => summaryData.value?.maxDrawDown ?? 0)
 const heroSharpe = computed(() => summaryData.value?.sharpe ?? 0)
@@ -261,14 +281,14 @@ function metricValue(m: PortfolioStatistic): string {
             </svg>
             {{ formatSignedPercent(heroYtd) }}
           </span>
-          <span class="muted"
-            >YTD · vs. bench
-            <strong
-              v-if="heroBenchmarkYtd !== null"
-              :class="heroBenchmarkYtd >= 0 ? 'up' : 'down'"
-              >{{ formatSignedPercent(heroBenchmarkYtd) }}</strong
-            ></span
-          >
+          <span class="muted">
+            YTD<template v-if="heroBenchmarkYtd !== null">
+              · vs. bench
+              <strong :class="heroBenchmarkYtd >= 0 ? 'up' : 'down'">{{
+                formatSignedPercent(heroBenchmarkYtd)
+              }}</strong>
+            </template>
+          </span>
         </div>
       </KpiCard>
 
@@ -324,18 +344,23 @@ function metricValue(m: PortfolioStatistic): string {
       <template #header>
         <div>
           <h2>Trailing returns</h2>
-          <p class="panel-sub">Portfolio and benchmark, with after-tax variants</p>
+          <p class="panel-sub">Portfolio vs. benchmark</p>
         </div>
         <div class="chip-row">
+          <SelectButton
+            v-if="hasAfterTaxRows"
+            v-model="taxView"
+            :options="taxViewOptions"
+            option-label="label"
+            option-value="value"
+            :allow-empty="false"
+            aria-label="Tax view"
+            class="tax-toggle"
+          />
           <Tag
             :value="'Benchmark · ' + portfolioData.benchmark"
             severity="warn"
             :title="'Benchmark index used for comparison'"
-          />
-          <Tag
-            :value="'Tax cost ratio · ' + formatPercent(summaryData?.taxCostRatio ?? 0)"
-            severity="secondary"
-            :title="'Annualized percentage of return lost to taxes (since inception)'"
           />
         </div>
       </template>
@@ -354,7 +379,7 @@ function metricValue(m: PortfolioStatistic): string {
           </thead>
           <tbody>
             <tr
-              v-for="(r, i) in trailingReturnsData ?? []"
+              v-for="(r, i) in displayedTrailingReturns"
               :key="r.title"
               :class="`v-${r.kind}`"
               :style="{ '--i': i }"
@@ -857,6 +882,12 @@ function metricValue(m: PortfolioStatistic): string {
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+}
+.chip-row :deep(.tax-toggle .p-togglebutton) {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
 }
 
 .ret-table-wrap {
