@@ -66,8 +66,10 @@ function onKey(e: KeyboardEvent): void {
   position: relative;
   height: 100%;
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   transition: transform 450ms cubic-bezier(0.4, 0, 0.2, 1);
   transform: rotateY(0deg);
+  will-change: transform;
 }
 .fk-card.fk-flipped {
   transform: rotateY(180deg);
@@ -79,11 +81,14 @@ function onKey(e: KeyboardEvent): void {
 .fk-front {
   position: relative;
   height: 100%;
+  transform: rotateY(0deg);
+  -webkit-transform: rotateY(0deg);
 }
 .fk-back {
   position: absolute;
   inset: 0;
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
 }
 .fk-front :deep(.kpi),
 .fk-back :deep(.kpi) {
