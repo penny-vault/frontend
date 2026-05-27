@@ -67,7 +67,7 @@ export function deletePortfolio(slug: string): Promise<void> {
 }
 
 export function triggerPortfolioRun(slug: string): Promise<BacktestRun> {
-  return apiClient<BacktestRun>(`/portfolios/${slug}/runs`, { method: 'POST' })
+  return apiClient<BacktestRun>(`/portfolios/${slug}/run`, { method: 'POST' })
 }
 
 export function getPortfolioRun(slug: string, runId: string): Promise<BacktestRun> {

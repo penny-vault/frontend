@@ -8,8 +8,10 @@ import { usePortfolioAlerts } from '@/composables/usePortfolioAlerts'
 import {
   updatePortfolio,
   deletePortfolio,
-  sendPortfolioEmailSummary
+  sendPortfolioEmailSummary,
+  triggerPortfolioRun
 } from '@/api/endpoints/portfolios'
+import { usePortfolioRunProgress } from '@/composables/usePortfolioRunProgress'
 import {
   createPortfolioAlert,
   updatePortfolioAlert,
@@ -71,6 +73,42 @@ async function onRename() {
     renameError.value = (e as Error).message
   } finally {
     renaming.value = false
+  }
+}
+
+// --- Rerun ---
+type RunState = 'idle' | 'running' | 'done' | 'error'
+const runState = ref<RunState>('idle')
+const runError = ref<string | null>(null)
+
+const { progressPct, start: startRunProgress } = usePortfolioRunProgress({
+  onSuccess: async () => {
+    const slug = portfolioId.value
+    if (slug) {
+      await queryClient.invalidateQueries({ queryKey: ['portfolio', slug] })
+      await queryClient.invalidateQueries({ queryKey: ['portfolios'] })
+    }
+    runState.value = 'done'
+    setTimeout(() => {
+      if (runState.value === 'done') runState.value = 'idle'
+    }, 4000)
+  },
+  onFailure: (msg) => {
+    runError.value = msg
+    runState.value = 'error'
+  }
+})
+
+async function onRerun() {
+  if (!portfolioId.value || runState.value === 'running') return
+  runState.value = 'running'
+  runError.value = null
+  try {
+    const run = await triggerPortfolioRun(portfolioId.value)
+    await startRunProgress(portfolioId.value, run.id)
+  } catch (e) {
+    runError.value = (e as Error).message
+    runState.value = 'error'
   }
 }
 
@@ -325,14 +363,44 @@ async function onSendEmail() {
       </div>
     </section>
 
-    <!-- Q2: Details -->
+    <!-- Q2: Details + Rerun -->
     <section class="ps-card ps-q2">
-      <div class="ps-section-label">Details</div>
-      <div class="ps-kv-list">
-        <div v-for="row in infoRows" :key="row.label" class="ps-kv-row">
-          <span class="ps-kv-key">{{ row.label }}</span>
-          <span class="ps-kv-val" :class="{ mono: row.mono }">{{ row.value }}</span>
+      <div class="ps-subsection ps-subsection--grow">
+        <div class="ps-section-label">Details</div>
+        <div class="ps-kv-list">
+          <div v-for="row in infoRows" :key="row.label" class="ps-kv-row">
+            <span class="ps-kv-key">{{ row.label }}</span>
+            <span class="ps-kv-val" :class="{ mono: row.mono }">{{ row.value }}</span>
+          </div>
         </div>
+      </div>
+
+      <div class="ps-subsection-divider" />
+
+      <div class="ps-subsection">
+        <div class="ps-section-label">Run backtest</div>
+        <p class="ps-section-desc">
+          Re-run this portfolio against the latest market data. New holdings, transactions, and
+          statistics replace the current snapshot.
+        </p>
+        <div class="ps-run-row">
+          <button
+            type="button"
+            class="ps-btn ps-btn--primary"
+            :disabled="runState === 'running'"
+            @click="onRerun"
+          >
+            {{ runState === 'running' ? 'Running…' : 'Rerun' }}
+          </button>
+          <div v-if="runState === 'running'" class="ps-run-progress">
+            <div class="ps-run-track">
+              <div class="ps-run-bar" :style="{ width: progressPct + '%' }" />
+            </div>
+            <span class="ps-run-pct">{{ progressPct }}%</span>
+          </div>
+        </div>
+        <p v-if="runState === 'done'" class="ps-ok">Run completed. Portfolio updated.</p>
+        <p v-if="runState === 'error' && runError" class="ps-err">{{ runError }}</p>
       </div>
     </section>
 
@@ -666,8 +734,9 @@ async function onSendEmail() {
   color: color-mix(in srgb, var(--loss) 70%, var(--text-3));
 }
 
-/* ── Q1: two subsections stacked ───────────────────── */
-.ps-q1 {
+/* ── Q1/Q2: two subsections stacked ────────────────── */
+.ps-q1,
+.ps-q2 {
   display: flex;
   flex-direction: column;
 }
@@ -728,6 +797,50 @@ async function onSendEmail() {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 12px;
   letter-spacing: 0.01em;
+}
+
+/* ── Run backtest ──────────────────────────────────── */
+.ps-run-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ps-run-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ps-run-track {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ps-run-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: width 400ms ease;
+}
+
+.ps-run-pct {
+  font-size: 11px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ps-run-bar {
+    transition: none;
+  }
 }
 
 /* ── Email card ────────────────────────────────────── */
