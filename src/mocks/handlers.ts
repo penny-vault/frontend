@@ -110,6 +110,25 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 })
   }),
 
+  http.post(`${base}/portfolios/:slug/run`, ({ params }) => {
+    const slug = typeof params.slug === 'string' ? params.slug : String(params.slug)
+    if (!(slug in portfolioMap)) {
+      return HttpResponse.json(
+        { title: 'Not Found', status: 404 },
+        { status: 404, headers: { 'content-type': 'application/problem+json' } }
+      )
+    }
+    return HttpResponse.json(
+      {
+        id: crypto.randomUUID(),
+        portfolioSlug: slug,
+        status: 'queued',
+        startedAt: new Date().toISOString()
+      },
+      { status: 202 }
+    )
+  }),
+
   http.get(`${base}/portfolios/:slug/runs/:runId/progress`, () => {
     const totalSteps = 8
     const stepMs = 400
