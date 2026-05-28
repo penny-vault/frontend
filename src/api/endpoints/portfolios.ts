@@ -1,5 +1,5 @@
 import { apiClient, type ApiFetchOptions } from '../client'
-import type { components } from '../types'
+import type { components, operations } from '../types'
 
 export type Portfolio = components['schemas']['Portfolio']
 export type PortfolioCreated = components['schemas']['PortfolioCreated']
@@ -68,6 +68,23 @@ export function deletePortfolio(slug: string): Promise<void> {
 
 export function triggerPortfolioRun(slug: string): Promise<BacktestRun> {
   return apiClient<BacktestRun>(`/portfolios/${slug}/run`, { method: 'POST' })
+}
+
+export type UpgradePortfolioRequest = NonNullable<
+  operations['upgradePortfolioStrategy']['requestBody']
+>['content']['application/json']
+
+export type UpgradePortfolioResponse =
+  operations['upgradePortfolioStrategy']['responses'][200]['content']['application/json']
+
+export function upgradePortfolio(
+  slug: string,
+  body: UpgradePortfolioRequest = {}
+): Promise<UpgradePortfolioResponse> {
+  return apiClient<UpgradePortfolioResponse>(`/portfolios/${slug}/upgrade`, {
+    method: 'POST',
+    body
+  })
 }
 
 export function getPortfolioRun(slug: string, runId: string): Promise<BacktestRun> {

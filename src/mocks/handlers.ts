@@ -129,6 +129,25 @@ export const handlers = [
     )
   }),
 
+  http.post(`${base}/portfolios/:slug/upgrade`, ({ params }) => {
+    const slug = typeof params.slug === 'string' ? params.slug : String(params.slug)
+    if (!(slug in portfolioMap)) {
+      return HttpResponse.json(
+        { title: 'Not Found', status: 404 },
+        { status: 404, headers: { 'content-type': 'application/problem+json' } }
+      )
+    }
+    return HttpResponse.json(
+      {
+        status: 'upgraded',
+        from_version: 'v1.2.0',
+        to_version: 'v1.3.0',
+        run_id: crypto.randomUUID()
+      },
+      { status: 200 }
+    )
+  }),
+
   http.get(`${base}/portfolios/:slug/runs/:runId/progress`, () => {
     const totalSteps = 8
     const stepMs = 400

@@ -9,7 +9,8 @@ import {
   updatePortfolio,
   deletePortfolio,
   sendPortfolioEmailSummary,
-  triggerPortfolioRun
+  triggerPortfolioRun,
+  upgradePortfolio
 } from '@/api/endpoints/portfolios'
 import { usePortfolioRunProgress } from '@/composables/usePortfolioRunProgress'
 import {
@@ -109,6 +110,111 @@ async function onRerun() {
   } catch (e) {
     runError.value = (e as Error).message
     runState.value = 'error'
+  }
+}
+
+// --- Upgrade strategy ---
+type UpgradeState = 'idle' | 'upgrading' | 'running' | 'already' | 'upgraded' | 'error'
+const upgradeState = ref<UpgradeState>('idle')
+const upgradeMessage = ref<string | null>(null)
+const upgradeError = ref<string | null>(null)
+
+const { progressPct: upgradeProgressPct, start: startUpgradeProgress } = usePortfolioRunProgress({
+  onSuccess: async () => {
+    const slug = portfolioId.value
+    if (slug) {
+      await queryClient.invalidateQueries({ queryKey: ['portfolio', slug] })
+      await queryClient.invalidateQueries({ queryKey: ['portfolios'] })
+    }
+    upgradeState.value = 'upgraded'
+  },
+  onFailure: (msg) => {
+    upgradeError.value = msg
+    upgradeState.value = 'error'
+  }
+})
+
+interface UpgradeErrorBody {
+  error?: 'run_in_progress' | 'parameters_incompatible' | 'strategy_not_installable'
+  from_version?: string
+  to_version?: string
+  incompatibilities?: {
+    removed?: string[]
+    added_without_default?: string[]
+    retyped?: { name?: string; from?: string; to?: string }[]
+  }
+}
+
+function formatUpgradeError(status: number, body: UpgradeErrorBody | undefined): string {
+  if (status === 409 && body?.error === 'run_in_progress') {
+    return 'A backtest is already in progress. Wait for it to finish before upgrading.'
+  }
+  if (status === 409 && body?.error === 'parameters_incompatible') {
+    const inc = body.incompatibilities
+    const parts: string[] = []
+    if (inc?.removed?.length) parts.push(`removed: ${inc.removed.join(', ')}`)
+    if (inc?.added_without_default?.length)
+      parts.push(`new required: ${inc.added_without_default.join(', ')}`)
+    if (inc?.retyped?.length)
+      parts.push(
+        `retyped: ${inc.retyped.map((r) => `${r.name} (${r.from}→${r.to})`).join(', ')}`
+      )
+    const detail = parts.length ? ` (${parts.join('; ')})` : ''
+    return `New strategy version has incompatible parameters${detail}. Edit the portfolio's parameters and try again.`
+  }
+  if (status === 422) {
+    return 'The latest strategy version is not installable on this server.'
+  }
+  return 'Upgrade failed. Please try again.'
+}
+
+async function onUpgrade() {
+  if (!portfolioId.value || upgradeState.value === 'upgrading' || upgradeState.value === 'running')
+    return
+  upgradeState.value = 'upgrading'
+  upgradeMessage.value = null
+  upgradeError.value = null
+  try {
+    const result = await upgradePortfolio(portfolioId.value)
+    if (result.status === 'already_at_latest') {
+      upgradeState.value = 'already'
+      upgradeMessage.value = result.version
+        ? `Already at latest version (${result.version}).`
+        : 'Already at latest version.'
+      setTimeout(() => {
+        if (upgradeState.value === 'already') {
+          upgradeState.value = 'idle'
+          upgradeMessage.value = null
+        }
+      }, 4000)
+      return
+    }
+    // upgraded
+    const versions =
+      result.from_version && result.to_version
+        ? `${result.from_version} → ${result.to_version}`
+        : null
+    upgradeMessage.value = versions ? `Upgraded ${versions}.` : 'Upgraded.'
+    await queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId.value] })
+    await queryClient.invalidateQueries({ queryKey: ['portfolios'] })
+    if (result.run_id) {
+      upgradeState.value = 'running'
+      await startUpgradeProgress(portfolioId.value, result.run_id)
+    } else {
+      upgradeState.value = 'upgraded'
+    }
+  } catch (e) {
+    const err = e as Error & { status?: number; data?: UpgradeErrorBody }
+    if (err.status === 503) {
+      // Upgrade succeeded but the backtest queue is full.
+      upgradeState.value = 'upgraded'
+      upgradeMessage.value = 'Upgraded. Backtest queue is full — rerun manually later.'
+      await queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId.value] })
+      await queryClient.invalidateQueries({ queryKey: ['portfolios'] })
+      return
+    }
+    upgradeError.value = formatUpgradeError(err.status ?? 0, err.data)
+    upgradeState.value = 'error'
   }
 }
 
@@ -387,7 +493,11 @@ async function onSendEmail() {
           <button
             type="button"
             class="ps-btn ps-btn--primary"
-            :disabled="runState === 'running'"
+            :disabled="
+              runState === 'running' ||
+              upgradeState === 'upgrading' ||
+              upgradeState === 'running'
+            "
             @click="onRerun"
           >
             {{ runState === 'running' ? 'Running…' : 'Rerun' }}
@@ -401,6 +511,49 @@ async function onSendEmail() {
         </div>
         <p v-if="runState === 'done'" class="ps-ok">Run completed. Portfolio updated.</p>
         <p v-if="runState === 'error' && runError" class="ps-err">{{ runError }}</p>
+      </div>
+
+      <div class="ps-subsection-divider" />
+
+      <div class="ps-subsection">
+        <div class="ps-section-label">Upgrade strategy</div>
+        <p class="ps-section-desc">
+          Move this portfolio to the latest installed version of its strategy. A fresh backtest is
+          queued automatically.
+        </p>
+        <div class="ps-run-row">
+          <button
+            type="button"
+            class="ps-btn ps-btn--primary"
+            :disabled="
+              upgradeState === 'upgrading' ||
+              upgradeState === 'running' ||
+              runState === 'running'
+            "
+            @click="onUpgrade"
+          >
+            {{
+              upgradeState === 'upgrading'
+                ? 'Upgrading…'
+                : upgradeState === 'running'
+                  ? 'Running…'
+                  : 'Upgrade'
+            }}
+          </button>
+          <div v-if="upgradeState === 'running'" class="ps-run-progress">
+            <div class="ps-run-track">
+              <div class="ps-run-bar" :style="{ width: upgradeProgressPct + '%' }" />
+            </div>
+            <span class="ps-run-pct">{{ upgradeProgressPct }}%</span>
+          </div>
+        </div>
+        <p
+          v-if="upgradeMessage && (upgradeState === 'already' || upgradeState === 'upgraded')"
+          class="ps-ok"
+        >
+          {{ upgradeMessage }}
+        </p>
+        <p v-if="upgradeState === 'error' && upgradeError" class="ps-err">{{ upgradeError }}</p>
       </div>
     </section>
 
