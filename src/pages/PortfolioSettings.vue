@@ -156,9 +156,7 @@ function formatUpgradeError(status: number, body: UpgradeErrorBody | undefined):
     if (inc?.added_without_default?.length)
       parts.push(`new required: ${inc.added_without_default.join(', ')}`)
     if (inc?.retyped?.length)
-      parts.push(
-        `retyped: ${inc.retyped.map((r) => `${r.name} (${r.from}→${r.to})`).join(', ')}`
-      )
+      parts.push(`retyped: ${inc.retyped.map((r) => `${r.name} (${r.from}→${r.to})`).join(', ')}`)
     const detail = parts.length ? ` (${parts.join('; ')})` : ''
     return `New strategy version has incompatible parameters${detail}. Edit the portfolio's parameters and try again.`
   }
@@ -494,9 +492,7 @@ async function onSendEmail() {
             type="button"
             class="ps-btn ps-btn--primary"
             :disabled="
-              runState === 'running' ||
-              upgradeState === 'upgrading' ||
-              upgradeState === 'running'
+              runState === 'running' || upgradeState === 'upgrading' || upgradeState === 'running'
             "
             @click="onRerun"
           >
@@ -526,9 +522,7 @@ async function onSendEmail() {
             type="button"
             class="ps-btn ps-btn--primary"
             :disabled="
-              upgradeState === 'upgrading' ||
-              upgradeState === 'running' ||
-              runState === 'running'
+              upgradeState === 'upgrading' || upgradeState === 'running' || runState === 'running'
             "
             @click="onUpgrade"
           >
