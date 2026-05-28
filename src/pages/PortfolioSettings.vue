@@ -467,60 +467,123 @@ async function onSendEmail() {
       </div>
     </section>
 
-    <!-- Q2: Details + Rerun -->
+    <!-- Q2: Details -->
     <section class="ps-card ps-q2">
-      <div class="ps-subsection ps-subsection--grow">
-        <div class="ps-section-label">Details</div>
-        <div class="ps-kv-list">
-          <div v-for="row in infoRows" :key="row.label" class="ps-kv-row">
-            <span class="ps-kv-key">{{ row.label }}</span>
-            <span class="ps-kv-val" :class="{ mono: row.mono }">{{ row.value }}</span>
-          </div>
+      <div class="ps-section-label">Details</div>
+      <div class="ps-kv-list">
+        <div v-for="row in infoRows" :key="row.label" class="ps-kv-row">
+          <span class="ps-kv-key">{{ row.label }}</span>
+          <span class="ps-kv-val" :class="{ mono: row.mono }">{{ row.value }}</span>
         </div>
       </div>
+    </section>
 
-      <div class="ps-subsection-divider" />
+    <!-- Q3: Actions panel — constructive rows + restricted compartment -->
+    <section class="ps-card ps-q3 act">
+      <header class="act-head">
+        <span class="act-head-label">Actions</span>
+        <span class="act-head-rule" aria-hidden="true" />
+      </header>
 
-      <div class="ps-subsection">
-        <div class="ps-section-label">Run backtest</div>
-        <p class="ps-section-desc">
-          Re-run this portfolio against the latest market data. New holdings, transactions, and
-          statistics replace the current snapshot.
-        </p>
-        <div class="ps-run-row">
+      <div class="act-list">
+        <!-- Rerun -->
+        <article
+          class="act-row"
+          :class="{ 'act-row--busy': runState === 'running' }"
+          :data-state="runState"
+        >
+          <div class="act-mono" aria-hidden="true">
+            <span class="act-mono-char">R</span>
+            <span class="act-mono-pulse" />
+          </div>
+          <div class="act-body">
+            <h3 class="act-title">Rerun backtest</h3>
+            <p class="act-meta">
+              Latest market data <span class="act-meta-sep">·</span> current strategy version
+            </p>
+            <div v-if="runState === 'running'" class="act-progress">
+              <span class="act-progress-track">
+                <span class="act-progress-bar" :style="{ width: progressPct + '%' }" />
+              </span>
+              <span class="act-progress-pct mono"
+                >{{ progressPct.toString().padStart(2, '0') }}%</span
+              >
+            </div>
+            <p v-else-if="runState === 'done'" class="act-status act-status--ok">
+              <span aria-hidden="true">✓</span> Run completed
+            </p>
+            <p v-else-if="runState === 'error' && runError" class="act-status act-status--err">
+              <span aria-hidden="true">!</span> {{ runError }}
+            </p>
+          </div>
           <button
             type="button"
-            class="ps-btn ps-btn--primary"
+            class="act-btn"
             :disabled="
               runState === 'running' || upgradeState === 'upgrading' || upgradeState === 'running'
             "
             @click="onRerun"
           >
-            {{ runState === 'running' ? 'Running…' : 'Rerun' }}
+            {{ runState === 'running' ? 'Running' : 'Rerun' }}
           </button>
-          <div v-if="runState === 'running'" class="ps-run-progress">
-            <div class="ps-run-track">
-              <div class="ps-run-bar" :style="{ width: progressPct + '%' }" />
-            </div>
-            <span class="ps-run-pct">{{ progressPct }}%</span>
+        </article>
+
+        <!-- Upgrade -->
+        <article
+          class="act-row"
+          :class="{ 'act-row--busy': upgradeState === 'running' || upgradeState === 'upgrading' }"
+          :data-state="upgradeState"
+        >
+          <div class="act-mono" aria-hidden="true">
+            <span class="act-mono-char">↑</span>
+            <span class="act-mono-pulse" />
           </div>
-        </div>
-        <p v-if="runState === 'done'" class="ps-ok">Run completed. Portfolio updated.</p>
-        <p v-if="runState === 'error' && runError" class="ps-err">{{ runError }}</p>
-      </div>
-
-      <div class="ps-subsection-divider" />
-
-      <div class="ps-subsection">
-        <div class="ps-section-label">Upgrade strategy</div>
-        <p class="ps-section-desc">
-          Move this portfolio to the latest installed version of its strategy. A fresh backtest is
-          queued automatically.
-        </p>
-        <div class="ps-run-row">
+          <div class="act-body">
+            <h3 class="act-title">Upgrade strategy</h3>
+            <p class="act-meta">
+              <span class="mono">{{ portfolio.strategyVer || '—' }}</span>
+              <span class="act-meta-arrow" aria-hidden="true">→</span>
+              latest installed version
+            </p>
+            <div
+              v-if="upgradeState === 'running' || upgradeState === 'upgrading'"
+              class="act-progress"
+            >
+              <span class="act-progress-track">
+                <span
+                  class="act-progress-bar"
+                  :class="{ 'act-progress-bar--indeterminate': upgradeState === 'upgrading' }"
+                  :style="
+                    upgradeState === 'running' ? { width: upgradeProgressPct + '%' } : undefined
+                  "
+                />
+              </span>
+              <span class="act-progress-pct mono">
+                {{
+                  upgradeState === 'upgrading'
+                    ? '··'
+                    : upgradeProgressPct.toString().padStart(2, '0') + '%'
+                }}
+              </span>
+            </div>
+            <p
+              v-else-if="
+                upgradeMessage && (upgradeState === 'already' || upgradeState === 'upgraded')
+              "
+              class="act-status act-status--ok"
+            >
+              <span aria-hidden="true">✓</span> {{ upgradeMessage }}
+            </p>
+            <p
+              v-else-if="upgradeState === 'error' && upgradeError"
+              class="act-status act-status--err"
+            >
+              <span aria-hidden="true">!</span> {{ upgradeError }}
+            </p>
+          </div>
           <button
             type="button"
-            class="ps-btn ps-btn--primary"
+            class="act-btn"
             :disabled="
               upgradeState === 'upgrading' || upgradeState === 'running' || runState === 'running'
             "
@@ -528,71 +591,71 @@ async function onSendEmail() {
           >
             {{
               upgradeState === 'upgrading'
-                ? 'Upgrading…'
+                ? 'Upgrading'
                 : upgradeState === 'running'
-                  ? 'Running…'
+                  ? 'Running'
                   : 'Upgrade'
             }}
           </button>
-          <div v-if="upgradeState === 'running'" class="ps-run-progress">
-            <div class="ps-run-track">
-              <div class="ps-run-bar" :style="{ width: upgradeProgressPct + '%' }" />
-            </div>
-            <span class="ps-run-pct">{{ upgradeProgressPct }}%</span>
-          </div>
-        </div>
-        <p
-          v-if="upgradeMessage && (upgradeState === 'already' || upgradeState === 'upgraded')"
-          class="ps-ok"
-        >
-          {{ upgradeMessage }}
-        </p>
-        <p v-if="upgradeState === 'error' && upgradeError" class="ps-err">{{ upgradeError }}</p>
+        </article>
       </div>
-    </section>
 
-    <!-- Q3: Danger zone -->
-    <section class="ps-card ps-q3">
-      <div class="ps-section-label ps-section-label--danger">Danger zone</div>
-
-      <template v-if="deleteState === 'idle'">
-        <p class="ps-danger-desc">
-          Permanently removes all runs, holdings, and transaction history. This cannot be undone.
-        </p>
-        <div>
-          <button type="button" class="ps-btn ps-btn--danger" @click="startDelete">
-            Delete portfolio
-          </button>
+      <!-- Restricted compartment: visually quarantined destructive action -->
+      <div class="act-restrict">
+        <div class="act-restrict-tape" aria-hidden="true" />
+        <div class="act-restrict-banner">
+          <span class="act-restrict-glyph" aria-hidden="true">▲</span>
+          <span class="act-restrict-text">Restricted · irreversible</span>
+          <span class="act-restrict-glyph" aria-hidden="true">▲</span>
         </div>
-      </template>
 
-      <template v-else>
-        <p class="ps-danger-desc">
-          Permanently removes all runs, holdings, and transaction history. This cannot be undone.
-        </p>
-        <p class="ps-confirm-prompt">
-          Type <strong>{{ portfolio.name }}</strong> to confirm.
-        </p>
-        <input
-          v-model="deleteInput"
-          class="ps-input ps-input--danger ps-input--block"
-          type="text"
-          placeholder="Portfolio name"
-          autocomplete="off"
-        />
-        <div class="ps-confirm-actions">
-          <button type="button" class="ps-btn ps-btn--ghost" @click="cancelDelete">Cancel</button>
-          <button
-            type="button"
-            class="ps-btn ps-btn--danger"
-            :disabled="!deleteEnabled || deleting"
-            @click="onDelete"
-          >
-            {{ deleting ? 'Deleting…' : 'Delete permanently' }}
-          </button>
-        </div>
-        <p v-if="deleteError" class="ps-err">{{ deleteError }}</p>
-      </template>
+        <template v-if="deleteState === 'idle'">
+          <article class="act-row act-row--danger">
+            <div class="act-mono act-mono--danger" aria-hidden="true">
+              <span class="act-mono-char">✕</span>
+            </div>
+            <div class="act-body">
+              <h3 class="act-title">Delete portfolio</h3>
+              <p class="act-meta">
+                Destroys all runs, holdings, and transactions <span class="act-meta-sep">·</span>
+                cannot be undone
+              </p>
+            </div>
+            <button type="button" class="act-btn act-btn--danger" @click="startDelete">
+              Delete
+            </button>
+          </article>
+        </template>
+
+        <template v-else>
+          <div class="act-confirm">
+            <p class="act-confirm-prompt">
+              Type <strong>{{ portfolio.name }}</strong> to confirm permanent deletion.
+            </p>
+            <input
+              v-model="deleteInput"
+              class="ps-input ps-input--danger ps-input--block act-confirm-input"
+              type="text"
+              placeholder="Portfolio name"
+              autocomplete="off"
+            />
+            <div class="act-confirm-actions">
+              <button type="button" class="ps-btn ps-btn--ghost" @click="cancelDelete">
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="ps-btn ps-btn--danger"
+                :disabled="!deleteEnabled || deleting"
+                @click="onDelete"
+              >
+                {{ deleting ? 'Deleting…' : 'Delete permanently' }}
+              </button>
+            </div>
+            <p v-if="deleteError" class="ps-err">{{ deleteError }}</p>
+          </div>
+        </template>
+      </div>
     </section>
 
     <!-- Q4: Email -->
@@ -830,13 +893,6 @@ async function onSendEmail() {
   }
   .ps-rename-form .ps-btn,
   .ps-email-form .ps-btn {
-    width: 100%;
-  }
-  .ps-confirm-actions {
-    flex-direction: column-reverse;
-    align-items: stretch;
-  }
-  .ps-confirm-actions .ps-btn {
     width: 100%;
   }
   .ps-alert-row {
@@ -1186,37 +1242,363 @@ async function onSendEmail() {
   font-size: 11px;
 }
 
-/* ── Danger zone ───────────────────────────────────── */
-.ps-q3 {
-  border-color: color-mix(in srgb, var(--loss) 28%, transparent);
+/* ── Actions panel (Q3) ─────────────────────────────
+   Operations-console aesthetic. Constructive rows on top,
+   destructive action quarantined inside a restricted
+   compartment with hazard-tape edge. */
+.act {
+  padding: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
-.ps-danger-desc {
-  font-size: 12px;
+/* Header strip with monospace label + trailing rule */
+.act-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 22px 12px;
+}
+.act-head-label {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   color: var(--text-3);
+}
+.act-head-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--text-3) 40%, transparent),
+    transparent
+  );
+}
+
+/* Action list */
+.act-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.act-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 22px;
+  position: relative;
+  transition: background 200ms ease;
+}
+.act-row + .act-row {
+  border-top: 1px solid var(--divider, var(--border));
+}
+.act-row:hover {
+  background: var(--primary-soft-04);
+}
+.act-row--busy {
+  background: var(--primary-soft-05);
+}
+
+/* Monogrammed badge — anchor point for each action */
+.act-mono {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-soft-08);
+  border: 1px solid var(--primary-border);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.act-mono-char {
+  position: relative;
+  z-index: 1;
+  line-height: 1;
+}
+.act-mono-pulse {
+  position: absolute;
+  inset: -1px;
+  border-radius: 4px;
+  border: 1px solid var(--primary);
+  opacity: 0;
+  pointer-events: none;
+}
+.act-row--busy .act-mono-pulse {
+  animation: actPulse 1.4s ease-out infinite;
+}
+@keyframes actPulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+/* Body: title + meta + (progress | status) */
+.act-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.act-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+.act-meta {
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.4;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.act-meta .mono,
+.act-meta-arrow {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+}
+.act-meta-arrow {
+  color: var(--text-4);
+}
+.act-meta-sep {
+  color: var(--text-5);
+  letter-spacing: 0.2em;
+}
+
+/* Inline progress sliver beneath title — slim, telemetric */
+.act-progress {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.act-progress-track {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+.act-progress-bar {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--gain) 100%);
+  border-radius: 1px;
+  transition: width 400ms ease;
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+.act-progress-bar--indeterminate {
+  width: 30% !important;
+  animation: actIndeterminate 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes actIndeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+.act-progress-pct {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* Status line — fits where progress would be, same vertical rhythm */
+.act-status {
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.act-status > span:first-child {
+  font-weight: 700;
+}
+.act-status--ok {
+  color: var(--gain);
+}
+.act-status--err {
+  color: var(--loss);
+}
+
+/* Action button — small, refined */
+.act-btn {
+  height: 30px;
+  padding: 0 14px;
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: center;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease,
+    box-shadow 200ms ease;
+}
+.act-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  box-shadow: 0 0 0 1px var(--primary-glow);
+}
+.act-btn:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+.act-btn:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}
+.act-btn--danger {
+  background: var(--loss);
+  border-color: var(--loss);
+}
+.act-btn--danger:hover:not(:disabled) {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--loss) 50%, transparent);
+}
+
+/* ── Restricted compartment ──────────────────────────
+   Visually quarantined zone. Hazard-tape top edge,
+   recessed surface tinted with --loss-soft-15. */
+.act-restrict {
+  margin-top: auto;
+  position: relative;
+  background: color-mix(in srgb, var(--loss) 5%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--loss) 25%, var(--border));
+  padding-top: 8px;
+}
+.act-restrict-tape {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 6px,
+    color-mix(in srgb, var(--loss) 30%, transparent) 6px,
+    color-mix(in srgb, var(--loss) 30%, transparent) 12px
+  );
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.act-restrict-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 22px 4px;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--loss);
+}
+.act-restrict-glyph {
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  opacity: 0.7;
+  transform: translateY(-1px);
+}
+.act-restrict-text {
+  white-space: nowrap;
+}
+
+.act-row--danger {
+  background: transparent;
+}
+.act-row--danger:hover {
+  background: color-mix(in srgb, var(--loss) 7%, transparent);
+}
+.act-mono--danger {
+  color: var(--loss);
+  background: color-mix(in srgb, var(--loss) 10%, transparent);
+  border-color: color-mix(in srgb, var(--loss) 38%, transparent);
+  font-size: 11px;
+}
+
+/* Confirm flow within the restricted compartment */
+.act-confirm {
+  padding: 8px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.act-confirm-prompt {
+  font-size: 12px;
+  color: var(--text-2);
   line-height: 1.5;
   margin: 0;
 }
-
-.ps-confirm-prompt {
-  font-size: 12px;
-  color: var(--text-2);
-  margin: 0;
-}
-
-.ps-confirm-prompt strong {
+.act-confirm-prompt strong {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 11.5px;
   font-weight: 600;
   color: var(--text-1);
+  background: color-mix(in srgb, var(--loss) 12%, transparent);
+  padding: 1px 6px;
+  border-radius: 2px;
 }
-
-.ps-confirm-actions {
+.act-confirm-input {
+  margin: 2px 0 4px;
+}
+.act-confirm-actions {
   display: flex;
   gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Responsive — drop badge column at narrow widths */
+@media (max-width: 420px) {
+  .act-row {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+  .act-mono {
+    display: none;
+  }
+  .act-confirm-actions {
+    flex-direction: column-reverse;
+  }
+  .act-confirm-actions .ps-btn {
+    width: 100%;
+  }
 }
 
 /* ── Inputs ────────────────────────────────────────── */
