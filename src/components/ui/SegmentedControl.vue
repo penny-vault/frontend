@@ -42,6 +42,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', updateIndicator))
       v-for="opt in options"
       :key="opt.key"
       :class="{ active: modelValue === opt.key }"
+      type="button"
       @click="emit('update:modelValue', opt.key)"
     >
       {{ opt.label }}
