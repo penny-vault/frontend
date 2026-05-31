@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import Button from 'primevue/button'
 import type { HoldingsHistoryEntry } from '@/api/endpoints/portfolios'
 import { formatCurrency, formatNumber, formatPercent, formatDate } from '@/util/format'
+import { computeEntryValue, materialHoldings } from '@/util/holdings'
 
 const props = defineProps<{
   entry: HoldingsHistoryEntry | null
@@ -53,8 +54,8 @@ function ariaSort(key: SortKey): 'none' | 'ascending' | 'descending' {
 
 const rows = computed(() => {
   if (!props.entry) return []
-  const total = props.entry.items.reduce((sum, i) => sum + i.lastTradeValue, 0)
-  const items = props.entry.items.map((i) => ({
+  const total = computeEntryValue(props.entry)
+  const items = materialHoldings(props.entry).map((i) => ({
     ...i,
     weight: total > 0 ? i.lastTradeValue / total : 0
   }))

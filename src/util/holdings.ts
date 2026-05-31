@@ -1,5 +1,47 @@
 import type { HoldingsHistoryEntry, HistoricalHolding } from '@/api/endpoints/portfolios'
 
+const CASH_TICKER = '$CASH'
+
+// Positions worth less than this fraction of the snapshot total are treated as
+// immaterial and hidden from holdings displays so trivial residuals (often
+// cash) don't clutter them.
+const MIN_DISPLAY_WEIGHT = 0.01
+
+/**
+ * The holdings worth at least 1% of the snapshot total. Used by both the
+ * history table and the detail sidebar so they show the same set of positions.
+ */
+export function materialHoldings(entry: HoldingsHistoryEntry): HistoricalHolding[] {
+  const total = computeEntryValue(entry)
+  if (total <= 0) return entry.items
+  return entry.items.filter((i) => i.lastTradeValue / total >= MIN_DISPLAY_WEIGHT)
+}
+
+/**
+ * Total mark-to-market value of a holdings snapshot.
+ *
+ * Prefers the API's authoritative portfolioValue (mark-to-market total, includes
+ * cash). Falls back to summing items[].lastTradeValue — which now also includes
+ * cash — when portfolioValue is null (e.g. a snapshot timestamp that lands off
+ * the computed equity curve).
+ */
+export function computeEntryValue(entry: HoldingsHistoryEntry): number {
+  if (entry.portfolioValue != null) return entry.portfolioValue
+  return entry.items.reduce((sum, i) => sum + i.lastTradeValue, 0)
+}
+
+/**
+ * Compact, comma-separated ticker summary for a snapshot, including $CASH.
+ * Positions worth less than 1% of the snapshot total are omitted to avoid
+ * clutter. e.g. "$CASH, GLD, SPY".
+ */
+export function formatTickers(entry: HoldingsHistoryEntry): string {
+  const symbols = materialHoldings(entry)
+    .map((i) => i.ticker)
+    .sort()
+  return symbols.length ? symbols.join(', ') : '—'
+}
+
 export function buildJustificationColumns(entries: HoldingsHistoryEntry[]): string[] {
   const seen = new Set<string>()
   const order: string[] = []
@@ -25,7 +67,7 @@ export function computeTickerFrequency(entries: HoldingsHistoryEntry[]): TickerF
   const counts = new Map<string, number>()
   for (const e of entries) {
     for (const item of e.items) {
-      if (item.ticker === '$CASH') continue
+      if (item.ticker === CASH_TICKER) continue
       counts.set(item.ticker, (counts.get(item.ticker) ?? 0) + 1)
     }
   }
@@ -71,16 +113,10 @@ export function entriesToCsv(entries: HoldingsHistoryEntry[], annotationKeys: st
   const header = ['Timestamp', 'Tickers', 'Value', ...annotationKeys]
   const lines = [header.join(',')]
   for (const e of entries) {
-    const tickers = e.items
-      .map((i) => i.ticker)
-      .filter((t) => t !== '$CASH')
-      .sort()
-      .join(' ')
-    const totalValue = e.items.reduce((sum, i) => sum + i.lastTradeValue, 0)
     const row = [
       csvCell(e.timestamp),
-      csvCell(tickers),
-      csvCell(totalValue),
+      csvCell(formatTickers(e)),
+      csvCell(computeEntryValue(e)),
       ...annotationKeys.map((k) => csvCell(e.annotations?.[k] ?? ''))
     ]
     lines.push(row.join(','))

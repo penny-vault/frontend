@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import VGrid from '@revolist/vue3-datagrid'
 import type { CellTemplateProp, CellCompareFunc } from '@revolist/revogrid'
 import type { HoldingsHistoryEntry } from '@/api/endpoints/portfolios'
-import { buildJustificationColumns } from '@/util/holdings'
+import { buildJustificationColumns, computeEntryValue, formatTickers } from '@/util/holdings'
 import { formatCurrency, formatDate } from '@/util/format'
 import { useMediaQuery } from '@/util/motion'
 
@@ -38,12 +38,7 @@ function formatAnnotationValue(raw: string): string {
 
 const rows = computed<Row[]>(() =>
   props.entries.map((e) => {
-    const tickers = e.items
-      .map((i) => i.ticker)
-      .filter((t) => t !== '$CASH')
-      .sort()
-      .join(' ')
-    const totalValue = e.items.reduce((sum, i) => sum + i.lastTradeValue, 0)
+    const totalValue = computeEntryValue(e)
     const row: Row = {
       timestamp: e.timestamp,
       dateLabel: formatDate(e.timestamp, {
@@ -52,7 +47,7 @@ const rows = computed<Row[]>(() =>
         day: 'numeric',
         year: 'numeric'
       }),
-      tickers,
+      tickers: formatTickers(e),
       valueLabel: totalValue > 0 ? formatCurrency(totalValue) : '—',
       _totalValue: totalValue
     }

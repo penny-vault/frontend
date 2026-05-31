@@ -3,14 +3,17 @@ import {
   buildJustificationColumns,
   computeTickerFrequency,
   recomputeCalculatorRows,
-  entriesToCsv
+  entriesToCsv,
+  computeEntryValue,
+  formatTickers
 } from '@/util/holdings'
 import type { HoldingsHistoryEntry } from '@/api/endpoints/portfolios'
 
 const entry = (
   timestamp: string,
   items: Array<[string, number, number]>,
-  annotations?: Record<string, string>
+  annotations?: Record<string, string>,
+  portfolioValue?: number | null
 ): HoldingsHistoryEntry => ({
   batchId: 1,
   timestamp,
@@ -20,7 +23,8 @@ const entry = (
     lastTradeValue,
     avgCost: 0
   })),
-  ...(annotations ? { annotations } : {})
+  ...(annotations ? { annotations } : {}),
+  ...(portfolioValue !== undefined ? { portfolioValue } : {})
 })
 
 describe('buildJustificationColumns', () => {
@@ -41,8 +45,14 @@ describe('buildJustificationColumns', () => {
 describe('computeTickerFrequency', () => {
   it('counts entries per ticker excluding $CASH', () => {
     const entries = [
-      entry('2025-01-31T00:00:00Z', [['VTI', 10, 500], ['BND', 20, 500]]),
-      entry('2025-02-28T00:00:00Z', [['VTI', 10, 500], ['$CASH', 0, 500]]),
+      entry('2025-01-31T00:00:00Z', [
+        ['VTI', 10, 500],
+        ['BND', 20, 500]
+      ]),
+      entry('2025-02-28T00:00:00Z', [
+        ['VTI', 10, 500],
+        ['$CASH', 0, 500]
+      ]),
       entry('2025-03-31T00:00:00Z', [['VTI', 10, 1000]])
     ]
     const freq = computeTickerFrequency(entries)
@@ -57,7 +67,10 @@ describe('recomputeCalculatorRows', () => {
   it('scales value proportionally by weight and recomputes shares', () => {
     // VTI: qty=10, marketValue=6000 → price=600/share, weight=6000/10000=0.6
     // BND: qty=20, marketValue=4000 → price=200/share, weight=4000/10000=0.4
-    const e = entry('2025-01-31T00:00:00Z', [['VTI', 10, 6000], ['BND', 20, 4000]])
+    const e = entry('2025-01-31T00:00:00Z', [
+      ['VTI', 10, 6000],
+      ['BND', 20, 4000]
+    ])
     const rows = recomputeCalculatorRows(e, 10000)
     expect(rows[0]).toMatchObject({ ticker: 'VTI', value: 6000, shares: 10 })
     expect(rows[1]).toMatchObject({ ticker: 'BND', value: 4000, shares: 20 })
@@ -70,16 +83,96 @@ describe('recomputeCalculatorRows', () => {
   })
 })
 
+describe('computeEntryValue', () => {
+  it('prefers the authoritative portfolioValue over the item sum', () => {
+    const e = entry(
+      '2025-02-28T00:00:00Z',
+      [
+        ['GLD', 10, 6200],
+        ['$CASH', 0, 4780]
+      ],
+      undefined,
+      10980
+    )
+    expect(computeEntryValue(e)).toBe(10980)
+  })
+
+  it('falls back to summing item values (incl. cash) when portfolioValue is null', () => {
+    const e = entry(
+      '2025-03-31T00:00:00Z',
+      [
+        ['GLD', 10, 6500],
+        ['$CASH', 0, 4800]
+      ],
+      undefined,
+      null
+    )
+    expect(computeEntryValue(e)).toBe(11300)
+  })
+
+  it('falls back when portfolioValue is absent', () => {
+    const e = entry('2025-01-31T00:00:00Z', [
+      ['GLD', 10, 5000],
+      ['SPY', 5, 3000]
+    ])
+    expect(computeEntryValue(e)).toBe(8000)
+  })
+})
+
+describe('formatTickers', () => {
+  it('lists tickers sorted, comma-separated', () => {
+    const e = entry('2025-01-31T00:00:00Z', [
+      ['SPY', 5, 3000],
+      ['GLD', 10, 5000]
+    ])
+    expect(formatTickers(e)).toBe('GLD, SPY')
+  })
+
+  it('includes $CASH inline with no special casing', () => {
+    const e = entry('2025-02-28T00:00:00Z', [
+      ['GLD', 10, 6200],
+      ['$CASH', 0, 4780]
+    ])
+    expect(formatTickers(e)).toBe('$CASH, GLD')
+  })
+
+  it('shows cash alone when there are no other holdings', () => {
+    const e = entry('2025-02-28T00:00:00Z', [['$CASH', 0, 4780]])
+    expect(formatTickers(e)).toBe('$CASH')
+  })
+
+  it('drops cash worth less than 1% of the total', () => {
+    // GLD 9950 + cash 50 of 10000 → cash is 0.5%
+    const e = entry('2025-02-28T00:00:00Z', [
+      ['GLD', 10, 9950],
+      ['$CASH', 0, 50]
+    ])
+    expect(formatTickers(e)).toBe('GLD')
+  })
+
+  it('drops any holding worth less than 1% of the total', () => {
+    // SPY 9950 + GLD 50 of 10000 → GLD is 0.5%
+    const e = entry('2025-02-28T00:00:00Z', [
+      ['SPY', 10, 9950],
+      ['GLD', 1, 50]
+    ])
+    expect(formatTickers(e)).toBe('SPY')
+  })
+})
+
 describe('entriesToCsv', () => {
   it('emits header plus one row per entry with tickers joined and total value', () => {
     const entries = [
-      entry('2025-01-31T00:00:00Z', [['VTI', 10, 600], ['BND', 20, 400]]),
+      entry('2025-01-31T00:00:00Z', [
+        ['VTI', 10, 600],
+        ['BND', 20, 400]
+      ]),
       entry('2025-02-28T00:00:00Z', [['VTI', 10, 700]], { Momentum: '0.82' })
     ]
     const csv = entriesToCsv(entries, ['Momentum'])
     const lines = csv.trim().split('\n')
     expect(lines[0]).toBe('Timestamp,Tickers,Value,Momentum')
-    expect(lines[1]).toBe('2025-01-31T00:00:00Z,BND VTI,1000,')
+    expect(lines[1]).toBe('2025-01-31T00:00:00Z,"BND, VTI",1000,')
     expect(lines[2]).toBe('2025-02-28T00:00:00Z,VTI,700,0.82')
   })
 
