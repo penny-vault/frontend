@@ -78,7 +78,13 @@ const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
 const recentTransactions = computed<Transaction[]>(() => {
   const items = transactionsData.value?.items ?? []
   return [...items]
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.batchId - a.batchId))
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1
+      const typeOrder = (t: Transaction) => (t.type === 'sell' ? 0 : t.type === 'buy' ? 2 : 1)
+      const typeDiff = typeOrder(b) - typeOrder(a)
+      if (typeDiff !== 0) return typeDiff
+      return b.batchId - a.batchId
+    })
     .slice(0, 5)
 })
 

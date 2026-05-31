@@ -116,7 +116,12 @@ const hasAnyTransactions = computed(() => (data.value?.items.length ?? 0) > 0)
 
 type Row = (typeof rows.value)[number]
 
-const compareByDate: CellCompareFunc = (_p, a, b) => (a as Row)._dateMs - (b as Row)._dateMs
+const txTypeOrder = (type: string) => (type === 'sell' ? 0 : type === 'buy' ? 2 : 1)
+const compareByDate: CellCompareFunc = (_p, a, b) => {
+  const dateDiff = (a as Row)._dateMs - (b as Row)._dateMs
+  if (dateDiff !== 0) return dateDiff
+  return txTypeOrder((a as Row).type) - txTypeOrder((b as Row).type)
+}
 const compareByQty: CellCompareFunc = (_p, a, b) => (a as Row)._quantity - (b as Row)._quantity
 const compareByPrice: CellCompareFunc = (_p, a, b) => (a as Row)._price - (b as Row)._price
 const compareByAmount: CellCompareFunc = (_p, a, b) => (a as Row)._amount - (b as Row)._amount
