@@ -5,7 +5,10 @@ import {
   recomputeCalculatorRows,
   entriesToCsv,
   computeEntryValue,
-  formatTickers
+  formatTickers,
+  isPredictionEntry,
+  predictionToEntry,
+  PREDICTION_BATCH_ID
 } from '@/util/holdings'
 import type { HoldingsHistoryEntry } from '@/api/endpoints/portfolios'
 
@@ -182,5 +185,37 @@ describe('entriesToCsv', () => {
     ]
     const csv = entriesToCsv(entries, ['Reason'])
     expect(csv.trim().split('\n')[1]).toBe('2025-01-31T00:00:00Z,VTI,1000,"risk-off, ""bear"""')
+  })
+})
+
+describe('predictionToEntry', () => {
+  const prediction = {
+    date: '2026-05-29',
+    transactions: [],
+    holdings: [
+      { ticker: 'VTI', figi: 'BBG000BDTBL9', quantity: 710, marketValue: 169264, weight: 0.6635 },
+      { ticker: 'BND', figi: null, quantity: 700, marketValue: 50400, weight: 0.1976 }
+    ],
+    totalMarketValue: 219664
+  }
+
+  it('adapts a prediction to the history entry shape', () => {
+    const e = predictionToEntry(prediction)
+    expect(e.batchId).toBe(PREDICTION_BATCH_ID)
+    expect(e.timestamp).toBe('2026-05-29T12:00:00Z')
+    expect(e.portfolioValue).toBe(219664)
+    expect(e.items).toEqual([
+      { ticker: 'VTI', figi: 'BBG000BDTBL9', quantity: 710, avgCost: 0, lastTradeValue: 169264 },
+      { ticker: 'BND', figi: null, quantity: 700, avgCost: 0, lastTradeValue: 50400 }
+    ])
+  })
+
+  it('is recognized by isPredictionEntry while real entries are not', () => {
+    expect(isPredictionEntry(predictionToEntry(prediction))).toBe(true)
+    expect(isPredictionEntry(entry('2025-01-31T00:00:00Z', [['VTI', 10, 1000]]))).toBe(false)
+  })
+
+  it('uses the authoritative total for value computation', () => {
+    expect(computeEntryValue(predictionToEntry(prediction))).toBe(219664)
   })
 })

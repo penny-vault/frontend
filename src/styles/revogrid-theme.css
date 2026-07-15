@@ -38,7 +38,23 @@
 }
 
 .revo-wrap .holdings-row-predicted {
-  opacity: 0.6;
+  background: var(--secondary-soft-06);
+  box-shadow: inset 0 -1px 0 var(--secondary-border);
+}
+.revo-wrap .pred-date {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  line-height: 1.25;
+}
+.revo-wrap .pred-badge {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--secondary);
+  white-space: nowrap;
 }
 .revo-wrap .holdings-cell-up {
   color: var(--gain);

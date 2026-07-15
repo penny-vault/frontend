@@ -7,11 +7,10 @@ import HoldingsHistoryGrid from '@/components/holdings/HoldingsHistoryGrid.vue'
 import HoldingsDetailPanel from '@/components/holdings/HoldingsDetailPanel.vue'
 import HoldingsFrequencyChart from '@/components/holdings/HoldingsFrequencyChart.vue'
 import HoldingsCalculatorDialog from '@/components/holdings/HoldingsCalculatorDialog.vue'
-import PredictionPanel from '@/components/holdings/PredictionPanel.vue'
 import { usePortfolioHoldingsHistory } from '@/composables/usePortfolioHoldingsHistory'
 import { usePortfolioPrediction } from '@/composables/usePortfolioPrediction'
 import { isNotFoundError } from '@/api/client'
-import { buildJustificationColumns, entriesToCsv } from '@/util/holdings'
+import { buildJustificationColumns, entriesToCsv, predictionToEntry } from '@/util/holdings'
 
 const route = useRoute()
 const portfolioId = computed(() => {
@@ -22,11 +21,15 @@ const portfolioId = computed(() => {
 const { data: history, isLoading, error } = usePortfolioHoldingsHistory(portfolioId)
 
 // Prediction is optional: portfolios whose snapshot predates trade
-// predictions 404, in which case the panel is hidden entirely.
+// predictions 404, in which case the predicted row is hidden entirely.
 const { data: prediction, error: predictionError } = usePortfolioPrediction(portfolioId)
 const predictionFailed = computed(
   () => !!predictionError.value && !isNotFoundError(predictionError.value)
 )
+const predictionEntry = computed(() =>
+  prediction.value ? predictionToEntry(prediction.value) : null
+)
+const predictedTransactions = computed(() => prediction.value?.transactions ?? null)
 
 const selectedTimestamp = ref<string | null>(null)
 const hoveredTicker = ref<string | null>(null)
@@ -42,8 +45,15 @@ watchEffect(() => {
 
 const selectedEntry = computed(() => {
   const items = history.value?.items ?? []
-  return items.find((e) => e.timestamp === selectedTimestamp.value) ?? null
+  const found = items.find((e) => e.timestamp === selectedTimestamp.value)
+  if (found) return found
+  const pred = predictionEntry.value
+  return pred && pred.timestamp === selectedTimestamp.value ? pred : null
 })
+
+const selectedIsPrediction = computed(
+  () => !!selectedEntry.value && selectedEntry.value.timestamp === predictionEntry.value?.timestamp
+)
 
 function onSelectEntry(timestamp: string) {
   selectedTimestamp.value = timestamp
@@ -82,8 +92,7 @@ function downloadCsv() {
       Could not load holdings. {{ (error as Error).message }}
     </div>
     <div v-else-if="history" class="ph-content">
-      <PredictionPanel v-if="prediction" :prediction="prediction" />
-      <div v-else-if="predictionFailed" class="error-banner pp-error" role="alert">
+      <div v-if="predictionFailed" class="error-banner pp-error" role="alert">
         Could not load the trade prediction. {{ (predictionError as Error).message }}
       </div>
       <div class="ph-grid">
@@ -91,6 +100,7 @@ function downloadCsv() {
           <HoldingsHistoryGrid
             :entries="history.items"
             :selected-timestamp="selectedTimestamp"
+            :prediction="predictionEntry"
             @select-entry="onSelectEntry"
           />
           <Button
@@ -108,6 +118,8 @@ function downloadCsv() {
           <HoldingsDetailPanel
             :entry="selectedEntry"
             :hovered-ticker="hoveredTicker"
+            :predicted="selectedIsPrediction"
+            :predicted-transactions="predictedTransactions"
             @open-calculator="calculatorOpen = true"
           />
           <HoldingsFrequencyChart :entries="history.items" @hover-ticker="onHoverTicker" />

@@ -1,6 +1,41 @@
-import type { HoldingsHistoryEntry, HistoricalHolding } from '@/api/endpoints/portfolios'
+import type {
+  HoldingsHistoryEntry,
+  HistoricalHolding,
+  PredictionResponse
+} from '@/api/endpoints/portfolios'
 
 const CASH_TICKER = '$CASH'
+
+// Sentinel batchId for the synthetic entry built from a trade prediction; real
+// snapshot batches are numbered from 1.
+export const PREDICTION_BATCH_ID = -1
+
+/**
+ * Adapts a trade prediction to the holdings-history entry shape so the grid
+ * and detail panel can show it alongside real snapshots. Market values are
+ * estimated at the last available close and exclude cash; avgCost is unknown
+ * for predicted positions.
+ */
+export function predictionToEntry(p: PredictionResponse): HoldingsHistoryEntry {
+  return {
+    batchId: PREDICTION_BATCH_ID,
+    // Noon UTC so the America/New_York date labels show the calendar date the
+    // API meant.
+    timestamp: `${p.date}T12:00:00Z`,
+    items: p.holdings.map((h) => ({
+      ticker: h.ticker,
+      figi: h.figi ?? null,
+      quantity: h.quantity,
+      avgCost: 0,
+      lastTradeValue: h.marketValue
+    })),
+    portfolioValue: p.totalMarketValue
+  }
+}
+
+export function isPredictionEntry(e: HoldingsHistoryEntry): boolean {
+  return e.batchId === PREDICTION_BATCH_ID
+}
 
 // Positions worth less than this fraction of the snapshot total are treated as
 // immaterial and hidden from holdings displays so trivial residuals (often

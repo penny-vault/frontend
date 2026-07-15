@@ -1,14 +1,38 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import Button from 'primevue/button'
-import type { HoldingsHistoryEntry } from '@/api/endpoints/portfolios'
-import { formatCurrency, formatNumber, formatPercent, formatDate } from '@/util/format'
+import type { HoldingsHistoryEntry, PredictedTransaction } from '@/api/endpoints/portfolios'
+import {
+  formatCurrency,
+  formatCurrencyCents,
+  formatNumber,
+  formatPercent,
+  formatDate
+} from '@/util/format'
 import { computeEntryValue, materialHoldings } from '@/util/holdings'
 
 const props = defineProps<{
   entry: HoldingsHistoryEntry | null
   hoveredTicker: string | null
+  predicted?: boolean
+  predictedTransactions?: PredictedTransaction[] | null
 }>()
+
+const TYPE_LABELS: Record<string, string> = {
+  buy: 'Buy',
+  sell: 'Sell',
+  dividend: 'Dividend',
+  interest: 'Interest',
+  fee: 'Fee',
+  deposit: 'Deposit',
+  withdrawal: 'Withdrawal',
+  split: 'Split',
+  journal: 'Journal'
+}
+
+function typeLabel(type: string): string {
+  return TYPE_LABELS[type] ?? type.charAt(0).toUpperCase() + type.slice(1)
+}
 
 const emit = defineEmits<{
   'open-calculator': []
@@ -75,7 +99,9 @@ const rows = computed(() => {
   <section class="hdp">
     <header class="hdp-header">
       <div class="hdp-title">
-        Holdings detail for <span class="hdp-date">{{ dateLabel }}</span>
+        <span v-if="predicted" class="hdp-pred-badge">Predicted</span>
+        {{ predicted ? 'Holdings after trading on' : 'Holdings detail for' }}
+        <span class="hdp-date">{{ dateLabel }}</span>
         <span v-if="rows.length" class="hdp-count">
           · {{ rows.length }} {{ rows.length === 1 ? 'position' : 'positions' }}
         </span>
@@ -158,7 +184,41 @@ const rows = computed(() => {
         <div class="num">{{ p.lastTradeValue > 0 ? formatPercent(p.weight) : '—' }}</div>
         <div class="num">{{ p.lastTradeValue > 0 ? formatCurrency(p.lastTradeValue) : '—' }}</div>
       </div>
-      <div v-if="!rows.length" class="hdp-empty">No entry selected.</div>
+      <div v-if="!rows.length" class="hdp-empty">
+        {{
+          predicted
+            ? 'No securities held — the portfolio would be entirely in cash.'
+            : 'No entry selected.'
+        }}
+      </div>
+    </div>
+
+    <div v-if="predicted" class="hdp-orders">
+      <h3 class="hdp-orders-title">Predicted orders</h3>
+      <ul v-if="predictedTransactions?.length" class="hdp-order-list">
+        <li
+          v-for="(t, i) in predictedTransactions"
+          :key="`${t.type}-${t.ticker ?? ''}-${i}`"
+          class="hdp-order"
+        >
+          <div class="hdp-order-main">
+            <span class="hdp-order-type" :class="`tx-${t.type}`">{{ typeLabel(t.type) }}</span>
+            <span class="hdp-order-ticker">{{ t.ticker ?? '—' }}</span>
+            <span class="hdp-order-qty num">
+              {{ t.quantity != null ? formatNumber(t.quantity) : '—' }} ×
+              {{ formatCurrencyCents(t.price) }}
+            </span>
+            <span class="hdp-order-amount num">{{ formatCurrencyCents(t.amount) }}</span>
+          </div>
+          <p v-if="t.justification" class="hdp-order-why">{{ t.justification }}</p>
+        </li>
+      </ul>
+      <p v-else class="hdp-orders-empty">
+        No trades predicted for this date. Positions carry forward unchanged.
+      </p>
+      <p class="hdp-pred-note">
+        Prices estimated at last close. Cash holds the remainder and is not listed.
+      </p>
     </div>
   </section>
 </template>
@@ -255,6 +315,98 @@ const rows = computed(() => {
   text-align: center;
   color: var(--text-3);
   font-size: 13px;
+}
+.hdp-pred-badge {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--secondary);
+  background: var(--secondary-soft-06);
+  border: 1px dashed var(--secondary-border);
+  border-radius: 2px;
+  padding: 2px 7px;
+  margin-right: 6px;
+}
+.hdp-orders {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--secondary-border);
+}
+.hdp-orders-title {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+.hdp-order-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.hdp-order {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.hdp-order:last-child {
+  border-bottom: none;
+}
+.hdp-order-main {
+  display: grid;
+  grid-template-columns: 64px 1fr auto 100px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.hdp-order-type {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 2px;
+  background: var(--panel-hover);
+  color: var(--text-2);
+  text-align: center;
+}
+.hdp-order-type.tx-buy {
+  background: var(--gain-soft-15);
+  color: var(--gain);
+}
+.hdp-order-type.tx-sell {
+  background: var(--loss-soft-15);
+  color: var(--loss);
+}
+.hdp-order-ticker {
+  font-weight: 500;
+  color: var(--text-1);
+}
+.hdp-order-qty {
+  color: var(--text-3);
+  text-align: right;
+}
+.hdp-order-amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.hdp-order-why {
+  font-size: 12px;
+  color: var(--text-4);
+  margin-top: 4px;
+  padding-left: 74px;
+}
+.hdp-orders-empty {
+  padding: 16px 0;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+}
+.hdp-pred-note {
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--text-5);
 }
 
 @media (max-width: 720px) {

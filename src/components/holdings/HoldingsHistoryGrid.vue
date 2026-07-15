@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import VGrid from '@revolist/vue3-datagrid'
-import type { CellTemplateProp, CellCompareFunc } from '@revolist/revogrid'
+import type { CellTemplateProp, CellCompareFunc, HyperFunc, VNode } from '@revolist/revogrid'
 import type { HoldingsHistoryEntry } from '@/api/endpoints/portfolios'
 import { buildJustificationColumns, computeEntryValue, formatTickers } from '@/util/holdings'
 import { formatCurrency, formatDate } from '@/util/format'
@@ -12,6 +12,7 @@ const isNarrow = useMediaQuery('(max-width: 720px)')
 const props = defineProps<{
   entries: HoldingsHistoryEntry[]
   selectedTimestamp: string | null
+  prediction?: HoldingsHistoryEntry | null
 }>()
 
 const emit = defineEmits<{
@@ -24,6 +25,7 @@ interface Row {
   tickers: string
   valueLabel: string
   _totalValue: number
+  _predicted: boolean
   [key: string]: unknown
 }
 
@@ -36,28 +38,33 @@ function formatAnnotationValue(raw: string): string {
   return raw
 }
 
-const rows = computed<Row[]>(() =>
-  props.entries.map((e) => {
-    const totalValue = computeEntryValue(e)
-    const row: Row = {
-      timestamp: e.timestamp,
-      dateLabel: formatDate(e.timestamp, {
-        timeZone: 'America/New_York',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      }),
-      tickers: formatTickers(e),
-      valueLabel: totalValue > 0 ? formatCurrency(totalValue) : '—',
-      _totalValue: totalValue
-    }
-    for (const key of justificationKeys.value) {
-      row[`just_${key}`] = formatAnnotationValue(e.annotations?.[key] ?? '')
-      row[`_raw_${key}`] = parseFloat(e.annotations?.[key] ?? '') || 0
-    }
-    return row
-  })
-)
+function toRow(e: HoldingsHistoryEntry, predicted: boolean): Row {
+  const totalValue = computeEntryValue(e)
+  const row: Row = {
+    timestamp: e.timestamp,
+    dateLabel: formatDate(e.timestamp, {
+      timeZone: 'America/New_York',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }),
+    tickers: formatTickers(e),
+    valueLabel: totalValue > 0 ? formatCurrency(totalValue) : '—',
+    _totalValue: totalValue,
+    _predicted: predicted
+  }
+  for (const key of justificationKeys.value) {
+    row[`just_${key}`] = formatAnnotationValue(e.annotations?.[key] ?? '')
+    row[`_raw_${key}`] = parseFloat(e.annotations?.[key] ?? '') || 0
+  }
+  return row
+}
+
+const rows = computed<Row[]>(() => props.entries.map((e) => toRow(e, false)))
+
+// The prediction is pinned above the history so it stays visible and on top
+// regardless of the active sort.
+const pinnedRows = computed<Row[]>(() => (props.prediction ? [toRow(props.prediction, true)] : []))
 
 const compareByTimestamp: CellCompareFunc = (_prop, a, b) =>
   new Date((a as Row).timestamp).getTime() - new Date((b as Row).timestamp).getTime()
@@ -70,20 +77,35 @@ function compareByAnnotation(key: string): CellCompareFunc {
     ((a as Row)[`_raw_${key}`] as number) - ((b as Row)[`_raw_${key}`] as number)
 }
 
+const dateCellTemplate = (h: HyperFunc<VNode>, { model }: CellTemplateProp) => {
+  const m = model as Row
+  if (!m._predicted) return m.dateLabel
+  return h('div', { class: 'pred-date' }, [
+    h('span', { class: 'pred-badge' }, 'Predicted upcoming'),
+    h('span', {}, m.dateLabel)
+  ])
+}
+
 const columns = computed(() => {
   const rowClass = (model: Row) =>
-    model.timestamp === props.selectedTimestamp ? 'holdings-row-selected' : ''
+    [
+      model.timestamp === props.selectedTimestamp ? 'holdings-row-selected' : '',
+      model._predicted ? 'holdings-row-predicted' : ''
+    ]
+      .filter(Boolean)
+      .join(' ')
   const narrow = isNarrow.value
   const base = [
     {
       prop: 'dateLabel',
       name: 'Date',
-      size: narrow ? 110 : 130,
+      size: narrow ? 130 : 160,
       pin: 'colPinStart' as const,
       readonly: true,
       sortable: true,
       order: 'desc' as const,
       cellCompare: compareByTimestamp,
+      cellTemplate: dateCellTemplate,
       cellProperties: ({ model }: CellTemplateProp) => ({ class: rowClass(model as Row) })
     },
     {
@@ -128,6 +150,7 @@ function onCellFocus(e: CustomEvent) {
   <div class="revo-wrap holdings-history-grid" :class="{ 'is-narrow': isNarrow }">
     <v-grid
       :source="rows"
+      :pinned-top-source="pinnedRows"
       :columns="columns"
       :readonly="true"
       :row-size="40"
