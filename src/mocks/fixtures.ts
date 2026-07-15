@@ -10,6 +10,7 @@ import type {
   HoldingsResponse,
   HoldingsHistoryEntry,
   HoldingsHistoryResponse,
+  PredictionResponse,
   TransactionsResponse,
   HoldingsImpactResponse,
   PortfolioFactorAnalysis,
@@ -145,7 +146,6 @@ export const portfolioFixture3: Portfolio = {
 export const summaryFixture1: PortfolioSummary = {
   currentValue: 310760.55,
   ytdReturn: 0.0714,
-  benchmarkYtdReturn: 0.0538,
   oneYearReturn: 0.1832,
   cagrSinceInception: 0.1147,
   maxDrawDown: -0.3387,
@@ -161,7 +161,6 @@ export const summaryFixture1: PortfolioSummary = {
 export const summaryFixture2: PortfolioSummary = {
   currentValue: 142380.22,
   ytdReturn: 0.0198,
-  benchmarkYtdReturn: 0.0142,
   oneYearReturn: 0.0412,
   cagrSinceInception: 0.0318,
   maxDrawDown: -0.0843,
@@ -177,7 +176,6 @@ export const summaryFixture2: PortfolioSummary = {
 export const summaryFixture3: PortfolioSummary = {
   currentValue: 87450.1,
   ytdReturn: 0.0532,
-  benchmarkYtdReturn: 0.0389,
   oneYearReturn: 0.1214,
   cagrSinceInception: 0.0891,
   maxDrawDown: -0.1892,
@@ -351,22 +349,22 @@ export const portfolioListFixture: PortfolioListItem[] = [
     ...portfolioFixture,
     inceptionDate: '2015-01-02',
     currentValue: summaryFixture1.currentValue,
-    ytdReturn: summaryFixture1.ytdReturn,
-    maxDrawDown: summaryFixture1.maxDrawDown
+    ytdReturn: summaryFixture1.ytdReturn ?? null,
+    maxDrawDown: summaryFixture1.maxDrawDown ?? null
   },
   {
     ...portfolioFixture2,
     inceptionDate: '2019-06-15',
     currentValue: summaryFixture2.currentValue,
-    ytdReturn: summaryFixture2.ytdReturn,
-    maxDrawDown: summaryFixture2.maxDrawDown
+    ytdReturn: summaryFixture2.ytdReturn ?? null,
+    maxDrawDown: summaryFixture2.maxDrawDown ?? null
   },
   {
     ...portfolioFixture3,
     inceptionDate: '2021-01-04',
     currentValue: summaryFixture3.currentValue,
-    ytdReturn: summaryFixture3.ytdReturn,
-    maxDrawDown: summaryFixture3.maxDrawDown
+    ytdReturn: summaryFixture3.ytdReturn ?? null,
+    maxDrawDown: summaryFixture3.maxDrawDown ?? null
   }
 ]
 
@@ -487,6 +485,59 @@ export const holdingsHistoryMap: Record<string, HoldingsHistoryResponse> = {
   [PORTFOLIO_SLUG_1]: holdingsHistoryFixture1,
   [PORTFOLIO_SLUG_2]: holdingsHistoryFixture2,
   [PORTFOLIO_SLUG_3]: holdingsHistoryFixture3
+}
+
+// -----------------------------------------------------------------------------
+// Trade predictions — next scheduled trade date. Portfolio 3 has no entry so
+// the endpoint 404s for it, mimicking a snapshot without a prediction.
+// -----------------------------------------------------------------------------
+
+export const predictionFixture1: PredictionResponse = {
+  date: '2026-05-29',
+  transactions: [
+    {
+      type: 'sell',
+      ticker: 'VEA',
+      figi: 'BBG000BK5W78',
+      quantity: 420,
+      price: 52.1,
+      amount: 21882,
+      justification: 'Momentum rank fell below hold threshold'
+    },
+    {
+      type: 'buy',
+      ticker: 'VTI',
+      figi: 'BBG000BDTBL9',
+      quantity: 80,
+      price: 238.4,
+      amount: 19072,
+      justification: 'Rebalance to target weight'
+    }
+  ],
+  holdings: [
+    { ticker: 'VTI', figi: 'BBG000BDTBL9', quantity: 710, marketValue: 169264, weight: 0.6635 },
+    { ticker: 'BND', figi: 'BBG000BDTR35', quantity: 700, marketValue: 50400, weight: 0.1976 },
+    { ticker: 'VEA', figi: 'BBG000BK5W78', quantity: 680, marketValue: 35428, weight: 0.1389 }
+  ],
+  totalMarketValue: 255092
+}
+
+// No trades predicted: transactions is legitimately empty and positions
+// carry forward unchanged.
+export const predictionFixture2: PredictionResponse = {
+  date: '2026-06-01',
+  transactions: [],
+  holdings: [
+    { ticker: 'BND', figi: 'BBG000BDTR35', quantity: 900, marketValue: 64800, weight: 0.5273 },
+    { ticker: 'VTIP', figi: 'BBG000BHCYJ1', quantity: 700, marketValue: 34300, weight: 0.2791 },
+    { ticker: 'SHY', figi: 'BBG000BJKYW3', quantity: 280, marketValue: 23800, weight: 0.1936 }
+  ],
+  totalMarketValue: 122900
+}
+
+export const predictionMap: Record<string, PredictionResponse> = {
+  [PORTFOLIO_SLUG_1]: predictionFixture1,
+  [PORTFOLIO_SLUG_2]: predictionFixture2
 }
 
 // -----------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-import { ofetch, type FetchOptions } from 'ofetch'
+import { FetchError, ofetch, type FetchOptions } from 'ofetch'
 
 let getAuthToken: (() => Promise<string | null>) | null = null
 let onUnauthenticated: (() => void) | null = null
@@ -31,6 +31,10 @@ export const apiClient = ofetch.create({
 })
 
 export type ApiFetchOptions = FetchOptions<'json'>
+
+export function isNotFoundError(err: unknown): boolean {
+  return err instanceof FetchError && err.statusCode === 404
+}
 
 export async function fetchWithAuth(url: string, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers)

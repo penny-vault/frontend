@@ -7,7 +7,10 @@ import HoldingsHistoryGrid from '@/components/holdings/HoldingsHistoryGrid.vue'
 import HoldingsDetailPanel from '@/components/holdings/HoldingsDetailPanel.vue'
 import HoldingsFrequencyChart from '@/components/holdings/HoldingsFrequencyChart.vue'
 import HoldingsCalculatorDialog from '@/components/holdings/HoldingsCalculatorDialog.vue'
+import PredictionPanel from '@/components/holdings/PredictionPanel.vue'
 import { usePortfolioHoldingsHistory } from '@/composables/usePortfolioHoldingsHistory'
+import { usePortfolioPrediction } from '@/composables/usePortfolioPrediction'
+import { isNotFoundError } from '@/api/client'
 import { buildJustificationColumns, entriesToCsv } from '@/util/holdings'
 
 const route = useRoute()
@@ -17,6 +20,13 @@ const portfolioId = computed(() => {
 })
 
 const { data: history, isLoading, error } = usePortfolioHoldingsHistory(portfolioId)
+
+// Prediction is optional: portfolios whose snapshot predates trade
+// predictions 404, in which case the panel is hidden entirely.
+const { data: prediction, error: predictionError } = usePortfolioPrediction(portfolioId)
+const predictionFailed = computed(
+  () => !!predictionError.value && !isNotFoundError(predictionError.value)
+)
 
 const selectedTimestamp = ref<string | null>(null)
 const hoveredTicker = ref<string | null>(null)
@@ -71,31 +81,37 @@ function downloadCsv() {
     <div v-else-if="error" class="error-banner" role="alert">
       Could not load holdings. {{ (error as Error).message }}
     </div>
-    <div v-else-if="history" class="ph-grid">
-      <div class="ph-left">
-        <HoldingsHistoryGrid
-          :entries="history.items"
-          :selected-timestamp="selectedTimestamp"
-          @select-entry="onSelectEntry"
-        />
-        <Button
-          class="ph-export"
-          icon="pi pi-download"
-          text
-          rounded
-          size="small"
-          aria-label="Export CSV"
-          title="Export CSV"
-          @click="downloadCsv"
-        />
+    <div v-else-if="history" class="ph-content">
+      <PredictionPanel v-if="prediction" :prediction="prediction" />
+      <div v-else-if="predictionFailed" class="error-banner pp-error" role="alert">
+        Could not load the trade prediction. {{ (predictionError as Error).message }}
       </div>
-      <div class="ph-right">
-        <HoldingsDetailPanel
-          :entry="selectedEntry"
-          :hovered-ticker="hoveredTicker"
-          @open-calculator="calculatorOpen = true"
-        />
-        <HoldingsFrequencyChart :entries="history.items" @hover-ticker="onHoverTicker" />
+      <div class="ph-grid">
+        <div class="ph-left">
+          <HoldingsHistoryGrid
+            :entries="history.items"
+            :selected-timestamp="selectedTimestamp"
+            @select-entry="onSelectEntry"
+          />
+          <Button
+            class="ph-export"
+            icon="pi pi-download"
+            text
+            rounded
+            size="small"
+            aria-label="Export CSV"
+            title="Export CSV"
+            @click="downloadCsv"
+          />
+        </div>
+        <div class="ph-right">
+          <HoldingsDetailPanel
+            :entry="selectedEntry"
+            :hovered-ticker="hoveredTicker"
+            @open-calculator="calculatorOpen = true"
+          />
+          <HoldingsFrequencyChart :entries="history.items" @hover-ticker="onHoverTicker" />
+        </div>
       </div>
     </div>
 
@@ -110,6 +126,15 @@ function downloadCsv() {
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+.ph-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.pp-error {
+  margin-bottom: 20px;
 }
 .ph-grid {
   display: grid;

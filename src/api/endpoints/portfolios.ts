@@ -19,6 +19,9 @@ export type Transaction = components['schemas']['Transaction']
 export type TransactionsResponse = components['schemas']['TransactionsResponse']
 export type TransactionType = Transaction['type']
 export type BacktestRun = components['schemas']['BacktestRun']
+export type PredictionResponse = components['schemas']['PredictionResponse']
+export type PredictedTransaction = components['schemas']['PredictedTransaction']
+export type PredictedHolding = components['schemas']['PredictedHolding']
 export type PortfolioMetrics = components['schemas']['PortfolioMetrics']
 export type MetricGroup = components['schemas']['MetricGroup']
 export type RecalculatingResponse = components['schemas']['RecalculatingResponse']
@@ -138,6 +141,14 @@ export function getPortfolioPerformance(
 
 export function getPortfolioHoldings(slug: string): Promise<MaybeRecalculating<HoldingsResponse>> {
   return getOrRecalculating<HoldingsResponse>(`/portfolios/${slug}/holdings`)
+}
+
+// 404 means the portfolio's snapshot predates trade predictions; callers
+// should treat it as "not available" rather than an error.
+export function getPortfolioPrediction(
+  slug: string
+): Promise<MaybeRecalculating<PredictionResponse>> {
+  return getOrRecalculating<PredictionResponse>(`/portfolios/${slug}/prediction`)
 }
 
 export function getPortfolioHoldingsHistory(

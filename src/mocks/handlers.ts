@@ -9,6 +9,7 @@ import {
   performanceFixture,
   holdingsMap,
   holdingsHistoryMap,
+  predictionMap,
   transactionsMap,
   holdingsImpactMap,
   factorMap,
@@ -292,6 +293,18 @@ export const handlers = [
       )
     }
     return HttpResponse.json(history)
+  }),
+
+  http.get(`${base}/portfolios/:slug/prediction`, ({ params }) => {
+    const slug = typeof params.slug === 'string' ? params.slug : String(params.slug)
+    const prediction = predictionMap[slug]
+    if (!prediction) {
+      return HttpResponse.json(
+        { title: 'Not Found', status: 404 },
+        { status: 404, headers: { 'content-type': 'application/problem+json' } }
+      )
+    }
+    return HttpResponse.json(prediction)
   }),
 
   http.get(`${base}/portfolios/:slug/holdings-impact`, ({ params }) => {

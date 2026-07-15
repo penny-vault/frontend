@@ -339,6 +339,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/portfolios/{slug}/prediction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Predicted trades and holdings for the next scheduled trade date
+         * @description Returns the strategy's prediction for its next scheduled trade date
+         *     after the backtest window ends (pvbt schema 6+). `transactions` may
+         *     legitimately be empty: it means the strategy would not trade, not
+         *     that data is missing. Prices and market values are based on the last
+         *     available close forward-filled to the predicted date, not real
+         *     future prices. Responds 404 when the snapshot recorded no prediction
+         *     (files written by pvbt releases before v0.12.0).
+         */
+        get: operations["getPortfolioPrediction"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/portfolios/{slug}/alerts": {
         parameters: {
             query?: never;
@@ -562,34 +588,47 @@ export interface components {
              */
             runId?: string;
         };
-        /** @description Top-line numbers for the KPI strip. */
+        /**
+         * @description Top-line numbers for the KPI strip. Every field is sourced verbatim
+         *     from pvbt's `metrics` table — pv-api performs no local computation.
+         *     Scalar fields are nullable: a null value means pvbt did not emit
+         *     that metric for the snapshot (typically because the window did not
+         *     span enough data, or the snapshot pre-dates the metric).
+         */
         PortfolioSummary: {
             /** Format: double */
             currentValue: number;
+            /**
+             * Format: double
+             * @description TWRR for the year-to-date window (cumulative).
+             */
+            ytdReturn?: number | null;
+            /**
+             * Format: double
+             * @description TWRR for the trailing one-year window (cumulative).
+             */
+            oneYearReturn?: number | null;
+            /**
+             * Format: double
+             * @description Annualized return over the full snapshot.
+             */
+            cagrSinceInception?: number | null;
             /** Format: double */
-            ytdReturn: number;
+            maxDrawDown?: number | null;
             /** Format: double */
-            benchmarkYtdReturn: number;
+            sharpe?: number | null;
             /** Format: double */
-            oneYearReturn: number;
+            sortino?: number | null;
             /** Format: double */
-            cagrSinceInception: number;
+            beta?: number | null;
             /** Format: double */
-            maxDrawDown: number;
+            alpha?: number | null;
             /** Format: double */
-            sharpe: number;
+            stdDev?: number | null;
             /** Format: double */
-            sortino: number;
+            ulcerIndex?: number | null;
             /** Format: double */
-            beta: number;
-            /** Format: double */
-            alpha: number;
-            /** Format: double */
-            stdDev: number;
-            /** Format: double */
-            ulcerIndex?: number;
-            /** Format: double */
-            taxCostRatio: number;
+            taxCostRatio?: number | null;
         };
         Drawdown: {
             /**
@@ -617,11 +656,29 @@ export interface components {
         };
         PortfolioStatistic: {
             label: string;
-            /** Format: double */
-            value: number;
+            /**
+             * Format: double
+             * @description Null when the underlying metric is absent from the snapshot.
+             */
+            value: number | null;
             format: components["schemas"]["MetricFormat"];
         };
-        /** @description Map of pvbt metric name to array of values, one per requested window. */
+        /**
+         * @description Map of pvbt metric name to array of values, one per requested window.
+         *     Cells are null when pvbt did not write a value for that (metric,
+         *     window) pair — typically because the snapshot did not span the
+         *     window.
+         *
+         *     Return-style metric units by category:
+         *       * `TWRR`, `BenchmarkTWRR`, `AfterTaxTWRR`, `BenchmarkAfterTaxTWRR`:
+         *         cumulative period return for the window (e.g. 0.1234 = +12.34%).
+         *       * `CAGR`, `BenchmarkCAGR`, `AfterTaxCAGR`, `BenchmarkAfterTaxCAGR`:
+         *         annualized return (e.g. 0.0817 = +8.17% per year).
+         *       * `MWRR`, `BenchmarkMWRR`: always annualized (XIRR convention).
+         *         Sub-annual windows (`wtd`, `mtd`, `ytd`) produce extrapolated
+         *         rates; interpret with care.
+         *     Other metrics carry pvbt's documented units.
+         */
         MetricGroup: {
             [key: string]: (number | null)[];
         };
@@ -753,6 +810,60 @@ export interface components {
         };
         TransactionsResponse: {
             items: components["schemas"]["Transaction"][];
+        };
+        /**
+         * @description An order the strategy is predicted to place on the prediction date.
+         *     Prices are the last available close forward-filled to that date.
+         */
+        PredictedTransaction: {
+            /** @description Same values as Transaction.type (buy, sell, ...). */
+            type: string;
+            ticker?: string | null;
+            figi?: string | null;
+            /** Format: double */
+            quantity?: number;
+            /** Format: double */
+            price?: number;
+            /** Format: double */
+            amount?: number;
+            justification?: string | null;
+        };
+        PredictedHolding: {
+            /** @example VTI */
+            ticker: string;
+            figi?: string | null;
+            /** Format: double */
+            quantity: number;
+            /**
+             * Format: double
+             * @description Marked at the last available close.
+             */
+            marketValue: number;
+            /**
+             * Format: double
+             * @description marketValue / totalMarketValue, ignoring cash. 0 when totalMarketValue is 0.
+             */
+            weight: number;
+        };
+        PredictionResponse: {
+            /**
+             * Format: date
+             * @description Next scheduled trade date after the backtest window ends.
+             */
+            date: string;
+            /** @description Orders the strategy would place on `date`. Empty means the strategy would not trade. */
+            transactions: components["schemas"]["PredictedTransaction"][];
+            /**
+             * @description Positions the portfolio would hold after the predicted trades
+             *     execute, sorted by ticker then FIGI. Cash is not listed; it is
+             *     the remainder.
+             */
+            holdings: components["schemas"]["PredictedHolding"][];
+            /**
+             * Format: double
+             * @description Sum of the predicted holdings' market values (cash excluded).
+             */
+            totalMarketValue: number;
         };
         HoldingsHistoryEntry: {
             /** Format: int64 */
@@ -1640,9 +1751,9 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description One or more windows to include. Repeatable. Default is since_inception. */
-                window?: ("since_inception" | "5yr" | "3yr" | "1yr" | "ytd" | "mtd" | "wtd")[];
+                window?: ("since_inception" | "10yr" | "5yr" | "3yr" | "1yr" | "ytd" | "mtd" | "wtd")[];
                 /** @description One or more pvbt PascalCase metric names to include. Repeatable. Default is all metrics. */
-                metric?: ("TWRR" | "MWRR" | "Sharpe" | "Sortino" | "Calmar" | "KellerRatio" | "MaxDrawdown" | "StdDev" | "Beta" | "Alpha" | "TrackingError" | "DownsideDeviation" | "InformationRatio" | "Treynor" | "UlcerIndex" | "ExcessKurtosis" | "Skewness" | "RSquared" | "ValueAtRisk" | "UpsideCaptureRatio" | "DownsideCaptureRatio" | "WinRate" | "AverageWin" | "AverageLoss" | "ProfitFactor" | "AverageHoldingPeriod" | "Turnover" | "NPositivePeriods" | "TradeGainLossRatio" | "AverageMFE" | "AverageMAE" | "MedianMFE" | "MedianMAE" | "EdgeRatio" | "TradeCaptureRatio" | "LongWinRate" | "ShortWinRate" | "LongProfitFactor" | "ShortProfitFactor" | "SafeWithdrawalRate" | "PerpetualWithdrawalRate" | "DynamicWithdrawalRate" | "LTCG" | "STCG" | "UnrealizedLTCG" | "UnrealizedSTCG" | "QualifiedDividends" | "NonQualifiedIncome" | "TaxCostRatio" | "TaxDrag" | "CAGR" | "ActiveReturn" | "SmartSharpe" | "SmartSortino" | "ProbabilisticSharpe" | "KRatio" | "KellyCriterion" | "OmegaRatio" | "GainToPainRatio" | "CVaR" | "TailRatio" | "RecoveryFactor" | "Exposure" | "ConsecutiveWins" | "ConsecutiveLosses" | "AvgDrawdown" | "AvgDrawdownDays" | "GainLossRatio" | "AvgUlcerIndex" | "P90UlcerIndex" | "MedianUlcerIndex")[];
+                metric?: ("TWRR" | "MWRR" | "Sharpe" | "Sortino" | "Calmar" | "KellerRatio" | "MaxDrawdown" | "StdDev" | "BenchmarkTWRR" | "BenchmarkMWRR" | "BenchmarkSharpe" | "BenchmarkSortino" | "BenchmarkCalmar" | "BenchmarkMaxDrawdown" | "BenchmarkStdDev" | "Beta" | "Alpha" | "TrackingError" | "DownsideDeviation" | "InformationRatio" | "Treynor" | "UlcerIndex" | "ExcessKurtosis" | "Skewness" | "RSquared" | "ValueAtRisk" | "UpsideCaptureRatio" | "DownsideCaptureRatio" | "BenchmarkDownsideDeviation" | "BenchmarkUlcerIndex" | "BenchmarkExcessKurtosis" | "BenchmarkSkewness" | "BenchmarkValueAtRisk" | "WinRate" | "AverageWin" | "AverageLoss" | "ProfitFactor" | "AverageHoldingPeriod" | "Turnover" | "NPositivePeriods" | "TradeGainLossRatio" | "AverageMFE" | "AverageMAE" | "MedianMFE" | "MedianMAE" | "EdgeRatio" | "TradeCaptureRatio" | "LongWinRate" | "ShortWinRate" | "LongProfitFactor" | "ShortProfitFactor" | "SafeWithdrawalRate" | "PerpetualWithdrawalRate" | "DynamicWithdrawalRate" | "LTCG" | "STCG" | "UnrealizedLTCG" | "UnrealizedSTCG" | "QualifiedDividends" | "NonQualifiedIncome" | "TaxCostRatio" | "TaxDrag" | "AfterTaxTWRR" | "AfterTaxCAGR" | "BenchmarkAfterTaxTWRR" | "BenchmarkAfterTaxCAGR" | "CAGR" | "BenchmarkCAGR" | "ActiveReturn" | "SmartSharpe" | "SmartSortino" | "ProbabilisticSharpe" | "KRatio" | "KellyCriterion" | "OmegaRatio" | "GainToPainRatio" | "CVaR" | "TailRatio" | "RecoveryFactor" | "Exposure" | "ConsecutiveWins" | "ConsecutiveLosses" | "AvgDrawdown" | "AvgDrawdownDays" | "GainLossRatio" | "AvgUlcerIndex" | "P90UlcerIndex" | "MedianUlcerIndex" | "BenchmarkAvgUlcerIndex" | "BenchmarkP90UlcerIndex" | "BenchmarkMedianUlcerIndex")[];
             };
             header?: never;
             path: {
@@ -1804,6 +1915,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HoldingsImpactResponse"];
+                };
+            };
+            202: components["responses"]["Recalculating"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    getPortfolioPrediction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Portfolio slug, e.g. `adm-aggressive-gm59`. */
+                slug: components["parameters"]["PortfolioSlug"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Predicted transactions and post-trade holdings */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PredictionResponse"];
                 };
             };
             202: components["responses"]["Recalculating"];

@@ -41,9 +41,10 @@ const derived = usePortfolioReturns(measurements)
 const { data: drawdownsData } = usePortfolioDrawdowns(portfolioId)
 const mounted = useMounted(60)
 
-// Replace the current-year row's portfolio/benchmark with the server's
-// authoritative YTD values so this page agrees with the overview's YTD KPI.
-// Anything older comes from the daily-series-derived calculation.
+// Replace the current-year row's portfolio return with the server's
+// authoritative YTD value so this page agrees with the overview's YTD KPI.
+// The benchmark and anything older come from the daily-series-derived
+// calculation.
 const annualReconciled = computed<AnnualReturn[]>(() => {
   const annual = derived.value?.annual ?? []
   const s = summary.value
@@ -52,8 +53,7 @@ const annualReconciled = computed<AnnualReturn[]>(() => {
   return annual.map((a) => {
     if (a.year !== currentYear) return a
     const portfolio = s.ytdReturn ?? a.portfolio
-    const benchmark = s.benchmarkYtdReturn ?? a.benchmark
-    return { ...a, portfolio, benchmark, delta: portfolio - benchmark }
+    return { ...a, portfolio, delta: portfolio - a.benchmark }
   })
 })
 
