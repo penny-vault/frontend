@@ -17,6 +17,11 @@ export const PREDICTION_BATCH_ID = -1
  * for predicted positions.
  */
 export function predictionToEntry(p: PredictionResponse): HoldingsHistoryEntry {
+  // The API returns prediction annotations as an ordered key/value list;
+  // the grid consumes the history entries' map form. Guard against backends
+  // that predate the field.
+  const pairs = p.annotations ?? []
+  const annotations = Object.fromEntries(pairs.map((a) => [a.key, a.value]))
   return {
     batchId: PREDICTION_BATCH_ID,
     // Noon UTC so the America/New_York date labels show the calendar date the
@@ -29,7 +34,8 @@ export function predictionToEntry(p: PredictionResponse): HoldingsHistoryEntry {
       avgCost: 0,
       lastTradeValue: h.marketValue
     })),
-    portfolioValue: p.totalMarketValue
+    portfolioValue: p.totalMarketValue,
+    ...(pairs.length ? { annotations } : {})
   }
 }
 

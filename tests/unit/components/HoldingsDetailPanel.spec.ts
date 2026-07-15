@@ -31,7 +31,8 @@ const prediction = {
     { ticker: 'VTI', figi: 'BBG000BDTBL9', quantity: 710, marketValue: 169264, weight: 0.6635 },
     { ticker: 'BND', figi: null, quantity: 700, marketValue: 50400, weight: 0.1976 }
   ],
-  totalMarketValue: 219664
+  totalMarketValue: 219664,
+  annotations: []
 }
 
 describe('HoldingsDetailPanel', () => {

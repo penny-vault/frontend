@@ -519,7 +519,11 @@ export const predictionFixture1: PredictionResponse = {
     { ticker: 'BND', figi: 'BBG000BDTR35', quantity: 700, marketValue: 50400, weight: 0.1976 },
     { ticker: 'VEA', figi: 'BBG000BK5W78', quantity: 680, marketValue: 35428, weight: 0.1389 }
   ],
-  totalMarketValue: 255092
+  totalMarketValue: 255092,
+  annotations: [
+    { key: 'momentum', value: '0.24' },
+    { key: 'vol', value: '0.10' }
+  ]
 }
 
 // No trades predicted: transactions is legitimately empty and positions
@@ -532,7 +536,8 @@ export const predictionFixture2: PredictionResponse = {
     { ticker: 'VTIP', figi: 'BBG000BHCYJ1', quantity: 700, marketValue: 34300, weight: 0.2791 },
     { ticker: 'SHY', figi: 'BBG000BJKYW3', quantity: 280, marketValue: 23800, weight: 0.1936 }
   ],
-  totalMarketValue: 122900
+  totalMarketValue: 122900,
+  annotations: []
 }
 
 export const predictionMap: Record<string, PredictionResponse> = {

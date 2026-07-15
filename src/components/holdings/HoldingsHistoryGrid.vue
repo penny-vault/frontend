@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import VGrid from '@revolist/vue3-datagrid'
-import type { CellTemplateProp, CellCompareFunc, HyperFunc, VNode } from '@revolist/revogrid'
+import type { CellTemplateProp, CellCompareFunc } from '@revolist/revogrid'
 import type { HoldingsHistoryEntry } from '@/api/endpoints/portfolios'
 import { buildJustificationColumns, computeEntryValue, formatTickers } from '@/util/holdings'
 import { formatCurrency, formatDate } from '@/util/format'
@@ -77,15 +77,6 @@ function compareByAnnotation(key: string): CellCompareFunc {
     ((a as Row)[`_raw_${key}`] as number) - ((b as Row)[`_raw_${key}`] as number)
 }
 
-const dateCellTemplate = (h: HyperFunc<VNode>, { model }: CellTemplateProp) => {
-  const m = model as Row
-  if (!m._predicted) return m.dateLabel
-  return h('div', { class: 'pred-date' }, [
-    h('span', { class: 'pred-badge' }, 'Predicted upcoming'),
-    h('span', {}, m.dateLabel)
-  ])
-}
-
 const columns = computed(() => {
   const rowClass = (model: Row) =>
     [
@@ -94,19 +85,32 @@ const columns = computed(() => {
     ]
       .filter(Boolean)
       .join(' ')
+  // extra: additional class(es) applied only to predicted-row cells, used to
+  // draw the edges of the dashed border around the pinned prediction row.
+  const cellPropsWith =
+    (extra = '') =>
+    ({ model }: CellTemplateProp) => {
+      const m = model as Row
+      return m._predicted
+        ? {
+            class: `${rowClass(m)}${extra ? ` ${extra}` : ''}`,
+            title: 'Predicted upcoming trade'
+          }
+        : { class: rowClass(m) }
+    }
+  const cellProps = cellPropsWith()
   const narrow = isNarrow.value
   const base = [
     {
       prop: 'dateLabel',
       name: 'Date',
-      size: narrow ? 130 : 160,
+      size: narrow ? 110 : 130,
       pin: 'colPinStart' as const,
       readonly: true,
       sortable: true,
       order: 'desc' as const,
       cellCompare: compareByTimestamp,
-      cellTemplate: dateCellTemplate,
-      cellProperties: ({ model }: CellTemplateProp) => ({ class: rowClass(model as Row) })
+      cellProperties: cellPropsWith('pred-date-cell')
     },
     {
       prop: 'tickers',
@@ -114,7 +118,7 @@ const columns = computed(() => {
       size: narrow ? 120 : 220,
       readonly: true,
       sortable: true,
-      cellProperties: ({ model }: CellTemplateProp) => ({ class: rowClass(model as Row) })
+      cellProperties: cellProps
     },
     {
       prop: 'valueLabel',
@@ -123,18 +127,22 @@ const columns = computed(() => {
       readonly: true,
       sortable: true,
       cellCompare: compareByTotalValue,
-      cellProperties: ({ model }: CellTemplateProp) => ({ class: rowClass(model as Row) })
+      cellProperties: cellProps
     }
   ]
-  const dyn = justificationKeys.value.map((k) => ({
+  const dyn = justificationKeys.value.map((k, idx) => ({
     prop: `just_${k}`,
     name: k,
     size: narrow ? 90 : 120,
     readonly: true,
     sortable: true,
     cellCompare: compareByAnnotation(k),
-    cellProperties: ({ model }: CellTemplateProp) => ({ class: rowClass(model as Row) })
+    cellProperties:
+      idx === justificationKeys.value.length - 1 ? cellPropsWith('pred-row-end') : cellProps
   }))
+  if (dyn.length === 0) {
+    base[base.length - 1]!.cellProperties = cellPropsWith('pred-row-end')
+  }
   return [...base, ...dyn]
 })
 

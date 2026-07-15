@@ -845,6 +845,10 @@ export interface components {
              */
             weight: number;
         };
+        PredictionAnnotation: {
+            key: string;
+            value: string;
+        };
         PredictionResponse: {
             /**
              * Format: date
@@ -864,6 +868,11 @@ export interface components {
              * @description Sum of the predicted holdings' market values (cash excluded).
              */
             totalMarketValue: number;
+            /**
+             * @description Key/value labels the strategy recorded during the prediction
+             *     run, in recording order. Empty when the strategy recorded none.
+             */
+            annotations: components["schemas"]["PredictionAnnotation"][];
         };
         HoldingsHistoryEntry: {
             /** Format: int64 */

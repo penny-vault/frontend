@@ -37,24 +37,20 @@
   min-height: 400px;
 }
 
+/* The prediction row is drawn per-cell: dashed top/bottom on every cell,
+   with the left and right edges closed off on the first and last columns. */
 .revo-wrap .holdings-row-predicted {
-  background: var(--secondary-soft-06);
-  box-shadow: inset 0 -1px 0 var(--secondary-border);
+  background: var(--secondary-soft-15);
+  border-top: 1px dashed var(--secondary-border);
+  border-bottom: 1px dashed var(--secondary-border);
 }
-.revo-wrap .pred-date {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100%;
-  line-height: 1.25;
-}
-.revo-wrap .pred-badge {
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 600;
+.revo-wrap .pred-date-cell {
   color: var(--secondary);
-  white-space: nowrap;
+  font-weight: 500;
+  border-left: 1px dashed var(--secondary-border);
+}
+.revo-wrap .pred-row-end {
+  border-right: 1px dashed var(--secondary-border);
 }
 .revo-wrap .holdings-cell-up {
   color: var(--gain);

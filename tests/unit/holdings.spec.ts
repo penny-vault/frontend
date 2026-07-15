@@ -196,7 +196,8 @@ describe('predictionToEntry', () => {
       { ticker: 'VTI', figi: 'BBG000BDTBL9', quantity: 710, marketValue: 169264, weight: 0.6635 },
       { ticker: 'BND', figi: null, quantity: 700, marketValue: 50400, weight: 0.1976 }
     ],
-    totalMarketValue: 219664
+    totalMarketValue: 219664,
+    annotations: []
   }
 
   it('adapts a prediction to the history entry shape', () => {
@@ -217,5 +218,27 @@ describe('predictionToEntry', () => {
 
   it('uses the authoritative total for value computation', () => {
     expect(computeEntryValue(predictionToEntry(prediction))).toBe(219664)
+  })
+
+  it('converts annotation pairs to the map form the grid consumes', () => {
+    const withScores = {
+      ...prediction,
+      annotations: [
+        { key: 'QQQ/score', value: '14.78' },
+        { key: 'VOO/score', value: '6.91' }
+      ]
+    }
+    expect(predictionToEntry(withScores).annotations).toEqual({
+      'QQQ/score': '14.78',
+      'VOO/score': '6.91'
+    })
+  })
+
+  it('omits annotations when empty or missing', () => {
+    expect(predictionToEntry(prediction).annotations).toBeUndefined()
+    const legacy = { ...prediction, annotations: undefined } as unknown as Parameters<
+      typeof predictionToEntry
+    >[0]
+    expect(predictionToEntry(legacy).annotations).toBeUndefined()
   })
 })
